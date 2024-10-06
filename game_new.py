@@ -7,7 +7,7 @@ from entities import Curve
 from model.GameModel import GameModel
 from handler import InputHandler
 from renderer import Renderer
-from particles import HeatParticle
+from particles import Particle
 from ui import UI
 
 
@@ -22,7 +22,8 @@ clock = pg.time.Clock()
 
 game = GameModel(dt=1)
 
-def main_loop(screen, game, renderer:Renderer, input_handler:InputHandler, clock, ui:UI):
+def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHandler, 
+              clock:pg.time.Clock, ui:UI):
     """The main game loop responsible for processing events, updating game state, and rendering."""
     running = True
     while running:
@@ -38,13 +39,14 @@ def main_loop(screen, game, renderer:Renderer, input_handler:InputHandler, clock
         game.update()
         
         ui.update(game)
-        for p in heat_particles:
-            p.lifetime -= 1
-            if p.lifetime <= 0: 
-                heat_particles.remove(p)
-                continue
-            p.speed.scale_to_length(p.lifetime/10)
-            p.pos += p.speed
+        for l in particle_lists:
+            for p in l:
+                p.lifetime -= 1
+                if p.lifetime <= 0: 
+                    l.remove(p)
+                    continue
+                p.speed.scale_to_length(p.lifetime/10)
+                p.pos += p.speed
             
         #render
         renderer.camera.update()
@@ -52,9 +54,12 @@ def main_loop(screen, game, renderer:Renderer, input_handler:InputHandler, clock
 
         for curve in game.curves.values():
             renderer.draw_curve(curve)
-        renderer.draw_game_objects(game)
+            
+        renderer.draw_indoor_temperature(pos=game.position, dT=game.comfort_diff,
+                                         size=(10 + (game.heat_on + game.cool_on)*5))
 
-        renderer.draw_particles(heat_particles)
+        renderer.draw_heat_particles(heat_particles)
+        renderer.draw_cool_particles(cool_particles)
         
         renderer.draw_ui(ui.get_ui_elements())
         renderer.draw_stats(game)
@@ -62,6 +67,8 @@ def main_loop(screen, game, renderer:Renderer, input_handler:InputHandler, clock
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
         clock.tick(60)
+        
+        game.cleanup()
         
         if game.finished: running = False
 
@@ -82,13 +89,21 @@ def menu_loop(screen, renderer:Renderer, input_handler:InputHandler, clock):
         clock.tick(60)
 
 heat_particles = []
+cool_particles = []
+particle_lists = [heat_particles, cool_particles]
 def heat():
     game.heat()
-    heat_particles.append(HeatParticle(
+    heat_particles.append(Particle(
         pos=camera.screen_coords(pg.Vector2(game.position)), 
         speed=pg.Vector2(game.dt, game.model.HVAC.HP_heating_power).rotate(random.randint(-20,20)),
         lifetime=30))
-
+    
+def cool():
+    game.cool()
+    cool_particles.append(Particle(
+        pos=camera.screen_coords(pg.Vector2(game.position)), 
+        speed=pg.Vector2(game.dt, -game.model.HVAC.HP_cooling_power).rotate(random.randint(-20,20)),
+        lifetime=30))
     
 
 ui = UI(anchorpoint=(100, screen.get_height()//2))
@@ -114,7 +129,7 @@ startgame = lambda: main_loop(screen, game, renderer, input_handler, clock, ui)
 
 input_handler.bind_camera(camera)
 input_handler.bind_continuous_keypress(pg.K_UP, heat)
-input_handler.bind_continuous_keypress(pg.K_DOWN, game.cool)
+input_handler.bind_continuous_keypress(pg.K_DOWN, cool)
 input_handler.bind_keypress(pg.K_p, game.toggle_pause)
 input_handler.bind_keypress(pg.K_1, lambda: game.set_speed(1))
 input_handler.bind_keypress(pg.K_2, lambda: game.set_speed(2))

@@ -49,9 +49,14 @@ class Renderer:
     def reset(self):
         self.display.fill(BLACK)
 
-    def draw_particles(self, particleList):
+    def draw_heat_particles(self, particleList):
         for p in particleList:
-            pg.draw.circle(self.display, colors["QH"], p.pos, p.lifetime/10)
+            pg.draw.circle(self.display, colors["QH"], p.pos, p.lifetime/5)
+            
+    def draw_cool_particles(self, particleList):
+        for p in particleList:
+            pg.draw.circle(self.display, colors["QC"], p.pos, p.lifetime/5)
+          
 
     def draw_stats(self, game):
         x, y = 10, 500
@@ -120,25 +125,15 @@ class Renderer:
         pg.draw.lines(self.display, curve.color, closed=False, points=screencoords, width=3)
 
 
-    def draw_game_objects(self, game):
+    def draw_indoor_temperature(self, pos, dT, size):
         """Draw game objects like players or enemies."""
-        x, y = self.camera.screen_coords(game.position)
+        x, y = self.camera.screen_coords(pos)
 
-        if game.comfort_diff > 0:
+        if dT > 0:
             color = RED
-        elif game.comfort_diff < 0:
+        elif dT < 0:
             color = BLUE
         else:
             color = GREEN
 
-        size = 10 + game.heat_on*game.cool_on*5
         pg.draw.circle(self.display, color, (x, y), size)
-        # pg.draw.line(self.display, DARK_BLUE, (x, y), 
-                    #  self.camera.screen_coords(pg.Vector2(*game.position) + (game.dt, game.dT)))
-        qh = game.qh
-        qc = game.qc   
-        pg.draw.rect(self.display, RED, pg.Rect(x-5, y-qh, 10, qh))
-        pg.draw.rect(self.display, BLUE, pg.Rect(x-5, y, 10, -qc))
-        pg.draw.line(self.display, WHITE, (x, y), 
-                     self.camera.screen_coords(pg.Vector2(*game.position) + (10*game.dt, 10*game.dT)),
-                     width=3)
