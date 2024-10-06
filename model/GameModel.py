@@ -100,7 +100,8 @@ class GameModel:
             self.curve_comfort_min.extend()  
             self.curve_comfort_max.extend()
 
-        #cleanup
+    def cleanup(self):
+        """cleans up logic and other flags for the next time step"""
         self.heat_on = False
         self.cool_on = False
         
