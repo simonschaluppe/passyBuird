@@ -49,6 +49,10 @@ class Renderer:
     def reset(self):
         self.display.fill(BLACK)
 
+    def draw_particles(self, particleList):
+        for p in particleList:
+            pg.draw.circle(self.display, colors["QH"], p.pos, p.lifetime/10)
+
     def draw_stats(self, game):
         x, y = 10, 500
 

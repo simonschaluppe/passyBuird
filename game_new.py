@@ -1,6 +1,7 @@
 
 # Import required modules and classes
 import pygame as pg
+import random 
 from camera import Camera2D
 from entities import Curve
 from model.GameModel import GameModel
@@ -37,7 +38,14 @@ def main_loop(screen, game, renderer:Renderer, input_handler:InputHandler, clock
         game.update()
         
         ui.update(game)
-        
+        for p in heat_particles:
+            p.lifetime -= 1
+            if p.lifetime <= 0: 
+                heat_particles.remove(p)
+                continue
+            p.speed.scale_to_length(p.lifetime/10)
+            p.pos += p.speed
+            
         #render
         renderer.camera.update()
         renderer.reset()
@@ -45,6 +53,8 @@ def main_loop(screen, game, renderer:Renderer, input_handler:InputHandler, clock
         for curve in game.curves.values():
             renderer.draw_curve(curve)
         renderer.draw_game_objects(game)
+
+        renderer.draw_particles(heat_particles)
         
         renderer.draw_ui(ui.get_ui_elements())
         renderer.draw_stats(game)
@@ -75,8 +85,8 @@ heat_particles = []
 def heat():
     game.heat()
     heat_particles.append(HeatParticle(
-        pos=game.position, 
-        speed=pg.Vector2(game.dt, game.model.HVAC.HP_heating_power),
+        pos=camera.screen_coords(pg.Vector2(game.position)), 
+        speed=pg.Vector2(game.dt, game.model.HVAC.HP_heating_power).rotate(random.randint(-20,20)),
         lifetime=30))
 
     
