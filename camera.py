@@ -2,7 +2,7 @@ from typing import Protocol
 import pygame as pg
 
 class Camera(Protocol):
-    def project(self, sprite:pg.sprite.Sprite) -> [pg.Surface, pg.Rect]:
+    def project(self, sprite):
         ...
     
     def game_coords(self, screen_coords:pg.Vector2) -> pg.Vector2:

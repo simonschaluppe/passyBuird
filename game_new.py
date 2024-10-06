@@ -14,10 +14,10 @@ from ui import UI
 pg.init()
 print(pg.version)
 # Set up the main display surface
-screen = pg.display.set_mode((800, 600))
+screen = pg.display.set_mode((1280, 900))
 pg.display.set_caption("passyBUIRLD")
 # Create another surface to perform off-screen drawing
-display = pg.Surface((800, 600))
+display = pg.Surface((1280, 900))
 clock = pg.time.Clock()
 
 game = GameModel(dt=1)
@@ -45,7 +45,7 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
                 if p.lifetime <= 0: 
                     l.remove(p)
                     continue
-                p.speed.scale_to_length(p.lifetime/10)
+                #p.speed.scale_to_length(p.lifetime/50)
                 p.pos += p.speed
             
         #render
@@ -94,16 +94,16 @@ particle_lists = [heat_particles, cool_particles]
 def heat():
     game.heat()
     heat_particles.append(Particle(
-        pos=camera.screen_coords(pg.Vector2(game.position)), 
-        speed=pg.Vector2(game.dt, game.model.HVAC.HP_heating_power).rotate(random.randint(-20,20)),
-        lifetime=30))
+        pos=pg.Vector2(game.position), 
+        speed=pg.Vector2(0, -0.1).rotate(random.randint(-40,40)),
+        lifetime=40))
     
 def cool():
     game.cool()
     cool_particles.append(Particle(
-        pos=camera.screen_coords(pg.Vector2(game.position)), 
-        speed=pg.Vector2(game.dt, -game.model.HVAC.HP_cooling_power).rotate(random.randint(-20,20)),
-        lifetime=30))
+        pos=pg.Vector2(game.position), 
+        speed=pg.Vector2(0, 0.1).rotate(random.randint(-40,40)),
+        lifetime=40))
     
 
 ui = UI(anchorpoint=(100, screen.get_height()//2))

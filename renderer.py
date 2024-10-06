@@ -51,11 +51,13 @@ class Renderer:
 
     def draw_heat_particles(self, particleList):
         for p in particleList:
-            pg.draw.circle(self.display, colors["QH"], p.pos, p.lifetime/5)
+            pos = self.camera.screen_coords(p.pos)
+            pg.draw.circle(self.display, colors["QH"], pos, p.lifetime/5)
             
     def draw_cool_particles(self, particleList):
         for p in particleList:
-            pg.draw.circle(self.display, colors["QC"], p.pos, p.lifetime/5)
+            pos = self.camera.screen_coords(p.pos)
+            pg.draw.circle(self.display, colors["QC"], pos, p.lifetime/5)
           
 
     def draw_stats(self, game):
