@@ -67,30 +67,30 @@ if __name__ == '__main__':
     my_font = Font('assets/fonts/small_font.png')
     my_big_font = Font('assets/fonts/large_font.png')
 
-    
-# Loop ------------------------------------------------------- #
-while True:
-    
-    # Background --------------------------------------------- #
-    screen.fill((0,232,0))
+        
+    # Loop ------------------------------------------------------- #
+    while True:
+        
+        # Background --------------------------------------------- #
+        screen.fill((0,232,0))
 
 
-    my_font.render(screen, 'Hello World!', (20, 20))
-    my_big_font.render(screen, 'Hello World! I am DaFluffyPotato.', (20, 40))
-    my_big_font.render(screen, 'Hello World! I am Simono.', (20, 60), 200)
-    my_font.render(screen, 'Hello World! I have °C.', (20, 120), 20)
-    
-    # Buttons ------------------------------------------------ #
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
+        my_font.render(screen, 'Hello World!', (20, 20))
+        my_big_font.render(screen, 'Hello World! I am DaFluffyPotato.', (20, 40))
+        my_big_font.render(screen, 'Hello World! I am Simono.', (20, 60), 200)
+        my_font.render(screen, 'Hello World! I have °C.', (20, 120), 20)
+        
+        # Buttons ------------------------------------------------ #
+        for event in pygame.event.get():
+            if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-                
-    # Update ------------------------------------------------- #
-    pygame.display.update()
-    mainClock.tick(60)
-    
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+                    
+        # Update ------------------------------------------------- #
+        pygame.display.update()
+        mainClock.tick(60)
+        
