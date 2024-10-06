@@ -401,12 +401,10 @@ class EnergyModel:
     def __repr__(self):
         width = 24
         string = f"""
-Gebäude    {self.building.file}
-BGF        {self.building.bgf} m²BGF
+Building   {self.building.file}
+GFA        {self.building.bgf} m2
 PV-Anlage  {self.PV.kWp} kWp
 Batterie   {self.battery.capacity} kWh
---- {self.simulated=} {"-" * (width)}
-
 """
         if self.simulated:
             string += f"""

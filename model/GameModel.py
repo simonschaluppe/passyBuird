@@ -121,4 +121,4 @@ class GameModel:
         return self.model.HVAC.HP_heating_power, self.model.HVAC.HP_COP
     
     def __repr__(self) -> str:
-        return f"hour: {self.hour:4} | Ti= {self.model.TI[self.hour]:.2f}°C | ED {self.model.ED.sum():.1f} Wh/m²"
+        return f"hour: {self.hour:4}  Ti= {self.model.TI[self.hour]:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"

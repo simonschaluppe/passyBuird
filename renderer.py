@@ -1,14 +1,15 @@
 import pygame as pg
 import math
+from font import Font
 
 colors = {
     "QV": (200, 0, 100),
-    "QT": (250, 0, 0),
+    "QT": (76, 37, 29),
     "QS": (200, 200, 0),
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
     "Title": (255, 230, 225),
-    "DEBUG": (255, 230, 225),
+    "DEBUG": (40, 64, 123),
     "Winter BG": (60, 84, 153), #(61, 98, 116),
     "Summer BG": (255, 232, 197),
 }
@@ -43,26 +44,27 @@ class Renderer:
         self.camera = camera
         self.ui = ui
         self.scale = scale
-        self.lineheight = 15
-        self.titlefont = pg.font.Font("assets/fonts/8-BIT WONDER.ttf", size=int(self.lineheight*self.scale*2))
-        self.font = pg.font.Font("assets/fonts/cour.ttf", size=int(self.lineheight*self.scale))
+        self.lineheight = 25
+        self.font = Font('assets/fonts/small_font.png')
+        self.titlefont = Font('assets/fonts/large_font.png')
 
-    def render_line(self, text:str, color=(100,100,100), pos=(0,0), font=None):
+
+    def render_line(self, text:str, color=(10,10,10), pos=(0,0), size=20, font=None):
         """Render a text line using the font."""
         if not font: font = self.font
         px, py = pos
         dy = 0
         for line in text.splitlines():
             dy += self.lineheight
-            self.display.blit(font.render(line, True, color), (px, py+dy))
+            font.render(self.display, line, (px, py+dy), size, color)
 
     def render_menu(self):
         self.display.fill(BLACK)
         title = """
         PassyBUIRLD
 
-        <<<press Enter to start>>>"""
-        self.render_line(title, colors["Title"], self.camera.position)  # Label
+        +++press Enter to start+++"""
+        self.render_line(title, colors["Title"], self.camera.position, font=self.titlefont)  # Label
 
     def draw_background(self, hour_of_year):
         self.display.fill(seasonalcolor(hour_of_year))
@@ -82,12 +84,12 @@ class Renderer:
         x, y = 10, 500
 
         Lt = game.get_insulation()
-        self.render_line(f"Leitwert {Lt:.2f} W/m²K", 
+        self.render_line(f"Leitwert {Lt:.2f} W/m2K", 
                          color=colors["QT"],
                          pos=(x,y))
         
         PH, coph = game.get_power_info()
-        text = f"Wärmepumpe Leistung {PH} W/m²\nWärmepumpe Effizienz {coph*100:.1f}%" 
+        text = f"Heatpump Power {PH} W/m2\nHeatpump COP {coph:.2f}" 
         self.render_line(text, 
                          color=colors["QT"],
                          pos=(x,y+self.lineheight))
@@ -109,9 +111,9 @@ class Renderer:
         current_y = anchor_y
 
         # Render the first set of bars (positive values go down)
-        for label, value in first.items():
+        for i, (label, value) in enumerate(first.items()):
             pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 3*width, current_y, width, abs(value)))  # Draw the bar
-            self.render_line(f"{label}: {value:.1f}", colors[label], (anchor_x + 8*width, current_y))  # Label
+            self.render_line(f"{label}: {value:.1f}", colors[label], (anchor_x + 8*width, i*20))  # Label
             current_y -= value  # Move down
 
         # Render the second set of bars (negative values go up)
@@ -124,12 +126,12 @@ class Renderer:
         # QH (positive, down)
         pg.draw.rect(self.display, colors["QH"], pg.Rect(anchor_x + 50, current_y-QH, 10, QH))
         if QH != 0:
-            self.render_line(f"QH: {QH:.1f}", colors["QH"], (anchor_x + 8*width, current_y - QH))  # Label
+            self.render_line(f"QH: {QH:.1f}", colors["QH"], (anchor_x + 10*width, anchor_y))  # Label
             
         # QC (negative, up)
         pg.draw.rect(self.display, colors["QC"], pg.Rect(anchor_x + 50, current_y, 10, -QC))
         if QC != 0:
-            self.render_line(f"QC: {QC:.1f}", colors["QC"], (anchor_x + 8*width, current_y - QC))  # Label
+            self.render_line(f"QC: {QC:.1f}", colors["QC"], (anchor_x + 10*width, anchor_y-20))  # Label
 
         # Render debug statements
         for i, (label, callback) in enumerate(debug_statements.items()):
