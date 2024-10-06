@@ -46,17 +46,8 @@ class Renderer:
         <<<press Enter to start>>>"""
         self.render_line(title, colors["Title"], self.camera.position)  # Label
 
-    def render(self, game):
-        """Render the entire game state onto the display."""
+    def reset(self):
         self.display.fill(BLACK)
-
-        for curve in game.curves.values():
-            self.draw_curve(curve)
-
-        self.draw_game_objects(game)
-        
-        self.draw_ui(self.ui.get_ui_elements())
-        self.draw_stats(game)
 
     def draw_stats(self, game):
         x, y = 10, 500
