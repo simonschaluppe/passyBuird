@@ -7,8 +7,11 @@ from model.Simulation import EnergyModel
 from entities import Curve
 
 class GameModel:
-    def __init__(self, dt=1) -> None:
-        self.hour = 0
+    def __init__(self, dt=1, start_hour=0) -> None:
+        self.hour = start_hour
+        if start_hour == 0:
+            self.stop_hour = 8759
+        else: self.stop_hour = start_hour - 1
         self.dt = dt
         self.paused = False
         self.finished = False
@@ -25,9 +28,11 @@ class GameModel:
         self.forecast_hours = 72
 
         self.temperature_curve = Curve()
-        self.outdoor_temp_curve = Curve.from_points(self.model.TA[0:self.forecast_hours], "blue")
-        self.curve_comfort_min = Curve.from_points([self.model.comfort.minimum_room_temperature]*self.forecast_hours,"lightblue")
-        self.curve_comfort_max = Curve.from_points([self.model.comfort.maximum_room_temperature]*self.forecast_hours,"orange")
+        self.outdoor_temp_curve = Curve.from_points(self.model.TA[self.hour:self.hour+self.forecast_hours], self.hour, "blue")
+        self.curve_comfort_min = Curve.from_points(
+            [self.model.comfort.minimum_room_temperature]*self.forecast_hours,self.hour, "lightblue")
+        self.curve_comfort_max = Curve.from_points(
+            [self.model.comfort.maximum_room_temperature]*self.forecast_hours,self.hour, "orange")
         self.curves = {
             "Temperature Curve": self.temperature_curve,
             "Outdoor Temperature": self.outdoor_temp_curve,
@@ -81,9 +86,13 @@ class GameModel:
 
     def update(self):
         for _ in range(self.dt):
-            if self.hour >= 8759: 
-                self.finished = True
-                return
+            if self.hour == self.stop_hour:
+                pass
+                #  if input("rerun year? (Y/N").capitalize() != "Y":
+                #     self.finished = True
+                #     return
+            if self.hour == 8759: 
+                self.hour = 0
             self.hour += 1
             self.model.timestep(hour=self.hour)
 

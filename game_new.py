@@ -14,13 +14,13 @@ from ui import UI
 pg.init()
 print(pg.version)
 # Set up the main display surface
-screen = pg.display.set_mode((1280, 900))
+screen = pg.display.set_mode((800, 600))
 pg.display.set_caption("passyBUIRLD")
 # Create another surface to perform off-screen drawing
-display = pg.Surface((1280, 900))
+display = pg.Surface((800, 600))
 clock = pg.time.Clock()
 
-game = GameModel(dt=1)
+game = GameModel(dt=1, start_hour=6000)
 
 def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHandler, 
               clock:pg.time.Clock, ui:UI):
@@ -50,7 +50,7 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
             
         #render
         renderer.camera.update()
-        renderer.reset()
+        renderer.draw_background(game.hour)
 
         for curve in game.curves.values():
             renderer.draw_curve(curve)

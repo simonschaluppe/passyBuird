@@ -8,10 +8,10 @@ class Curve:
         self.color = color
     
     @classmethod
-    def from_points(cls, points, *args, **kwargs) -> "Curve":
+    def from_points(cls, points, start=0, *args, **kwargs) -> "Curve":
         new = cls(*args, **kwargs)
         for i, p in enumerate(points):
-            new.update((i,p))
+            new.update((i+start,p))
         return new
     
     def update(self, point=None):
@@ -20,8 +20,10 @@ class Curve:
 
     def extend(self):
         lastx, lasty = self.coordinates[-1]
-        self.coordinates.append((lastx+1, lasty))
+        x = (lastx + 1) % 8760
+        self.coordinates.append((x, lasty))
 
+    #old
     def draw(self, surface, camera):
         if len(self.coordinates) < 2: return
         screencoords = []

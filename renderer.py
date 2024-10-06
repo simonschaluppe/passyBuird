@@ -1,5 +1,5 @@
 import pygame as pg
-
+import math
 
 colors = {
     "QV": (200, 0, 100),
@@ -9,7 +9,18 @@ colors = {
     "QC": (0, 0, 255),
     "Title": (255, 230, 225),
     "DEBUG": (255, 230, 225),
+    "Winter BG": (60, 84, 153), #(61, 98, 116),
+    "Summer BG": (255, 232, 197),
 }
+
+def seasonalcolor(timeofyear=0):
+    """interpolate between Winter and Summer color"""
+    winter = pg.Vector3(colors["Winter BG"])
+    summer = pg.Vector3(colors["Summer BG"])
+    inbetween = winter.move_towards(summer, 
+                250*(1-math.cos(2*math.pi*timeofyear/8760)))
+    return tuple(inbetween)
+
 # Define color constants
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -46,8 +57,8 @@ class Renderer:
         <<<press Enter to start>>>"""
         self.render_line(title, colors["Title"], self.camera.position)  # Label
 
-    def reset(self):
-        self.display.fill(BLACK)
+    def draw_background(self, hour_of_year):
+        self.display.fill(seasonalcolor(hour_of_year))
 
     def draw_heat_particles(self, particleList):
         for p in particleList:
