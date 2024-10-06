@@ -13,13 +13,6 @@ colors = {
     "Summer BG": (255, 232, 197),
 }
 
-def seasonalcolor(timeofyear=0):
-    """interpolate between Winter and Summer color"""
-    winter = pg.Vector3(colors["Winter BG"])
-    summer = pg.Vector3(colors["Summer BG"])
-    inbetween = winter.move_towards(summer, 
-                250*(1-math.cos(2*math.pi*timeofyear/8760)))
-    return tuple(inbetween)
 
 # Define color constants
 RED = (255, 0, 0)
@@ -29,6 +22,20 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 
+def seasonalcolor(timeofyear=0):
+    """interpolate between Winter and Summer color"""
+    winter = pg.Vector3(colors["Winter BG"])
+    summer = pg.Vector3(colors["Summer BG"])
+    inbetween = winter.move_towards(summer, 
+                250*(1-math.cos(2*math.pi*timeofyear/8760)))
+    return tuple(inbetween)
+
+def change_color(surf, old, new):
+    new_surf = pg.Surface(surf.get_size())
+    new_surf.fill(new)
+    surf.set_colorkey(old)
+    new_surf.blit(surf, (0,0))
+    return new_surf
 
 class Renderer:
     def __init__(self, display:pg.Surface, camera, ui, scale=1.0):
