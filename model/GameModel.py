@@ -69,7 +69,9 @@ class GameModel:
         else:
             return 0
     
-    
+    @property
+    def comfort_score(self):
+        return max(100-20*abs(self.comfort_diff),0)
 
     @property
     def qc(self):
@@ -128,6 +130,28 @@ class GameModel:
     
     def get_cop(self):
         return self.model.HVAC.HP_COP
+    
+    def get_ui_data(self):
+        ui_data = {
+            "Energy balance": {
+                "anchorpoint": (600, 250),
+                "first": {"QV" : self.model.QV[self.hour] * 5,
+                        "QT" : self.model.QT[self.hour] * 5},
+                "second": {"QS": self.model.QS[self.hour] * 5},
+                "QH": self.model.QH[self.hour] * 5,
+                "QC": self.model.QC[self.hour] * 5
+                },
+            "Scores": {
+                "Money": int(self.money),
+                "Comfort": {"dT": self.comfort_diff, 
+                            "score": self.comfort_score}
+                },
+            "Price": f"Price: {self.model.price_grid} €/Wh",
+            "COP": f"Efficiency    {self.get_cop()*100:.0f}%",
+            "Power": f"Heating Power {self.get_power()} W/m²",
+        }
+        return ui_data
 
     def __repr__(self) -> str:
         return f"hour: {self.hour:4}  Ti= {self.model.TI[self.hour]:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
+    

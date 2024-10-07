@@ -18,6 +18,8 @@ colors = {
     "Summer BG": (255, 232, 197),
     "Button hovered": (61, 98, 116),
     "Button": (51, 58, 96),
+    "Price": (50,80,30),
+    "UI Text": (76, 37, 29),
 }
 
 # Define color constants
@@ -50,6 +52,12 @@ class Renderer:
         self.font = Font('assets/fonts/small_font.png')
         self.titlefont = Font('assets/fonts/large_font.png')
 
+        # components
+        self.ui_renderer = UIRenderer(self)
+        
+    def render_ui(self, ui_data):
+        self.ui_renderer.render(ui_data)
+# basic rendering
     def outline(self, surf, loc, pixel, color=(10,10,10), onto=False):
         if not onto: onto = self.display
         mask = pg.mask.from_surface(surf)
@@ -91,7 +99,7 @@ class Renderer:
         self.render_line(button.text, pos=(5, offset), onto=button_surf, size=20, border_width=1+button.hovered)
         # button
         self.display.blit(button_surf, button.position)
-
+# menu screen
     def render_title(self, pos):
         self.display.fill(seasonalcolor(0))
         title = """PassyBUIRLD
@@ -99,9 +107,6 @@ class Renderer:
 +++press Enter to start+++"""
         self.render_lines(title, colors["Title"], pos, 
                          font=self.titlefont, size=40)  # Label
-
-    def draw_label(self, text, pos=(0,0), color=ALMOSTBLACK, onto=None):
-        self.render_line(text, color=color, pos=pos, onto=onto)
 
     def render_panel(self, lines, color, pos, size):
         box = pg.Surface(size)
@@ -117,8 +122,10 @@ class Renderer:
 
     def draw_background(self, hour_of_year):
         #self.display.fill((0,0,0))
-        self.display.fill(seasonalcolor(hour_of_year))
+        self.display.fill(seasonalcolor(hour_of_year))  
 
+# draw stuff using camera (game)
+# particle renderer
     def draw_particles(self, particleList, color):
         for p in particleList:
             pos = self.camera.screen_coords(p.pos)
@@ -133,58 +140,7 @@ class Renderer:
 
     def draw_cool_particles(self, particleList):
         self.draw_particles(particleList, colors["QC"])
-
-
-    def draw_stats(self, Lt, PH, coph):
-        x, y = 10, 100
-
-        self.draw_label(f"Leitwert {Lt:.2f} W/m2K", 
-                         color=colors["QT"],
-                         pos=(x,y))
-        
-        self.draw_label(text=f"Heatpump Power {PH} W/m2", 
-                         color=colors["QT"],
-                         pos=(x,y+self.lineheight))
-        
-    def draw_energybalance(self, balance_data):
-        """Render energy balance as waterfall diagram."""
-        anchor_x, anchor_y = balance_data["anchorpoint"]
-        first = balance_data["first"]
-        second = balance_data["second"]
-        QH = balance_data["QH"]
-        QC = balance_data["QC"]
-        
-        width = 10
-        # Draw anchor point line (reference point)
-        pg.draw.rect(self.display, WHITE, pg.Rect(anchor_x, anchor_y, 120, 2))  # White anchor line
-
-        # Initial position is the anchor point
-        current_y = anchor_y
-
-        # Render the first set of bars (positive values go down)
-        for i, (label, value) in enumerate(first.items()):
-            pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 3*width, current_y, width, abs(value)))  # Draw the bar
-            self.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y+i*self.lineheight))  # Label
-            current_y -= value  # Move down
-
-        # Render the second set of bars (negative values go up)
-        for label, value in second.items():
-            pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 4*width, current_y - value, width, value))  # Draw bar
-            if value != 0.: 
-                self.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y-self.lineheight))  # Label
-            current_y -= value  # Move up
-
-        # Render QH and QC bars relative to anchor point
-        # QH (positive, down)
-        pg.draw.rect(self.display, colors["QH"], pg.Rect(anchor_x + 50, current_y-QH, 10, QH))
-        if QH != 0:
-            self.render_line(f"QH: {QH:.1f} W/m²", colors["QH"], (anchor_x + 8*width, anchor_y+2*self.lineheight))  # Label
-            
-        # QC (negative, up)
-        pg.draw.rect(self.display, colors["QC"], pg.Rect(anchor_x + 50, current_y, 10, -QC))
-        if QC != 0:
-            self.render_line(f"QC: {QC:.1f} W/m²", colors["QC"], (anchor_x + 8*width, anchor_y+2*self.lineheight))  # Label
-
+# curve renderer
     def draw_curve(self, curve):
         """Draw curves representing game data."""
         if len(curve.coordinates) < 2: return
@@ -199,16 +155,6 @@ class Renderer:
         color = color_indicator(dT)
 
         pg.draw.circle(self.display, color, (x, y), size)
-
-    def draw_score(self, score, pos=(650,10)):
-        self.render_line(str(score), color=(100,255,120), size=40, pos=pos, font=self.titlefont, )
-
-    def draw_comfort_indicator(self, dT):
-        comfort_score = max(100-20*abs(dT),0)
-        text = f"Comfort {comfort_score:.1f} %"
-        color = color_indicator(dT)
-        color = color_interpolation(color, GREEN, comfort_score/100)
-        self.render_line(text, color, pos=(550,120), size=20)
 
     def draw_TA_indicator(self, TA, hour, y=10):
         textcolor = seasonalcolor(hour)
@@ -226,7 +172,81 @@ class Renderer:
             debug_text = f"{label}: {callback()}"
             self.render_line(debug_text, colors["DEBUG"], (10, 10 + i*self.lineheight))
 
- 
+
+class UIRenderer:
+    def __init__(self, renderer:Renderer):
+        self.renderer = renderer
+        self.display = renderer.display
+        self.render_line = renderer.render_line
+
+    def render(self, ui_data):
+        self.energybalance(ui_data["Energy balance"])
+        self.money(ui_data["Scores"]["Money"])
+
+        comfort_data = ui_data["Scores"]["Comfort"]
+        self.comfort_score(score=comfort_data["score"],
+                           dT=comfort_data["dT"])
+        
+        self.render_line(ui_data["Price"], pos=(550, 80), color=colors["Price"])
+        self.render_line(ui_data["COP"], pos=(550, 100), color=colors["UI Text"])
+        self.render_line(ui_data["Power"], pos=(550, 120), color=colors["UI Text"])
+
+    def energybalance(self, balance_data):
+        """Render energy balance as waterfall diagram."""
+        anchor_x, anchor_y = 600, self.renderer.cy 
+        first = balance_data["first"]
+        second = balance_data["second"]
+        QH = balance_data["QH"]
+        QC = balance_data["QC"]
+        
+        width = 10
+        # Draw anchor point line (reference point)
+        pg.draw.rect(self.display, WHITE, pg.Rect(anchor_x, anchor_y, 120, 2))  # White anchor line
+
+        # Initial position is the anchor point
+        current_y = anchor_y
+
+        # Render the first set of bars (positive values go down)
+        for i, (label, value) in enumerate(first.items()):
+            pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 3*width, current_y, width, abs(value)))  # Draw the bar
+            self.renderer.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y+i*self.renderer.lineheight))  # Label
+            current_y -= value  # Move down
+
+        # Render the second set of bars (negative values go up)
+        for label, value in second.items():
+            pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 4*width, current_y - value, width, value))  # Draw bar
+            if value != 0.: 
+                self.renderer.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y-self.renderer.lineheight))  # Label
+            current_y -= value  # Move up
+
+        # Render QH and QC bars relative to anchor point
+        # QH (positive, down)
+        pg.draw.rect(self.display, colors["QH"], pg.Rect(anchor_x + 50, current_y-QH, 10, QH))
+        if QH != 0:
+            self.renderer.render_line(f"QH: {QH:.1f} W/m²", colors["QH"], (anchor_x + 8*width, anchor_y+2*self.renderer.lineheight))  # Label
+            
+        # QC (negative, up)
+        pg.draw.rect(self.display, colors["QC"], pg.Rect(anchor_x + 50, current_y, 10, -QC))
+        if QC != 0:
+            self.renderer.render_line(f"QC: {QC:.1f} W/m²", colors["QC"], (anchor_x + 8*width, anchor_y+2*self.renderer.lineheight))  # Label
+
+    def money(self, money, pos=(650,10)):
+        self.render_line(str(money),
+                         color=(100,255,120),
+                         size=40, 
+                         pos=pos, 
+                         font=self.renderer.titlefont)
+
+    def comfort_score(self, score, dT, pos=(550,50)):
+        text = f"Comfort {score:.1f} %"
+        color = color_indicator(dT)
+        color = color_interpolation(color, GREEN, score/100)
+        self.render_line(text, color, pos=pos, size=20)
+
+
+
+
+
 # test code
 
 def test():
@@ -276,14 +296,6 @@ def test():
         # Draw particles (testing draw_heat_particles and draw_cool_particles)
         renderer.draw_heat_particles(heat_particles)
         renderer.draw_cool_particles(cool_particles)
-
-        # Draw some mock stats (testing draw_stats)
-        mock_game_data = {
-            "Lt": 0.5,
-            "PH": 20,
-            "coph": 4.3
-        }
-        renderer.draw_stats(**mock_game_data)
 
         # Draw UI (testing draw_ui)
         renderer.draw_energybalance(mock_ui_data)

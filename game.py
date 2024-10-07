@@ -41,45 +41,23 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
 
         for curve in game.curves.values():
             renderer.draw_curve(curve)
+
+        renderer.draw_TA_indicator(game.model.TA[game.hour],
+                            game.hour,
+                            y=game.model.TA[game.hour-96:game.hour].mean())
             
         renderer.draw_indoor_temperature(pos=game.position, dT=game.comfort_diff,
                                          size=(10 + (game.heat_on + game.cool_on)*5))
 
         renderer.draw_heat_particles(particle_manager.groups["heating"])
         renderer.draw_cool_particles(particle_manager.groups["cooling"])
-        
-        d = {
-            "anchorpoint": (600, 250),
-            "first": {"QV" : game.model.QV[game.hour] * 5,
-                      "QT" : game.model.QT[game.hour] * 5},
-            "second": {"QS": game.model.QS[game.hour] * 5},
-            "QH": game.model.QH[game.hour] * 5,
-            "QC": game.model.QC[game.hour] * 5
-        }
-        renderer.draw_energybalance(d)
-        
-        renderer.draw_score(int(game.money))
-        renderer.draw_label(f"Price: {game.model.price_grid} €/Wh", 
-                            pos=(550,50),
-                            color=(50,80,30))
-        renderer.draw_label(f"Efficiency    {game.get_cop()*100:.0f}%",
-                            pos=(550,80),
-                            color=colors["QT"])
-        renderer.draw_label(f"Heaitng Power {game.get_power()} W/m²", 
-                         color=colors["QT"],
-                         pos=(550,100))
-        
-        renderer.draw_comfort_indicator(game.comfort_diff)
-        
-        renderer.draw_TA_indicator(game.model.TA[game.hour],
-                                   game.hour,
-                                   y=game.model.TA[game.hour-96:game.hour].mean())
-        
+
+        renderer.render_ui(game.get_ui_data())
+               
         for button in input_handler.buttons:
             renderer.render_button(button)
 
         renderer.debug({"FPS": lambda: round(clock.get_fps(),1)})
-
 
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
