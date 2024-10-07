@@ -4,6 +4,8 @@ from camera import Camera2D
 from font import Font
 from handler import Button
 
+from utils import color_interpolation, seasonalcolor, circle_surf, change_color
+
 colors = {
     "QV": (200, 0, 100),
     "QT": (76, 37, 29),
@@ -16,9 +18,7 @@ colors = {
     "Summer BG": (255, 232, 197),
     "Button hovered": (61, 98, 116),
     "Button": (51, 58, 96),
-
 }
-
 
 # Define color constants
 RED = (255, 0, 0)
@@ -29,33 +29,13 @@ BLACK = (0, 0, 0)
 ALMOSTBLACK = (10,10,10)
 GREEN = (0, 255, 0)
 
-def color_interpolation(color1, color2, weight):
-    colorvector1 = pg.Vector3(color1)
-    colorvector2 = pg.Vector3(color2)
-    dist = colorvector1.distance_to(colorvector2)
-    return tuple(colorvector1.move_towards(colorvector2, weight*dist))
-
-def seasonalcolor(timeofyear=0):
-    """interpolate between Winter and Summer color"""
-    return color_interpolation(color1=colors["Winter BG"], 
-                               color2=colors["Summer BG"],
-                               weight=(1-math.cos(2*math.pi*timeofyear/8760)))
-
-def change_color(surf, old, new):
-    new_surf = pg.Surface(surf.get_size())
-    new_surf.fill(new)
-    surf.set_colorkey(old)
-    new_surf.blit(surf, (0,0))
-    return new_surf
-
-
-def circle_surf(radius, color):
-    surf = pg.Surface((radius*2,radius*2))
-    pg.draw.circle(surf, color, (radius, radius), radius)
-    surf.set_colorkey((0,0,0))
-    return surf
-
-
+def color_indicator(dT):
+    if dT > 0:
+        return RED
+    elif dT < 0:
+        return BLUE
+    else:
+        return GREEN
 
 class Renderer:
     def __init__(self, display:pg.Surface, camera:Camera2D, clock:pg.time.Clock, scale=1.0):
@@ -80,6 +60,10 @@ class Renderer:
         onto.blit(mask_surf, (x+pixel, y))
         onto.blit(mask_surf, (x, y-pixel))
         onto.blit(mask_surf, (x, y+pixel))
+        onto.blit(mask_surf, (x-pixel, y-pixel))
+        onto.blit(mask_surf, (x+pixel, y+pixel))
+        onto.blit(mask_surf, (x+pixel, y-pixel))
+        onto.blit(mask_surf, (x-pixel, y+pixel))
 
     def render_line(self, text:str, color=ALMOSTBLACK, pos=(0,0), size=20, border_width=2, border_color=WHITE, font=None, onto=None):
         """Render a single text line onto a surface."""
@@ -101,9 +85,10 @@ class Renderer:
         button_surf = pg.Surface(button.size)
         button_surf.fill(colors["Button hovered"] if button.hovered else colors["Button"])
         # outline
-        self.outline(button_surf, button.position, pixel=2)
+        self.outline(button_surf, button.position, pixel=1+button.hovered-button.pressed)
         # text
-        self.render_line(button.text, pos=(5,5), onto=button_surf, size=20)
+        offset = 5+2*button.pressed
+        self.render_line(button.text, pos=(5, offset), onto=button_surf, size=20, border_width=1+button.hovered)
         # button
         self.display.blit(button_surf, button.position)
 
@@ -162,7 +147,7 @@ class Renderer:
                          pos=(x,y+self.lineheight))
         
     def draw_energybalance(self, balance_data):
-        """Render UI elements on the screen based on provided data."""
+        """Render energy balance as waterfall diagram."""
         anchor_x, anchor_y = balance_data["anchorpoint"]
         first = balance_data["first"]
         second = balance_data["second"]
@@ -211,17 +196,29 @@ class Renderer:
         """Draw game objects like players or enemies."""
         x, y = self.camera.screen_coords(pos)
 
-        if dT > 0:
-            color = RED
-        elif dT < 0:
-            color = BLUE
-        else:
-            color = GREEN
+        color = color_indicator(dT)
 
         pg.draw.circle(self.display, color, (x, y), size)
 
     def draw_score(self, score, pos=(650,10)):
         self.render_line(str(score), color=(100,255,120), size=40, pos=pos, font=self.titlefont, )
+
+    def draw_comfort_indicator(self, dT):
+        comfort_score = max(100-20*abs(dT),0)
+        text = f"Comfort {comfort_score:.1f} %"
+        color = color_indicator(dT)
+        color = color_interpolation(color, GREEN, comfort_score/100)
+        self.render_line(text, color, pos=(550,120), size=20)
+
+    def draw_TA_indicator(self, TA, hour, y=10):
+        textcolor = seasonalcolor(hour)
+        bordercolor = color_interpolation(textcolor, (255, 255,255),0.8)
+        textcolor = color_interpolation(textcolor, (0,0,0), 0.5)
+        text = f"Outdoor Temp {TA:2.1f}°C"
+        self.render_line(text, textcolor, 
+                         pos=self.camera.screen_coords((hour, y)), 
+                         border_color=bordercolor
+                         )
 
     def debug(self, statements):
         # Render debug statements
@@ -258,7 +255,7 @@ def test():
     
     # Initialize mock camera and renderer
     camera = Camera2D(screen, zoom=(1,1))
-    renderer = Renderer(screen, camera, ui=mock_ui_data)
+    renderer = Renderer(screen, camera, clock)
 
     # Mock particle lists for heat and cool particles
     heat_particles = [Particle(Vector2(random.randint(100, 700), random.randint(100, 500)),

@@ -15,6 +15,12 @@ class Comfortmodel:
 
         self.timestamp =  pd.Series(np.arange('2021-01-01 00:00', '2022-01-01 00:00', dtype='datetime64[h]'))
         
+        self.comfort = np.ones(8760)*100
+
+    def update(self, t, TI):
+
+        pass
+
 
     def heating_season(self, t):
         return self.timestamp[t].month in self.heating_months

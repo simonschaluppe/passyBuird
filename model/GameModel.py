@@ -69,6 +69,7 @@ class GameModel:
         else:
             return 0
     
+    
 
     @property
     def qc(self):

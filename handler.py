@@ -8,15 +8,21 @@ class Button:
         self.text = text
         self.callback = callback
         self.hovered = False
+        self.pressed = False
     
-    def press(self):
+    def release(self):
+        self.pressed = False
         self.callback()
+
+    def press(self):
+        self.pressed = True
 
     def is_hovering(self, mouse_pos):
         """Check if the mouse is over the button."""
         x, y = self.position
         w, h = self.size
         self.hovered = x <= mouse_pos[0] <= x + w and y <= mouse_pos[1] <= y + h
+        self.pressed = min(self.pressed,self.hovered)
         return self.hovered
 
 class InputHandler(object):
@@ -42,9 +48,9 @@ class InputHandler(object):
     def bind_continuous_keypress(self, key, action):
         self.continuous_keypress_bindings[key] = action
 
-    def bind_mousebutton(self, button, action):
+    def bind_mousebutton_down(self, button, action):
         self.mousebutton_bindings[button] = action    
-        
+
     def bind_continuous_mousebutton(self, button, action):
         self.continuous_mousebutton_bindings[button] = action
 
@@ -55,19 +61,32 @@ class InputHandler(object):
         self.bind_continuous_keypress(pg.K_d, lambda: mover.turn(angle=-turnspeed))
 
     def bind_camera(self, camera):
-        self.bind_mousebutton(4, lambda: camera.zoom(1.1))
-        self.bind_mousebutton(5, lambda: camera.zoom(0.9))
+        self.bind_mousebutton_down(4, lambda: camera.zoom(1.1))
+        self.bind_mousebutton_down(5, lambda: camera.zoom(0.9))
         self.bind_continuous_keypress(pg.K_UP, lambda: camera.move((0,10)))
         self.bind_continuous_keypress(pg.K_DOWN, lambda: camera.move((0,-10)))
         self.bind_continuous_keypress(pg.K_LEFT, lambda: camera.move((-10,0)))
         self.bind_continuous_keypress(pg.K_RIGHT, lambda: camera.move((10,0)))
         self.bind_keypress(pg.K_r, camera.reset)
 
-    def handle_mouse(self):
+    def handle_mouse_movement(self):
         mousepos = pg.mouse.get_pos()
         for button in self.buttons:
-            if button.is_hovering(mousepos) and pg.mouse.get_pressed()[0]:
+            button.is_hovering(mousepos)
+
+    def handle_mouse_down(self, event):
+        if event.button in self.mousebutton_bindings:
+            self.mousebutton_bindings[event.button]()
+        for button in self.buttons:
+            if button.is_hovering(pg.mouse.get_pos()): 
                 button.press()
+    
+    def handle_mouse_up(self, event):
+        if event.button != 1:
+            return
+        for button in self.buttons:
+            if button.is_hovering(pg.mouse.get_pos()):
+                button.release()
 
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
@@ -79,8 +98,9 @@ class InputHandler(object):
                 print(f"key released: {event.key} > calling {self.keyrelease_bindings[event.key].__name__}")
                 self.keyrelease_bindings[event.key]()
         elif event.type == pg.MOUSEBUTTONDOWN:
-            if event.button in self.mousebutton_bindings:
-                self.mousebutton_bindings[event.button]()
+            self.handle_mouse_down(event)
+        elif event.type == pg.MOUSEBUTTONUP:
+            self.handle_mouse_up(event)
         
     def handle_continuous_keypresses(self):
         keys = pg.key.get_pressed()
@@ -94,12 +114,12 @@ class InputHandler(object):
             if buttons[button]:
                 action()
 
-    def update(self):
+    def update(self):        
+        self.handle_mouse_movement()
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return False
             self.handle_event(event)
-        self.handle_mouse()
         self.handle_continuous_keypresses()
         self.handle_continuous_mousebuttons()
         return True

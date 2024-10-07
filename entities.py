@@ -1,10 +1,8 @@
 import pygame as pg
 
 class Curve:
-    def __init__(self, color="red", starting_point=None) -> None:
+    def __init__(self, color="red") -> None:
         self.coordinates = []
-        if starting_point:
-            self.update(starting_point)
         self.color = color
     
     @classmethod

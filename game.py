@@ -1,103 +1,164 @@
+
 # Import required modules and classes
 import pygame as pg
 from camera import Camera2D
-from entities import Curve
 from model.GameModel import GameModel
-from handler import InputHandler
-from ui import UI
+from handler import Button, InputHandler
+from renderer import Renderer, colors
+from particles import ParticleManager
 
-# Optional profiling to check performance
-PROFILE = False
-if PROFILE:
-    import cProfile
+pg.init()
+print(pg.version)
+# Set up the main display surface
+screen = pg.display.set_mode((800, 600))
+pg.display.set_caption("passyBUIRLD")
+# Create another surface to perform off-screen drawing
+display = pg.Surface((800, 600))
+clock = pg.time.Clock()
 
-# Main function definition
-def main() -> None:
-    # Initialize the pygame module
-    pg.init()
-    print(pg.version)
-    # Set up the main display surface
-    screen = pg.display.set_mode((800, 600))
-    pg.display.set_caption("passyBird")
+game = GameModel(dt=1, start_hour=6000)
 
-    # Create another surface to perform off-screen drawing
-    display = pg.Surface((800, 600))
+def quit_game():
+    print("Quitting game...")
+    pg.quit()
+    quit()
 
-    # Clock for managing frame rates
-    clock = pg.time.Clock()
-    # Initialize the game model
-    game = GameModel(dt=1)
-
-    # Create curves to visualize various game data
-    temperature_curve = Curve()
-    outdoor_temp_curve = Curve.from_points(game.model.TA, "blue")
-    curve_comfort_min = Curve.from_points([game.model.comfort.minimum_room_temperature]*8760, "lightblue")
-    curve_comfort_max = Curve.from_points([game.model.comfort.maximum_room_temperature]*8760, "orange")
-
-    # Initialize UI elements
-    ui = UI(anchorpoint=(100, screen.get_height()//2))
-    ui.debug("Model", game.__repr__)
-    ui.debug("FPS", clock.get_fps)
-
-    # Set up the camera with a zoom feature
-    camera = Camera2D(surface=display, 
-                      game_world_position=game.position,
-                      zoom=(1, 5))
-    camera.follow(game, maxspeed=game.dt)
-
-    # Configure input handling
-    input_handler = InputHandler()
-    input_handler.bind_continuous_keypress(pg.K_UP, game.heat)
-    input_handler.bind_continuous_keypress(pg.K_DOWN, game.cool)
-
-    # Game main loop
+def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHandler, 
+              clock:pg.time.Clock, particle_manager:ParticleManager):
+    """The main game loop responsible for processing events, updating game state, and rendering."""
     running = True
     while running:
-        # Handle game events
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                running = False
-            input_handler.handle_event(event)
-        input_handler.handle_continuous_keypresses()
-        input_handler.handle_continuous_mousebuttons()
+        running = input_handler.update()
+        if game.paused: continue
 
-        # Update game logic and elements
         game.update()
-        temperature_curve.update(game.position)
-        ui.update(game)
-        camera.update()
 
-        # Draw elements onto the display surface
-        display.fill((255, 255, 255))
-        temperature_curve.draw(display, camera)
-        outdoor_temp_curve.draw(display, camera)
-        curve_comfort_min.draw(display, camera)
-        curve_comfort_max.draw(display, camera)
+        particle_manager.update()
+            
+        #render
+        renderer.camera.update()
+        renderer.draw_background(game.hour)
 
-        # Draw game-related graphics
-        x, y = camera.screen_coords(game.position)
-        pg.draw.circle(display, (255, 0, 0), (x, y), 10)
-        pg.draw.line(display, (0, 0, 180), (x, y),
-                     camera.screen_coords(pg.Vector2(*game.position) + (game.dt, game.dT)))
-        pg.draw.rect(display, (255, 0, 0), pg.Rect(x-5, y-game.model.QH[game.hour], 10, y))
-        pg.draw.rect(display, (0, 0, 255), pg.Rect(x-5, y, 10, -game.model.QC[game.hour]))
+        for curve in game.curves.values():
+            renderer.draw_curve(curve)
+            
+        renderer.draw_indoor_temperature(pos=game.position, dT=game.comfort_diff,
+                                         size=(10 + (game.heat_on + game.cool_on)*5))
 
-        # Render UI elements
-        ui.draw(display)
-        ui.draw_debug(display)
+        renderer.draw_heat_particles(particle_manager.groups["heating"])
+        renderer.draw_cool_particles(particle_manager.groups["cooling"])
+        
+        d = {
+            "anchorpoint": (600, 250),
+            "first": {"QV" : game.model.QV[game.hour] * 5,
+                      "QT" : game.model.QT[game.hour] * 5},
+            "second": {"QS": game.model.QS[game.hour] * 5},
+            "QH": game.model.QH[game.hour] * 5,
+            "QC": game.model.QC[game.hour] * 5
+        }
+        renderer.draw_energybalance(d)
+        
+        renderer.draw_score(int(game.money))
+        renderer.draw_label(f"Price: {game.model.price_grid} €/Wh", 
+                            pos=(550,50),
+                            color=(50,80,30))
+        renderer.draw_label(f"Efficiency    {game.get_cop()*100:.0f}%",
+                            pos=(550,80),
+                            color=colors["QT"])
+        renderer.draw_label(f"Heaitng Power {game.get_power()} W/m²", 
+                         color=colors["QT"],
+                         pos=(550,100))
+        
+        renderer.draw_comfort_indicator(game.comfort_diff)
+        
+        renderer.draw_TA_indicator(game.model.TA[game.hour],
+                                   game.hour,
+                                   y=game.model.TA[game.hour-96:game.hour].mean())
+        
+        for button in input_handler.buttons:
+            renderer.render_button(button)
 
-        # Display everything onto the main screen
-        screen.blit(display, (0, 0))
+        renderer.debug({"FPS": lambda: round(clock.get_fps(),1)})
+
+
+        screen.blit(renderer.display, (0, 0))
         pg.display.update()
+        clock.tick(60)
+        
+        game.cleanup()
+        
+        if game.finished: running = False
 
-        # Manage the frame rate
+def menu_loop(screen, renderer:Renderer, menu_handler:InputHandler, clock):
+    running = True
+    while running:
+        running = menu_handler.update()
+               
+        renderer.render_title(pos=(50, 50))
+        renderer.render_building_menu(game.model.building.__repr__())
+        
+        renderer.render_hvac_menu(game.model.HVAC.__repr__())
+
+        for button in menu_handler.buttons:
+            renderer.render_button(button)
+
+        screen.blit(renderer.display, (0, 0))
+        pg.display.update()
         clock.tick(60)
 
-# Entry point of the program
-if __name__ == '__main__':
-    if PROFILE:
-        cProfile.run('main()', "profile.prof")
-        import pstats
-        p = pstats.Stats("profile.prof")
-        p.sort_stats("cumulative").print_stats(20)
-    main()
+#new
+particle_manager = ParticleManager()
+def heat():
+    game.heat()
+    particle_manager.heat(game.position, (game.dt/2, -0.1))
+    
+def cool():
+    game.cool()
+    particle_manager.cool(game.position, (game.dt/2, 0.1))
+
+# Set up the camera with a zoom feature
+camera = Camera2D(surface=display, 
+                    game_world_position=game.position,
+                    zoom=(2, 5))
+camera.follow(game, maxdist = 100)
+
+renderer = Renderer(display, camera, clock)
+
+menu_handler = InputHandler()
+input_handler = InputHandler()
+end_handler = InputHandler()
+
+enter_menu = lambda: menu_loop(screen, renderer=renderer,menu_handler=menu_handler, clock=clock)
+startgame = lambda: main_loop(
+    screen=screen, 
+    game=game, 
+    renderer=renderer, 
+    input_handler=input_handler, 
+    clock=clock,
+    particle_manager=particle_manager
+    )
+
+input_handler.bind_camera(camera)
+input_handler.bind_continuous_keypress(pg.K_UP, heat)
+input_handler.bind_continuous_keypress(pg.K_DOWN, cool)
+input_handler.bind_keypress(pg.K_p, game.toggle_pause)
+input_handler.bind_keypress(pg.K_1, lambda: game.set_speed(1))
+input_handler.bind_keypress(pg.K_2, lambda: game.set_speed(2))
+input_handler.bind_keypress(pg.K_3, lambda: game.set_speed(5))
+input_handler.bind_keypress(pg.K_4, lambda: game.set_speed(10))
+input_handler.bind_keypress(pg.K_5, lambda: game.set_speed(50))
+input_handler.bind_keypress(pg.K_q, quit_game)
+input_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
+
+
+menu_handler.bind_keypress(pg.K_RETURN, startgame)
+#menu_handler.bind_mousebutton(1, startgame)
+menu_handler.bind_keypress(pg.K_q, quit)
+menu_handler.bind_keypress(pg.K_ESCAPE, startgame)
+start_button = Button((10, 200), startgame, "Start the Game!")
+quit_button = Button((10, 250), quit_game, "Quit")
+menu_handler.register_button(start_button)
+menu_handler.register_button(quit_button)
+
+enter_menu()
+
