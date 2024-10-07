@@ -29,7 +29,7 @@ class Font():
                 current_char_width += 1
         self.space_width = self.characters['A'].get_width()
 
-    def render(self, surf, text, loc, size=None, color=(10,10,10)):
+    def surface(self, text, size=None, color=(10,10,10)):
         if not size: size = self.height
         scale = int(size/self.height)
         small_surf = pygame.Surface((800,self.height))
@@ -41,14 +41,16 @@ class Font():
             else:
                 x_offset += self.space_width + self.spacing
         text = pygame.transform.scale(small_surf, (800*scale, self.height*scale))
-        colorbg= pygame.Surface(text.get_size())
-        colorbg.fill(color)
+        surf= pygame.Surface(text.get_size())
+        surf.fill(color)
         text.set_colorkey((255,0,0))
-        colorbg.blit(text, (0,0))
-        colorbg.set_colorkey((0,0,0))
-        
+        surf.blit(text, (0,0))
+        surf.set_colorkey((0,0,0))
+        return surf
 
-        surf.blit(colorbg, (loc[0], loc[1]))
+    def render(self, surf, text, loc, size=None, color=(10,10,10)):    
+        textsurface = self.surface(text, size, color)
+        surf.blit(textsurface, (loc[0], loc[1]))
 
 # Init ------------------------------------------------------- #
 
