@@ -77,7 +77,11 @@ def menu_loop(screen, renderer:Renderer, input_handler:InputHandler, clock):
         input_handler.handle_continuous_keypresses()
         input_handler.handle_continuous_mousebuttons()
        
-        renderer.render_menu()
+        renderer.render_title()
+        renderer.render_building_menu(game.model.building.__repr__())
+        
+        renderer.render_hvac_menu(game.model.HVAC.__repr__())
+
 
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
@@ -101,8 +105,6 @@ camera = Camera2D(surface=display,
 camera.follow(game, maxdist = 100)
 
 ui.debug("FPS", clock.get_fps)
-ui.debug("Game", game.__repr__)
-ui.debug("model", game.model.__repr__)
 
 renderer = Renderer(display, camera, ui)
 
@@ -137,6 +139,7 @@ input_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
 
 menu_handler.bind_keypress(pg.K_RETURN, startgame)
 menu_handler.bind_mousebutton(1, startgame)
+menu_handler.bind_keypress(pg.K_q, quit)
 menu_handler.bind_keypress(pg.K_ESCAPE, startgame)
 
 enter_menu()

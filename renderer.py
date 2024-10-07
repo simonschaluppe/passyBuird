@@ -8,7 +8,7 @@ colors = {
     "QS": (200, 200, 0),
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
-    "Title": (255, 230, 225),
+    "Title": (100,30,0),
     "DEBUG": (40, 64, 123),
     "Winter BG": (60, 84, 153), #(61, 98, 116),
     "Summer BG": (255, 232, 197),
@@ -21,6 +21,7 @@ BLUE = (0, 0, 255)
 DARK_BLUE = (0, 0, 128)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+ALMOSTBLACK = (10,10,10)
 GREEN = (0, 255, 0)
 
 def color_interpolation(color1, color2, weight):
@@ -49,12 +50,12 @@ def circle_surf(radius, color):
     surf.set_colorkey((0,0,0))
     return surf
 
-def outline(surf, color, pixel):
-    pass
+
 
 class Renderer:
     def __init__(self, display:pg.Surface, camera, ui, scale=1.0):
         self.display = display
+        self.cx, self.cy = display.get_width()//2, display.get_height()//2
         self.camera = camera
         self.ui = ui
         self.scale = scale
@@ -62,23 +63,53 @@ class Renderer:
         self.font = Font('assets/fonts/small_font.png')
         self.titlefont = Font('assets/fonts/large_font.png')
 
+    def outline(self, surf, loc, pixel, color=(0,0,0), onto=False):
+        if not onto: onto = self.display
+        mask = pg.mask.from_surface(surf)
+        mask_surf = mask.to_surface(setcolor=color, unsetcolor=(0, 0, 0))
+        mask_surf.set_colorkey((0,0,0))
+        x,y = loc
+        onto.blit(mask_surf, (x-pixel, y))
+        onto.blit(mask_surf, (x+pixel, y))
+        onto.blit(mask_surf, (x, y-pixel))
+        onto.blit(mask_surf, (x, y+pixel))
 
-    def render_line(self, text:str, color=(10,10,10), pos=(0,0), size=20, font=None):
-        """Render a text line using the font."""
+    def render_line(self, text:str, color=ALMOSTBLACK, pos=(0,0), size=20, border_width=2, border_color=WHITE, font=None, onto=None):
+        """Render a single text line onto a surface."""
         if not font: font = self.font
+        if not onto: onto = self.display
+        px, py = pos
+        textsurf = font.surface(text, size, color)
+        self.outline(textsurf, (px, py), border_width, border_color, onto=onto)
+        font.render(onto, text, (px, py), size, color)
+
+    def render_lines(self, text:str, color=ALMOSTBLACK, pos=(0,0), size=20, font=None, onto=None):
         px, py = pos
         dy = 0
         for line in text.splitlines():
             dy += self.lineheight
-            font.render(self.display, line, (px, py+dy), size, color)
+            self.render_line(line, color, (px, py+dy), size, font=font, onto=onto)
 
-    def render_menu(self):
-        self.display.fill(BLACK)
+    def render_title(self):
+        self.display.fill(seasonalcolor(0))
         title = """
         PassyBUIRLD
 
         +++press Enter to start+++"""
-        self.render_line(title, colors["Title"], self.camera.position, font=self.titlefont)  # Label
+        self.render_lines(title, colors["Title"], (self.cx-100, 10), 
+                         font=self.titlefont)  # Label
+
+    def render_panel(self, lines, color, pos, size):
+        box = pg.Surface(size)
+        box.fill(color)
+        self.render_lines(lines, onto=box, pos=(10,10))
+        self.display.blit(box, pos)
+
+    def render_building_menu(self, lines, color=WHITE):
+        self.render_panel(lines, color=color, pos=(10,10), size=(300,250))
+
+    def render_hvac_menu(self, lines, color=WHITE):
+        self.render_panel(lines, color=color, pos=(10,410), size=(300,150))
 
     def draw_background(self, hour_of_year):
         #self.display.fill((0,0,0))
@@ -98,20 +129,25 @@ class Renderer:
 
     def draw_cool_particles(self, particleList):
         self.draw_particles(particleList, colors["QC"])
-          
+
+    def draw_label(self, text, pos=(0,0), color=ALMOSTBLACK, onto=None):
+        if not onto: onto = self.display
+        self.render_line(text, color=color, pos=pos, onto=onto)
 
     def draw_stats(self, Lt, PH, coph):
-        x, y = 10, 500
+        x, y = 10, 100
 
-        self.render_line(f"Leitwert {Lt:.2f} W/m2K", 
+        self.draw_label(f"Leitwert {Lt:.2f} W/m2K", 
                          color=colors["QT"],
                          pos=(x,y))
         
-        text = f"Heatpump Power {PH} W/m2\nHeatpump COP {coph:.2f}" 
-        self.render_line(text, 
+        self.draw_label(text=f"Heatpump Power {PH} W/m2", 
                          color=colors["QT"],
                          pos=(x,y+self.lineheight))
-
+        self.draw_label(text=f"Heatpump COP {coph:.2f}", 
+                         color=colors["QT"],
+                         pos=(x,y+self.lineheight))
+        
     def draw_ui(self, ui_data):
         """Render UI elements on the screen based on provided data."""
         anchor_x, anchor_y = ui_data["anchorpoint"]
@@ -195,7 +231,7 @@ def test():
         "second": {"QS": 60},
         "QH": 100,
         "QC": 50,
-        "debug_statements": {"FPS": lambda: 60, "Hour": lambda: 8760}
+        "debug_statements": {"FPS": lambda: 60}
     }
 
     pg.init()
