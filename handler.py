@@ -1,6 +1,23 @@
-from collections import defaultdict
-from random import randint
+
 import pygame as pg
+
+class Button:
+    def __init__(self, pos, callback, text="", size=(150, 40) ):
+        self.position = pos
+        self.size = size
+        self.text = text
+        self.callback = callback
+        self.hovered = False
+    
+    def press(self):
+        self.callback()
+
+    def is_hovering(self, mouse_pos):
+        """Check if the mouse is over the button."""
+        x, y = self.position
+        w, h = self.size
+        self.hovered = x <= mouse_pos[0] <= x + w and y <= mouse_pos[1] <= y + h
+        return self.hovered
 
 class InputHandler(object):
     def __init__(self):
@@ -9,6 +26,12 @@ class InputHandler(object):
         self.continuous_keypress_bindings = {}
         self.mousebutton_bindings = {}
         self.continuous_mousebutton_bindings = {}
+
+        self.buttons = []
+
+    def register_button(self, button):
+        """Register a button to be checked for clicks."""
+        self.buttons.append(button)
 
     def bind_keypress(self, key, action):
         self.keypress_bindings[key] = action
@@ -40,6 +63,12 @@ class InputHandler(object):
         self.bind_continuous_keypress(pg.K_RIGHT, lambda: camera.move((10,0)))
         self.bind_keypress(pg.K_r, camera.reset)
 
+    def handle_mouse(self):
+        mousepos = pg.mouse.get_pos()
+        for button in self.buttons:
+            if button.is_hovering(mousepos) and pg.mouse.get_pressed()[0]:
+                button.press()
+
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key in self.keypress_bindings:
@@ -65,3 +94,12 @@ class InputHandler(object):
             if buttons[button]:
                 action()
 
+    def update(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return False
+            self.handle_event(event)
+        self.handle_mouse()
+        self.handle_continuous_keypresses()
+        self.handle_continuous_mousebuttons()
+        return True

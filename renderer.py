@@ -1,6 +1,8 @@
 import pygame as pg
 import math
+from camera import Camera2D
 from font import Font
+from handler import Button
 
 colors = {
     "QV": (200, 0, 100),
@@ -12,6 +14,9 @@ colors = {
     "DEBUG": (40, 64, 123),
     "Winter BG": (60, 84, 153), #(61, 98, 116),
     "Summer BG": (255, 232, 197),
+    "Button hovered": (61, 98, 116),
+    "Button": (51, 58, 96),
+
 }
 
 
@@ -53,17 +58,19 @@ def circle_surf(radius, color):
 
 
 class Renderer:
-    def __init__(self, display:pg.Surface, camera, ui, scale=1.0):
+    def __init__(self, display:pg.Surface, camera:Camera2D, clock:pg.time.Clock, scale=1.0):
         self.display = display
         self.cx, self.cy = display.get_width()//2, display.get_height()//2
         self.camera = camera
-        self.ui = ui
+        self.clock = clock
         self.scale = scale
+
+        #defaults
         self.lineheight = 25
         self.font = Font('assets/fonts/small_font.png')
         self.titlefont = Font('assets/fonts/large_font.png')
 
-    def outline(self, surf, loc, pixel, color=(0,0,0), onto=False):
+    def outline(self, surf, loc, pixel, color=(10,10,10), onto=False):
         if not onto: onto = self.display
         mask = pg.mask.from_surface(surf)
         mask_surf = mask.to_surface(setcolor=color, unsetcolor=(0, 0, 0))
@@ -90,26 +97,38 @@ class Renderer:
             dy += self.lineheight
             self.render_line(line, color, (px, py+dy), size, font=font, onto=onto)
 
-    def render_title(self):
-        self.display.fill(seasonalcolor(0))
-        title = """
-        PassyBUIRLD
+    def render_button(self, button:Button):
+        button_surf = pg.Surface(button.size)
+        button_surf.fill(colors["Button hovered"] if button.hovered else colors["Button"])
+        # outline
+        self.outline(button_surf, button.position, pixel=2)
+        # text
+        self.render_line(button.text, pos=(5,5), onto=button_surf, size=20)
+        # button
+        self.display.blit(button_surf, button.position)
 
-        +++press Enter to start+++"""
-        self.render_lines(title, colors["Title"], (self.cx-100, 10), 
-                         font=self.titlefont)  # Label
+    def render_title(self, pos):
+        self.display.fill(seasonalcolor(0))
+        title = """PassyBUIRLD
+
++++press Enter to start+++"""
+        self.render_lines(title, colors["Title"], pos, 
+                         font=self.titlefont, size=40)  # Label
+
+    def draw_label(self, text, pos=(0,0), color=ALMOSTBLACK, onto=None):
+        self.render_line(text, color=color, pos=pos, onto=onto)
 
     def render_panel(self, lines, color, pos, size):
         box = pg.Surface(size)
         box.fill(color)
         self.render_lines(lines, onto=box, pos=(10,10))
         self.display.blit(box, pos)
+    
+    def render_hvac_menu(self, lines, color=WHITE):
+        self.render_panel(lines, color=color, pos=(450,100), size=(300,100))
 
     def render_building_menu(self, lines, color=WHITE):
-        self.render_panel(lines, color=color, pos=(10,10), size=(300,250))
-
-    def render_hvac_menu(self, lines, color=WHITE):
-        self.render_panel(lines, color=color, pos=(10,410), size=(300,150))
+        self.render_panel(lines, color=color, pos=(450,300), size=(300,250))
 
     def draw_background(self, hour_of_year):
         #self.display.fill((0,0,0))
@@ -130,9 +149,6 @@ class Renderer:
     def draw_cool_particles(self, particleList):
         self.draw_particles(particleList, colors["QC"])
 
-    def draw_label(self, text, pos=(0,0), color=ALMOSTBLACK, onto=None):
-        if not onto: onto = self.display
-        self.render_line(text, color=color, pos=pos, onto=onto)
 
     def draw_stats(self, Lt, PH, coph):
         x, y = 10, 100
@@ -144,18 +160,14 @@ class Renderer:
         self.draw_label(text=f"Heatpump Power {PH} W/m2", 
                          color=colors["QT"],
                          pos=(x,y+self.lineheight))
-        self.draw_label(text=f"Heatpump COP {coph:.2f}", 
-                         color=colors["QT"],
-                         pos=(x,y+self.lineheight))
         
-    def draw_ui(self, ui_data):
+    def draw_energybalance(self, balance_data):
         """Render UI elements on the screen based on provided data."""
-        anchor_x, anchor_y = ui_data["anchorpoint"]
-        first = ui_data["first"]
-        second = ui_data["second"]
-        QH = ui_data["QH"]
-        QC = ui_data["QC"]
-        debug_statements = ui_data["debug_statements"]
+        anchor_x, anchor_y = balance_data["anchorpoint"]
+        first = balance_data["first"]
+        second = balance_data["second"]
+        QH = balance_data["QH"]
+        QC = balance_data["QC"]
         
         width = 10
         # Draw anchor point line (reference point)
@@ -167,39 +179,33 @@ class Renderer:
         # Render the first set of bars (positive values go down)
         for i, (label, value) in enumerate(first.items()):
             pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 3*width, current_y, width, abs(value)))  # Draw the bar
-            self.render_line(f"{label}: {value:.1f}", colors[label], (anchor_x + 8*width, i*20))  # Label
+            self.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y+i*self.lineheight))  # Label
             current_y -= value  # Move down
 
         # Render the second set of bars (negative values go up)
         for label, value in second.items():
             pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 4*width, current_y - value, width, value))  # Draw bar
-            self.render_line(f"{label}: {value:.1f}", colors[label], (anchor_x + 8*width, current_y - value))  # Label
+            if value != 0.: 
+                self.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y-self.lineheight))  # Label
             current_y -= value  # Move up
 
         # Render QH and QC bars relative to anchor point
         # QH (positive, down)
         pg.draw.rect(self.display, colors["QH"], pg.Rect(anchor_x + 50, current_y-QH, 10, QH))
         if QH != 0:
-            self.render_line(f"QH: {QH:.1f}", colors["QH"], (anchor_x + 10*width, anchor_y))  # Label
+            self.render_line(f"QH: {QH:.1f} W/m²", colors["QH"], (anchor_x + 8*width, anchor_y+2*self.lineheight))  # Label
             
         # QC (negative, up)
         pg.draw.rect(self.display, colors["QC"], pg.Rect(anchor_x + 50, current_y, 10, -QC))
         if QC != 0:
-            self.render_line(f"QC: {QC:.1f}", colors["QC"], (anchor_x + 10*width, anchor_y-20))  # Label
+            self.render_line(f"QC: {QC:.1f} W/m²", colors["QC"], (anchor_x + 8*width, anchor_y+2*self.lineheight))  # Label
 
-        # Render debug statements
-        for i, (label, callback) in enumerate(debug_statements.items()):
-            debug_text = f"{label}: {callback()}"
-            self.render_line(debug_text, colors["DEBUG"], (10, 10 + i*self.lineheight))
-
- 
     def draw_curve(self, curve):
         """Draw curves representing game data."""
         if len(curve.coordinates) < 2: return
         screencoords = [self.camera.screen_coords(coord) for coord in curve.coordinates[-300:]]  # Only last 300 points
     
         pg.draw.lines(self.display, curve.color, closed=False, points=screencoords, width=3)
-
 
     def draw_indoor_temperature(self, pos, dT, size):
         """Draw game objects like players or enemies."""
@@ -214,6 +220,16 @@ class Renderer:
 
         pg.draw.circle(self.display, color, (x, y), size)
 
+    def draw_score(self, score, pos=(650,10)):
+        self.render_line(str(score), color=(100,255,120), size=40, pos=pos, font=self.titlefont, )
+
+    def debug(self, statements):
+        # Render debug statements
+        for i, (label, callback) in enumerate(statements.items()):
+            debug_text = f"{label}: {callback()}"
+            self.render_line(debug_text, colors["DEBUG"], (10, 10 + i*self.lineheight))
+
+ 
 # test code
 
 def test():
@@ -273,7 +289,7 @@ def test():
         renderer.draw_stats(**mock_game_data)
 
         # Draw UI (testing draw_ui)
-        renderer.draw_ui(mock_ui_data)
+        renderer.draw_energybalance(mock_ui_data)
 
         # Update the screen
         pg.display.flip()

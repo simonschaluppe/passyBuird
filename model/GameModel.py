@@ -7,7 +7,7 @@ from model.Simulation import EnergyModel
 from entities import Curve
 
 class GameModel:
-    def __init__(self, dt=1, start_hour=0) -> None:
+    def __init__(self, dt=1, start_hour=0, starting_power=15, starting_cop=1) -> None:
         self.hour = start_hour
         if start_hour == 0:
             self.stop_hour = 8759
@@ -15,12 +15,16 @@ class GameModel:
         self.dt = dt
         self.paused = False
         self.finished = False
+
+        self.money = 100_000
+
         self.model = EnergyModel()
         self.model.init_sim(dt=self.dt)
+        self.model.TI[self.hour] = 22
 
-        self.model.HVAC.HP_heating_power = 30
-        self.model.HVAC.HP_cooling_power = 30
-        self.model.HVAC.HP_COP = 1
+        self.model.HVAC.HP_heating_power = starting_power
+        self.model.HVAC.HP_cooling_power = starting_power
+        self.model.HVAC.HP_COP = starting_cop
         
         self.heat_on = False    
         self.cool_on = False
@@ -102,6 +106,7 @@ class GameModel:
                 self.model.apply_cool(self.hour)
             #print(self.model.TI[self.hour])
             self.model.calc_ED(self.hour)
+            self.money -= self.model.ED[self.hour] * self.model.price_grid
 
             x_horizon = min(self.hour + self.forecast_hours, 8759)
             self.temperature_curve.update(self.position)
