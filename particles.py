@@ -32,10 +32,10 @@ class ParticleManager:
 
     def update(self):
         for name, container in self.groups.items():
-            for p in container:
+            for i, p in sorted(enumerate(container), reverse=True):
                 p.lifetime -= 1
                 if p.lifetime <= 0: 
-                    container.remove(p)
+                    container.pop(i)
                     continue
                 #p.speed.scale_to_length(p.lifetime/50)
                 p.speed = p.speed * 0.9
