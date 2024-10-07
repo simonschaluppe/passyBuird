@@ -3,11 +3,10 @@
 import pygame as pg
 import random 
 from camera import Camera2D
-from entities import Curve
 from model.GameModel import GameModel
 from handler import InputHandler
 from renderer import Renderer
-from particles import Particle
+from particles import Particle, ParticleManager
 from ui import UI
 
 
@@ -23,7 +22,7 @@ clock = pg.time.Clock()
 game = GameModel(dt=1, start_hour=6000)
 
 def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHandler, 
-              clock:pg.time.Clock, ui:UI):
+              clock:pg.time.Clock, ui:UI, particle_manager:ParticleManager):
     """The main game loop responsible for processing events, updating game state, and rendering."""
     running = True
     while running:
@@ -39,14 +38,7 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
         game.update()
         
         ui.update(game)
-        for l in particle_lists:
-            for p in l:
-                p.lifetime -= 1
-                if p.lifetime <= 0: 
-                    l.remove(p)
-                    continue
-                #p.speed.scale_to_length(p.lifetime/50)
-                p.pos += p.speed
+        particle_manager.update()
             
         #render
         renderer.camera.update()
@@ -58,11 +50,14 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
         renderer.draw_indoor_temperature(pos=game.position, dT=game.comfort_diff,
                                          size=(10 + (game.heat_on + game.cool_on)*5))
 
-        renderer.draw_heat_particles(heat_particles)
-        renderer.draw_cool_particles(cool_particles)
+        renderer.draw_heat_particles(particle_manager.groups["heating"])
+        renderer.draw_cool_particles(particle_manager.groups["cooling"])
         
         renderer.draw_ui(ui.get_ui_elements())
-        renderer.draw_stats(game)
+        renderer.draw_stats(
+            game.get_insulation(),
+            game.get_power(),
+            game.get_cop())
 
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
@@ -88,23 +83,15 @@ def menu_loop(screen, renderer:Renderer, input_handler:InputHandler, clock):
         pg.display.update()
         clock.tick(60)
 
-heat_particles = []
-cool_particles = []
-particle_lists = [heat_particles, cool_particles]
+#new
+particle_manager = ParticleManager()
 def heat():
     game.heat()
-    heat_particles.append(Particle(
-        pos=pg.Vector2(game.position), 
-        speed=pg.Vector2(0, -0.1).rotate(random.randint(-40,40)),
-        lifetime=40))
+    particle_manager.heat(game.position, (game.dt/2, -0.1))
     
 def cool():
     game.cool()
-    cool_particles.append(Particle(
-        pos=pg.Vector2(game.position), 
-        speed=pg.Vector2(0, 0.1).rotate(random.randint(-40,40)),
-        lifetime=40))
-    
+    particle_manager.cool(game.position, (game.dt/2, 0.1))
 
 ui = UI(anchorpoint=(100, screen.get_height()//2))
 # Set up the camera with a zoom feature
@@ -125,7 +112,15 @@ input_handler = InputHandler()
 end_handler = InputHandler()
 
 enter_menu = lambda: menu_loop(screen, renderer=renderer,input_handler=menu_handler, clock=clock)
-startgame = lambda: main_loop(screen, game, renderer, input_handler, clock, ui)
+startgame = lambda: main_loop(
+    screen=screen, 
+    game=game, 
+    renderer=renderer, 
+    input_handler=input_handler, 
+    clock=clock, 
+    ui=ui,
+    particle_manager=particle_manager
+    )
 
 input_handler.bind_camera(camera)
 input_handler.bind_continuous_keypress(pg.K_UP, heat)

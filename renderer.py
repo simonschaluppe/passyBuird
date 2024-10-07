@@ -23,13 +23,17 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 
+def color_interpolation(color1, color2, weight):
+    colorvector1 = pg.Vector3(color1)
+    colorvector2 = pg.Vector3(color2)
+    dist = colorvector1.distance_to(colorvector2)
+    return tuple(colorvector1.move_towards(colorvector2, weight*dist))
+
 def seasonalcolor(timeofyear=0):
     """interpolate between Winter and Summer color"""
-    winter = pg.Vector3(colors["Winter BG"])
-    summer = pg.Vector3(colors["Summer BG"])
-    inbetween = winter.move_towards(summer, 
-                250*(1-math.cos(2*math.pi*timeofyear/8760)))
-    return tuple(inbetween)
+    return color_interpolation(color1=colors["Winter BG"], 
+                               color2=colors["Summer BG"],
+                               weight=(1-math.cos(2*math.pi*timeofyear/8760)))
 
 def change_color(surf, old, new):
     new_surf = pg.Surface(surf.get_size())
@@ -37,6 +41,16 @@ def change_color(surf, old, new):
     surf.set_colorkey(old)
     new_surf.blit(surf, (0,0))
     return new_surf
+
+
+def circle_surf(radius, color):
+    surf = pg.Surface((radius*2,radius*2))
+    pg.draw.circle(surf, color, (radius, radius), radius)
+    surf.set_colorkey((0,0,0))
+    return surf
+
+def outline(surf, color, pixel):
+    pass
 
 class Renderer:
     def __init__(self, display:pg.Surface, camera, ui, scale=1.0):
@@ -67,28 +81,32 @@ class Renderer:
         self.render_line(title, colors["Title"], self.camera.position, font=self.titlefont)  # Label
 
     def draw_background(self, hour_of_year):
+        #self.display.fill((0,0,0))
         self.display.fill(seasonalcolor(hour_of_year))
 
+    def draw_particles(self, particleList, color):
+        for p in particleList:
+            pos = self.camera.screen_coords(p.pos)
+            x,y = pos
+            pg.draw.circle(self.display, color, pos, p.lifetime/8)
+            glow_color = color_interpolation((0,0,0), color, 0.2)
+            radius = p.lifetime/3
+            self.display.blit(circle_surf(radius,glow_color), (x-radius, y-radius), special_flags=pg.BLEND_RGB_ADD)
+
     def draw_heat_particles(self, particleList):
-        for p in particleList:
-            pos = self.camera.screen_coords(p.pos)
-            pg.draw.circle(self.display, colors["QH"], pos, p.lifetime/5)
-            
+        self.draw_particles(particleList, colors["QH"])   
+
     def draw_cool_particles(self, particleList):
-        for p in particleList:
-            pos = self.camera.screen_coords(p.pos)
-            pg.draw.circle(self.display, colors["QC"], pos, p.lifetime/5)
+        self.draw_particles(particleList, colors["QC"])
           
 
-    def draw_stats(self, game):
+    def draw_stats(self, Lt, PH, coph):
         x, y = 10, 500
 
-        Lt = game.get_insulation()
         self.render_line(f"Leitwert {Lt:.2f} W/m2K", 
                          color=colors["QT"],
                          pos=(x,y))
         
-        PH, coph = game.get_power_info()
         text = f"Heatpump Power {PH} W/m2\nHeatpump COP {coph:.2f}" 
         self.render_line(text, 
                          color=colors["QT"],
@@ -159,3 +177,73 @@ class Renderer:
             color = GREEN
 
         pg.draw.circle(self.display, color, (x, y), size)
+
+# test code
+
+def test():
+    import pygame as pg
+    from pygame.math import Vector2  # For handling positions
+    import random
+    from camera import Camera2D  # Assuming you have a simple Camera2D implementation
+    from font import Font  # Your Font class for text rendering
+    from renderer import Renderer  # The Renderer class
+    from particles import Particle
+    # A basic mock for UI, simulating the data that UI would pass to the Renderer
+    mock_ui_data = {
+        "anchorpoint": (100, 500),
+        "first": {"QV": 150, "QT": 120},
+        "second": {"QS": 60},
+        "QH": 100,
+        "QC": 50,
+        "debug_statements": {"FPS": lambda: 60, "Hour": lambda: 8760}
+    }
+
+    pg.init()
+
+    # Set up the Pygame window
+    screen = pg.display.set_mode((800, 600))
+    clock = pg.time.Clock()
+    
+    # Initialize mock camera and renderer
+    camera = Camera2D(screen, zoom=(1,1))
+    renderer = Renderer(screen, camera, ui=mock_ui_data)
+
+    # Mock particle lists for heat and cool particles
+    heat_particles = [Particle(Vector2(random.randint(100, 700), random.randint(100, 500)),
+                               Vector2(random.uniform(-1, 1), random.uniform(-1, 1)), 50) for _ in range(10)]
+    
+    cool_particles = [Particle(Vector2(random.randint(100, 700), random.randint(100, 500)),
+                               Vector2(random.uniform(-1, 1), random.uniform(-1, 1)), 50) for _ in range(10)]
+
+    running = True
+    while running:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                running = False
+
+        # Fill the screen with a background color
+        renderer.draw_background(6000)  # Example hour of year
+
+        # Draw particles (testing draw_heat_particles and draw_cool_particles)
+        renderer.draw_heat_particles(heat_particles)
+        renderer.draw_cool_particles(cool_particles)
+
+        # Draw some mock stats (testing draw_stats)
+        mock_game_data = {
+            "Lt": 0.5,
+            "PH": 20,
+            "coph": 4.3
+        }
+        renderer.draw_stats(**mock_game_data)
+
+        # Draw UI (testing draw_ui)
+        renderer.draw_ui(mock_ui_data)
+
+        # Update the screen
+        pg.display.flip()
+        clock.tick(60)  # Cap the frame rate at 60 FPS
+
+    pg.quit()
+
+if __name__ == "__main__":
+    test()
