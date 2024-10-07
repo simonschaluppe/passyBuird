@@ -21,7 +21,7 @@ class Component:
         return self.u_value * self.area * self.temp_factor  # = U * A * f_T [W/K]
 
     def __repr__(self):
-        return f"Bauteil {self.name}: {self.area} m²"
+        return f"{self.name[:10]:<10}: {self.area:>5.0f} m² @ {self.u_value:>3.2f} W/m²K"
 
 
 class Building:
@@ -83,14 +83,14 @@ class Building:
 
     def __repr__(self):
         data = 7
-        string = f"""Building@{self.file}
-{"-" * 35}
-bgf:                {self.gf:>{data}} m²BGF
-gf:                 {self.heat_capacity:>{data}} m²
-heat_capacity:      {self.net_storey_height:>{data}} Wh/m²/K
-net_storey_height:  {self.differential_cost:>{data}} €/m²BGF
-LT:                 {self.LT:>{data}.2f} W/K/m²BGF
+        string = f"""Gross floor area:   {self.bgf:>{data}} m²
+Net storey height:  {self.net_storey_height:>{data}} m
+Eff. Heat capacity: {self.heat_capacity:>{data}} Wh/m²/K
+LT:                 {self.LT:>{data}.2f} W/K/m²
 """  # triple quote strings preserve linebreaks and indentation
+        for c in self.components:
+            string+=str(c)+"\n"
+
         return string
 
 

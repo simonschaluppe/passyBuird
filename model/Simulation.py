@@ -24,6 +24,12 @@ class HVACSYSTEM:
     cooling_eff = 0.95
     # use COP,power and efficiency from heating also for cooling
 
+    def __repr__(self):
+        return f"""HVAC System
+Heatpump heating power {self.HP_heating_power} W/m²
+Heatpump cooling power {self.HP_cooling_power} W/m²
+"""
+
 
 class EnergyModel:
     simulated = []  # this is not strictly neccessary
