@@ -88,11 +88,11 @@ def menu_loop(screen, renderer:Renderer, menu_handler:InputHandler, clock):
 particle_manager = ParticleManager()
 def heat():
     game.heat()
-    particle_manager.heat(game.position, (game.dt/2, -0.1))
+    particle_manager.heat(game.position, (game.dt, -game.qh/game.model.building.heat_capacity*10))
     
 def cool():
     game.cool()
-    particle_manager.cool(game.position, (game.dt/2, 0.1))
+    particle_manager.cool(game.position, (game.dt, -game.qc/game.model.building.heat_capacity*10))
 
 # Set up the camera with a zoom feature
 camera = Camera2D(surface=display, 

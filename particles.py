@@ -19,7 +19,7 @@ class ParticleManager:
             raise KeyError(f"{list_name=} not in {__name__}.particleLists")
         p = Particle(
             pos=pg.Vector2(position), 
-            speed=pg.Vector2(velocity).rotate(random.randint(-20,20)),
+            speed=pg.Vector2(velocity).rotate(random.randint(-30,30)),
             lifetime=lifetime
             )
         self.groups[list_name].append(p)
@@ -38,8 +38,9 @@ class ParticleManager:
                     container.pop(i)
                     continue
                 #p.speed.scale_to_length(p.lifetime/50)
-                p.speed = p.speed * 0.9
                 p.pos += p.speed
+                vx, vy = p.speed
+                p.speed = (vx, vy*0.9)
 
 
 def test_draw_particles(container, screen):
