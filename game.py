@@ -47,16 +47,8 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
         renderer.camera.update()
         renderer.draw_background(game.hour)
 
-        for curve in game.curves.values():
-            renderer.draw_curve(curve)
-
-        renderer.draw_TA_indicator(game.model.TA[game.hour],
-                            game.hour,
-                            y=game.model.TA[game.hour-96:game.hour].mean())
-            
-        renderer.draw_indoor_temperature(pos=game.position, dT=game.comfort_diff,
-                                         size=(10 + (game.heat_on + game.cool_on)*5))
-
+        renderer.render_curves(game.get_curves_data())
+        
         renderer.draw_heat_particles(particle_manager.groups["heating"])
         renderer.draw_cool_particles(particle_manager.groups["cooling"])
 

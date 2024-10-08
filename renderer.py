@@ -54,9 +54,15 @@ class Renderer:
 
         # components
         self.ui_renderer = UIRenderer(self)
-        
-    def render_ui(self, ui_data):
-        self.ui_renderer.render(ui_data)
+        self.curves_renderer = CurvesRenderer(self) 
+
+# debug stuff, should be low level 
+    def debug(self, statements):
+        # Render debug statements
+        for i, (label, callback) in enumerate(statements.items()):
+            debug_text = f"{label}: {callback()}"
+            self.render_line(debug_text, colors["DEBUG"], (10, 10 + i*self.lineheight))    
+
 # basic rendering
     def outline(self, surf, loc, pixel, color=(10,10,10), onto=False):
         if not onto: onto = self.display
@@ -88,7 +94,7 @@ class Renderer:
         for line in text.splitlines():
             dy += self.lineheight
             self.render_line(line, color, (px, py+dy), size, font=font, onto=onto)
-
+# button
     def render_button(self, button:Button):
         button_surf = pg.Surface(button.size)
         button_surf.fill(colors["Button hovered"] if button.hovered else colors["Button"])
@@ -99,6 +105,35 @@ class Renderer:
         self.render_line(button.text, pos=(5, offset), onto=button_surf, size=20, border_width=1+button.hovered)
         # button
         self.display.blit(button_surf, button.position)
+
+# main game loop
+    def draw_background(self, hour_of_year):
+        #self.display.fill((0,0,0))
+        self.display.fill(seasonalcolor(hour_of_year))  
+# draw stuff using camera (game)
+    def render_curves(self, curve_data):
+        self.curves_renderer.render(curve_data)
+
+# particle renderer
+    def draw_particles(self, particleList, color):
+        for p in particleList:
+            pos = self.camera.screen_coords(p.pos)
+            x,y = pos
+            pg.draw.circle(self.display, color, pos, p.lifetime/8)
+            glow_color = color_interpolation((0,0,0), color, 0.2)
+            radius = p.lifetime/3
+            self.display.blit(circle_surf(radius,glow_color), (x-radius, y-radius), special_flags=pg.BLEND_RGB_ADD)
+
+    def draw_heat_particles(self, particleList):
+        self.draw_particles(particleList, colors["QH"])   
+
+    def draw_cool_particles(self, particleList):
+        self.draw_particles(particleList, colors["QC"])
+
+# main game UI    
+    def render_ui(self, ui_data):
+        self.ui_renderer.render(ui_data)
+
 # menu screen
     def render_title(self, pos):
         self.display.fill(seasonalcolor(0))
@@ -120,61 +155,47 @@ class Renderer:
     def render_building_menu(self, lines, color=WHITE):
         self.render_panel(lines, color=color, pos=(450,300), size=(300,250))
 
-    def draw_background(self, hour_of_year):
-        #self.display.fill((0,0,0))
-        self.display.fill(seasonalcolor(hour_of_year))  
-
-# draw stuff using camera (game)
-# particle renderer
-    def draw_particles(self, particleList, color):
-        for p in particleList:
-            pos = self.camera.screen_coords(p.pos)
-            x,y = pos
-            pg.draw.circle(self.display, color, pos, p.lifetime/8)
-            glow_color = color_interpolation((0,0,0), color, 0.2)
-            radius = p.lifetime/3
-            self.display.blit(circle_surf(radius,glow_color), (x-radius, y-radius), special_flags=pg.BLEND_RGB_ADD)
-
-    def draw_heat_particles(self, particleList):
-        self.draw_particles(particleList, colors["QH"])   
-
-    def draw_cool_particles(self, particleList):
-        self.draw_particles(particleList, colors["QC"])
-# curve renderer
-    def draw_curve(self, curve):
-        """Draw curves representing game data."""
-        if len(curve.coordinates) < 2: return
-        screencoords = [self.camera.screen_coords(coord) for coord in curve.coordinates[-300:]]  # Only last 300 points
+class CurvesRenderer:
+    def __init__(self, renderer:Renderer) -> None:
+        self.renderer = renderer
+        self.screen_coords = renderer.camera.screen_coords
+        self.curve_width = 2
+        self.size_TI_indicator = 10
     
-        pg.draw.lines(self.display, curve.color, closed=False, points=screencoords, width=3)
+    def render(self, data):
+        self.draw_curve("orange",data["Maximum Comfort Temperature"])
+        self.draw_curve("lightblue",data["Minimum Comfort Temperature"])
+        self.draw_curve("red", data["Indoor Temperature"])
+        self.draw_curve("blue", data["Outdoor Temperature"])
+        self.draw_TI_indicator(data["TI Indicator"])
+        self.draw_TA_indicator(data["TA Indicator"])
 
-    def draw_indoor_temperature(self, pos, dT, size):
+    # curve renderer
+    def draw_curve(self, color, curve):
+        """Draw curves representing game data."""
+        if len(curve) < 2: return
+        screencoords = [self.screen_coords(point) for point in curve]  # Only last 300 points
+        pg.draw.lines(self.renderer.display, color, closed=False, points=screencoords, width=self.curve_width)
+
+    def draw_TI_indicator(self, data):
         """Draw game objects like players or enemies."""
-        x, y = self.camera.screen_coords(pos)
+        x, y = self.screen_coords(data["Position"])
+        color = color_indicator(data["Comfort dT"])
+        size = self.size_TI_indicator * data["Scale"]
+        pg.draw.circle(self.renderer.display, color, (x, y), size)
 
-        color = color_indicator(dT)
-
-        pg.draw.circle(self.display, color, (x, y), size)
-
-    def draw_TA_indicator(self, TA, hour, y=10):
+    def draw_TA_indicator(self, data):
+        hour, TA = data["Position"]
         textcolor = seasonalcolor(hour)
         bordercolor = color_interpolation(textcolor, (255, 255,255),0.8)
         textcolor = color_interpolation(textcolor, (0,0,0), 0.5)
-        text = f"Outdoor Temp {TA:2.1f}°C"
-        self.render_line(text, textcolor, 
-                         pos=self.camera.screen_coords((hour, y)), 
-                         border_color=bordercolor
-                         )
-
-    def debug(self, statements):
-        # Render debug statements
-        for i, (label, callback) in enumerate(statements.items()):
-            debug_text = f"{label}: {callback()}"
-            self.render_line(debug_text, colors["DEBUG"], (10, 10 + i*self.lineheight))
-
+        text = f"Outdoor Temp {TA:+2.1f}°C"
+        self.renderer.render_line(text, textcolor, 
+                         pos=self.screen_coords((hour, 10)), 
+                         border_color=bordercolor)
 
 class UIRenderer:
-    def __init__(self, renderer:Renderer):
+    def __init__(self, renderer:Renderer) -> None:
         self.renderer = renderer
         self.display = renderer.display
         self.render_line = renderer.render_line
@@ -209,26 +230,26 @@ class UIRenderer:
         # Render the first set of bars (positive values go down)
         for i, (label, value) in enumerate(first.items()):
             pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 3*width, current_y, width, abs(value)))  # Draw the bar
-            self.renderer.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y+i*self.renderer.lineheight))  # Label
+            self.renderer.render_line(f"{label}: {value:+.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y+i*self.renderer.lineheight))  # Label
             current_y -= value  # Move down
 
         # Render the second set of bars (negative values go up)
         for label, value in second.items():
             pg.draw.rect(self.display, colors[label], pg.Rect(anchor_x + 4*width, current_y - value, width, value))  # Draw bar
             if value != 0.: 
-                self.renderer.render_line(f"{label}: {value:.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y-self.renderer.lineheight))  # Label
+                self.renderer.render_line(f"{label}: {value:+.1f} W/m²", colors[label], (anchor_x + 8*width, anchor_y-self.renderer.lineheight))  # Label
             current_y -= value  # Move up
 
         # Render QH and QC bars relative to anchor point
         # QH (positive, down)
         pg.draw.rect(self.display, colors["QH"], pg.Rect(anchor_x + 50, current_y-QH, 10, QH))
         if QH != 0:
-            self.renderer.render_line(f"QH: {QH:.1f} W/m²", colors["QH"], (anchor_x + 8*width, anchor_y+2*self.renderer.lineheight))  # Label
+            self.renderer.render_line(f"QH: {QH:+.1f} W/m²", colors["QH"], (anchor_x + 8*width, anchor_y+2*self.renderer.lineheight))  # Label
             
         # QC (negative, up)
         pg.draw.rect(self.display, colors["QC"], pg.Rect(anchor_x + 50, current_y, 10, -QC))
         if QC != 0:
-            self.renderer.render_line(f"QC: {QC:.1f} W/m²", colors["QC"], (anchor_x + 8*width, anchor_y+2*self.renderer.lineheight))  # Label
+            self.renderer.render_line(f"QC: {QC:+.1f} W/m²", colors["QC"], (anchor_x + 8*width, anchor_y+2*self.renderer.lineheight))  # Label
 
     def money(self, money, pos=(650,10)):
         self.render_line(str(money),
@@ -244,11 +265,7 @@ class UIRenderer:
         self.render_line(text, color, pos=pos, size=20)
 
 
-
-
-
 # test code
-
 def test():
     import pygame as pg
     from pygame.math import Vector2  # For handling positions
