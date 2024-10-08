@@ -3,12 +3,17 @@ import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
 
+import sys
+ROOT_PATH = Path(__file__).parent.parent
+sys.path.append(str(Path(__file__).parent.parent))
+
+DATA_PATH = ROOT_PATH / "data"
+
+
 from model.Comfort import Comfortmodel
 from model.Building import Building
 from model.PV import PV
 from model.Battery import Battery
-
-DATA_PATH = Path("data")
 
 
 class HVACSYSTEM:
@@ -329,11 +334,12 @@ class EnergyModel:
         self.plot_electricity_use(fig, ax=ax[3], start=start, end=end)
 
         if show:
-            dummy = plt.figure()  # create a dummy figure
-            new_manager = dummy.canvas.manager  # and use its manager to display "fig"
-            new_manager.canvas.figure = fig
-            fig.set_canvas(new_manager.canvas)
-            fig.show()
+            # dummy = plt.figure()  # create a dummy figure
+            # new_manager = dummy.canvas.manager  # and use its manager to display "fig"
+            # new_manager.canvas.figure = fig
+            # fig.set_canvas(new_manager.canvas)
+            # #fig.show()
+            plt.show()
 
     @property
     def df_heat_balance(self):
@@ -402,7 +408,7 @@ class EnergyModel:
         ax.set_title(title)
         ax.set_ylabel(ylabel)
         ax.grid()
-        plt.show()
+        #plt.show()
 
     def __repr__(self):
         width = 24
@@ -427,13 +433,28 @@ Gesamtkosten:               {self.total_cost:>10.0f} €"""
         return string
 
 
+
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run energy model simulation.")
+    parser.add_argument('--kwp', type=float, default=50, help='PV system size in kWp')
+    parser.add_argument('--battery', type=float, default=30, help='Battery capacity in kWh')
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    m = EnergyModel(kWp=50, battery_kWh=30)
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent))  # Ensure correct sys.path for relative imports
+    
+    args = parse_args()
+    print(args)
+    m = EnergyModel(kWp=args.kwp, battery_kWh=args.battery)
+
     m.init_sim()  # don't forget to intialize the first timestep = 0
         # with sensible starting values
         # like TI[0] = self.minimum_room_temperature
     m.simulate()
     m.calc_cost(verbose=False)
 
-    m.plot()
     print(m)  # calls the __repr__() method to print a nice representation of the object
+    m.plot()
