@@ -91,6 +91,9 @@ class GameModel:
     def set_speed(self, speed):
         self.dt = speed
 
+    def set_cop(self, cop_change):
+        self.model.HVAC.HP_COP += cop_change
+
     def update(self):
         for _ in range(self.dt):
             if self.hour == self.stop_hour:
@@ -111,6 +114,7 @@ class GameModel:
             self.model.calc_ED(self.hour)
             self.money -= self.model.ED[self.hour] * self.model.price_grid
 
+# wrap around stuff needs to be addressed 
             x_horizon = min(self.hour + self.forecast_hours, 8759)
             self.temperature_curve.update(self.position)
             self.outdoor_temp_curve.update((x_horizon, self.model.TA[x_horizon]))
@@ -122,6 +126,8 @@ class GameModel:
         self.heat_on = False
         self.cool_on = False
         
+
+# model data wrappers
     def get_insulation(self):
         return self.model.building.LT
 

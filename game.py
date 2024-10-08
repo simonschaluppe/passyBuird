@@ -57,7 +57,12 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
         for button in input_handler.buttons:
             renderer.render_button(button)
 
-        renderer.debug({"FPS": lambda: round(clock.get_fps(),1)})
+        fps = clock.get_fps()
+        game_hours_per_second = game.dt*fps
+        renderer.debug({"FPS": lambda: f"{fps:2.1f}", 
+                        "State": game.__repr__,
+                        "Speed": lambda: f"{game.dt} | {game_hours_per_second:.0f} h/s"
+                        })
 
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
@@ -125,6 +130,8 @@ input_handler.bind_keypress(pg.K_2, lambda: game.set_speed(2))
 input_handler.bind_keypress(pg.K_3, lambda: game.set_speed(5))
 input_handler.bind_keypress(pg.K_4, lambda: game.set_speed(10))
 input_handler.bind_keypress(pg.K_5, lambda: game.set_speed(50))
+input_handler.bind_keypress(pg.K_w, lambda: game.set_cop(0.3))
+input_handler.bind_keypress(pg.K_s, lambda: game.set_cop(-0.3))
 input_handler.bind_keypress(pg.K_q, quit_game)
 input_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
 
