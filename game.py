@@ -27,11 +27,19 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
               clock:pg.time.Clock, particle_manager:ParticleManager):
     """The main game loop responsible for processing events, updating game state, and rendering."""
     running = True
+    accumulated_gamehours = 0
     while running:
+        
         running = input_handler.update()
         if game.paused: continue
 
-        game.update()
+        dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
+        accumulated_gamehours += dt_real * game.speed # h/s
+
+        if accumulated_gamehours >= 1:
+            game.dt = int(accumulated_gamehours)
+            accumulated_gamehours -= game.dt
+            game.update()
 
         particle_manager.update()
             
@@ -58,15 +66,14 @@ def main_loop(screen, game:GameModel, renderer:Renderer, input_handler:InputHand
             renderer.render_button(button)
 
         fps = clock.get_fps()
-        game_hours_per_second = game.dt*fps
         renderer.debug({"FPS": lambda: f"{fps:2.1f}", 
+                        "Acc. hours": lambda: f"{accumulated_gamehours:.2f} h",
                         "State": game.__repr__,
-                        "Speed": lambda: f"{game.dt} | {game_hours_per_second:.0f} h/s"
+                        "Speed": lambda: f"{game.speed:.0f} h/s"
                         })
 
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
-        clock.tick(60)
         
         game.cleanup()
         
@@ -103,7 +110,7 @@ def cool():
 camera = Camera2D(surface=display, 
                     game_world_position=game.position,
                     zoom=(2, 5))
-camera.follow(game, maxdist = 100)
+camera.follow(game, maxdist = 0)
 
 renderer = Renderer(display, camera, clock)
 
@@ -125,13 +132,13 @@ input_handler.bind_camera(camera)
 input_handler.bind_continuous_keypress(pg.K_UP, heat)
 input_handler.bind_continuous_keypress(pg.K_DOWN, cool)
 input_handler.bind_keypress(pg.K_p, game.toggle_pause)
-input_handler.bind_keypress(pg.K_1, lambda: game.set_speed(1))
-input_handler.bind_keypress(pg.K_2, lambda: game.set_speed(2))
-input_handler.bind_keypress(pg.K_3, lambda: game.set_speed(5))
-input_handler.bind_keypress(pg.K_4, lambda: game.set_speed(10))
-input_handler.bind_keypress(pg.K_5, lambda: game.set_speed(50))
-input_handler.bind_keypress(pg.K_w, lambda: game.set_cop(0.3))
-input_handler.bind_keypress(pg.K_s, lambda: game.set_cop(-0.3))
+input_handler.bind_keypress(pg.K_1, lambda: game.set_speed(12))
+input_handler.bind_keypress(pg.K_2, lambda: game.set_speed(24))
+input_handler.bind_keypress(pg.K_3, lambda: game.set_speed(24*7))
+input_handler.bind_keypress(pg.K_4, lambda: game.set_speed(24*7*2))
+input_handler.bind_keypress(pg.K_5, lambda: game.set_speed(24*7*4))
+input_handler.bind_keypress(pg.K_w, lambda: game.set_cop(0.5))
+input_handler.bind_keypress(pg.K_s, lambda: game.set_cop(-0.5))
 input_handler.bind_keypress(pg.K_q, quit_game)
 input_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
 

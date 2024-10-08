@@ -8,15 +8,18 @@ from entities import Curve
 
 class GameModel:
     def __init__(self, dt=1, start_hour=0, starting_power=15, starting_cop=1) -> None:
+
+        self.dt = dt
+        self.speed = 24 # simulated hours / game second
+
+        self.paused = False
+        self.finished = False
+        self.money = 100_000
+
         self.hour = start_hour
         if start_hour == 0:
             self.stop_hour = 8759
         else: self.stop_hour = start_hour - 1
-        self.dt = dt
-        self.paused = False
-        self.finished = False
-
-        self.money = 100_000
 
         self.model = EnergyModel()
         self.model.init_sim(dt=self.dt)
@@ -43,6 +46,10 @@ class GameModel:
             "Minimum Comfort Temperature": self.curve_comfort_min,
             "Maximum Comfort Temperature": self.curve_comfort_max,
         }
+
+    def set_speed(self, simhours_per_second):
+        """sets how many hours should be simulated for each second of the game"""
+        self.speed = simhours_per_second
 
     @property
     def position(self):
@@ -87,9 +94,6 @@ class GameModel:
 
     def cool(self):
         self.cool_on = True 
-
-    def set_speed(self, speed):
-        self.dt = speed
 
     def set_cop(self, cop_change):
         self.model.HVAC.HP_COP += cop_change

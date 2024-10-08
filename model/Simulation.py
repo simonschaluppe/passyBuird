@@ -102,14 +102,12 @@ class EnergyModel:
         # initialize result arrays
         self.timestamp = self.comfort.timestamp
 
-
         self.QV = np.zeros(8760)  # ventilation losses
         self.QT = np.zeros(8760)  # transmission losses
         self.QI = np.zeros(8760)  # Internal losses/gains
         self.Q_loss = np.zeros(8760)  # total losses without heating/cooling
 
         self.TI = np.zeros(8760)  # indoor temperature
-        
 
         self.QH = np.zeros(8760)  # Heating demand Wh/m²
         self.QC = np.zeros(8760)  # Cooling demand Wh/m²
