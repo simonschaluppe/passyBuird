@@ -11,9 +11,10 @@ DATA_PATH = ROOT_PATH / "data"
 
 from model.Simulation import EnergyModel
 
-    
+
 class Curve:
     """Manages game time of timeseries in model time"""
+
     def __init__(self, label, points=None, x_list=None, y_list=None):
         self.wrap_length = 8760
         self.label = label
@@ -27,13 +28,17 @@ class Curve:
     def y_slice(self, start, stop):
         if not ((0 <= start < self.wrap_length) and (0 <= stop < self.wrap_length)):
             raise ValueError(f"Both {start=} and {stop=} must be between 0 and 8759")
-        return self.y_list[start:stop] if start <= stop else self.y_list[start:] + self.y_list[:stop]
+        return (
+            self.y_list[start:stop]
+            if start <= stop
+            else self.y_list[start:] + self.y_list[:stop]
+        )
 
     def points_in_game(self, gamex_start, gamex_end):
         """returns the list of points in game time from the appropriate model time"""
         ys = self.y_slice(gamex_start % self.wrap_length, gamex_end % self.wrap_length)
-        return [(x, y) for x, y in zip(range(gamex_start,gamex_end), ys)]
-    
+        return [(x, y) for x, y in zip(range(gamex_start, gamex_end), ys)]
+
     def update_point(self, gamex, y):
         self.y_list[gamex % self.wrap_length] = y
 
@@ -45,16 +50,17 @@ class Curve:
             for gamex, y in point_or_points:
                 self.update_point(gamex, y)
 
-
     def __repr__(self) -> str:
         return f"Curve({self.label=})"
 
 
 class GameModel:
-    def __init__(self, dt=1, start_hour=8700, starting_power=15, starting_cop=1, start_TI=22) -> None:
+    def __init__(
+        self, dt=1, start_hour=8700, starting_power=15, starting_cop=1, start_TI=22
+    ) -> None:
 
         self.dt = dt
-        self.speed = 24 # simulated hours / game second
+        self.speed = 24  # simulated hours / game second
 
         self.paused = False
         self.finished = False
@@ -62,8 +68,8 @@ class GameModel:
 
         if not (0 <= start_hour <= 8759):
             raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
-        self.hour = start_hour # ever increasing
-        self._mh = start_hour # model hour always in [0-8759]
+        self.hour = start_hour  # ever increasing
+        self._mh = start_hour  # model hour always in [0-8759]
         self.model = EnergyModel()
         self.model.init_sim(dt=self.dt)
         self.model.TI[start_hour] = start_TI
@@ -71,20 +77,31 @@ class GameModel:
         self.model.HVAC.HP_heating_power = starting_power
         self.model.HVAC.HP_cooling_power = starting_power
         self.model.HVAC.HP_COP = starting_cop
-        
-        self.heat_on = False    
+
+        self.heat_on = False
         self.cool_on = False
 
         self.forecast_hours = 72
         self.backcast_hours = 72
 
-        self.curve_TI = Curve("TI", points=[(h, ti) for h, ti in zip(range(8760), self.model.TI)])
-        self.curve_TA = Curve("TA", points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)])
-        self.curve_comfort_min = Curve("Minimum comfort temperature",
-                                       points=[(h, self.model.comfort.minimum_room_temperature) for h in range(8760)])
-        self.curve_comfort_max = Curve("Minimum comfort temperature",
-                                       points=[(h, self.model.comfort.maximum_room_temperature) for h in range(8760)])
-
+        self.curve_TI = Curve(
+            "TI", points=[(h, ti) for h, ti in zip(range(8760), self.model.TI)]
+        )
+        self.curve_TA = Curve(
+            "TA", points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)]
+        )
+        self.curve_comfort_min = Curve(
+            "Minimum comfort temperature",
+            points=[
+                (h, self.model.comfort.minimum_room_temperature) for h in range(8760)
+            ],
+        )
+        self.curve_comfort_max = Curve(
+            "Minimum comfort temperature",
+            points=[
+                (h, self.model.comfort.maximum_room_temperature) for h in range(8760)
+            ],
+        )
 
     def set_speed(self, simhours_per_second):
         """sets how many hours should be simulated for each second of the game"""
@@ -98,10 +115,10 @@ class GameModel:
     def position(self):
         """Game position is (x = hour, y = Indoor Temperature)"""
         return (self.hour, self.TI)
-    
+
     @property
     def dT(self):
-        return self.model.Q_loss[self._mh]/self.model.building.heat_capacity
+        return self.model.Q_loss[self._mh] / self.model.building.heat_capacity
 
     @property
     def qh(self):
@@ -118,10 +135,10 @@ class GameModel:
             return dmax
         else:
             return 0
-    
+
     @property
     def comfort_score(self):
-        return max(100-20*abs(self.comfort_diff),0)
+        return max(100 - 20 * abs(self.comfort_diff), 0)
 
     @property
     def qc(self):
@@ -136,7 +153,7 @@ class GameModel:
         self.heat_on = True
 
     def cool(self):
-        self.cool_on = True 
+        self.cool_on = True
 
     def set_cop(self, cop_change):
         self.model.HVAC.HP_COP += cop_change
@@ -158,56 +175,58 @@ class GameModel:
             self.curve_TI.update((self.hour, self.TI))
 
             self.hour += 1
-            
 
     def cleanup(self):
         """cleans up logic and other flags for the next time step"""
         self.heat_on = False
         self.cool_on = False
-        
 
-# model data wrappers
+    # model data wrappers
     def get_insulation(self):
         return self.model.building.LT
 
     def get_power(self):
         return self.model.HVAC.HP_heating_power
-    
+
     def get_cop(self):
         return self.model.HVAC.HP_COP
-    
+
     def get_curves_data(self):
         fc_index = self.hour + self.forecast_hours
         bc_index = self.hour - self.backcast_hours
         return {
             "Indoor Temperature": self.curve_TI.points_in_game(bc_index, self.hour),
             "Outdoor Temperature": self.curve_TA.points_in_game(bc_index, fc_index),
-            "Minimum Comfort Temperature": self.curve_comfort_min.points_in_game(bc_index, fc_index),
-            "Maximum Comfort Temperature": self.curve_comfort_max.points_in_game(bc_index, fc_index),
+            "Minimum Comfort Temperature": self.curve_comfort_min.points_in_game(
+                bc_index, fc_index
+            ),
+            "Maximum Comfort Temperature": self.curve_comfort_max.points_in_game(
+                bc_index, fc_index
+            ),
             "TI Indicator": {
                 "Position": self.position,
                 "Comfort dT": self.comfort_diff,
-                "Scale": 1+0.5*(self.heat_on+self.cool_on)},
-            "TA Indicator": {
-                "Position": (self.hour, self.model.TA[self._mh])},
-
+                "Scale": 1 + 0.5 * (self.heat_on + self.cool_on),
+            },
+            "TA Indicator": {"Position": (self.hour, self.model.TA[self._mh])},
         }
 
     def get_ui_data(self):
         return {
             "Energy balance": {
                 "anchorpoint": (600, 250),
-                "first": {"QV" : self.model.QV[self._mh] * 5,
-                        "QT" : self.model.QT[self._mh] * 5},
+                "first": {
+                    "QV": self.model.QV[self._mh] * 5,
+                    "QT": self.model.QT[self._mh] * 5,
+                },
                 "second": {"QS": self.model.QS[self._mh] * 5},
                 "QH": self.model.QH[self._mh] * 5,
-                "QC": self.model.QC[self._mh] * 5
-                },
+                "QC": self.model.QC[self._mh] * 5,
+            },
             "Scores": {
                 "Money": int(self.money),
-                "Comfort": {"dT": self.comfort_diff, 
-                            "score": self.comfort_score}
-                },
+                "Comfort": {"dT": self.comfort_diff, "score": self.comfort_score},
+            },
             "Price": f"Price: {self.model.price_grid} €/Wh",
             "COP": f"Efficiency    {self.get_cop()*100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
@@ -216,13 +235,20 @@ class GameModel:
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
 
+
 if __name__ == "__main__":
-    #test = GameModel(start_hour=7888)
-    #print(test.get_curves_data())
+    # test = GameModel(start_hour=7888)
+    # print(test.get_curves_data())
     c = Curve("test", points=[(x, x) for x in range(8760)])
-    print(c.points_in_game(8755,8765))
+    print(c.points_in_game(8755, 8765))
     c.update((8760, "hello changed 8760"))
-    print(c.points_in_game(8755,8765))
-        
-    c.update([(8761, "list of points 1"), (8762, "list of points 2"), (8765, "dont need to be in sequence")])
-    print(c.points_in_game(8755,8766))
+    print(c.points_in_game(8755, 8765))
+
+    c.update(
+        [
+            (8761, "list of points 1"),
+            (8762, "list of points 2"),
+            (8765, "dont need to be in sequence"),
+        ]
+    )
+    print(c.points_in_game(8755, 8766))
