@@ -103,6 +103,27 @@ class GameModel:
             ],
         )
 
+        self.upgrades = [
+            {
+                "name": "Wall Insulation",
+                "cost": 1000,
+                "image": "wall.png",
+                "available": True,
+            },
+            {
+                "name": "New Windows",
+                "cost": 1500,
+                "image": "window.png",
+                "available": False,
+            },
+            {
+                "name": "HVAC Upgrade",
+                "cost": 2000,
+                "image": "hvac.png",
+                "available": True,
+            },
+        ]
+
     def set_speed(self, simhours_per_second):
         """sets how many hours should be simulated for each second of the game"""
         self.speed = simhours_per_second
@@ -190,6 +211,20 @@ class GameModel:
 
     def get_cop(self):
         return self.model.HVAC.HP_COP
+
+    def get_hull_data(self) -> dict:
+        return {"lines": self.model.building.__repr__()}
+
+    def get_hvac_data(self) -> dict:
+        return {"lines": self.model.HVAC.__repr__()}
+
+    def get_menu_data(self) -> dict:
+        return {
+            "upgrades": self.upgrades,
+            "player": {"money": self.money},
+            "hull": self.get_hull_data(),
+            "hvac": self.get_hvac_data(),
+        }
 
     def get_curves_data(self):
         fc_index = self.hour + self.forecast_hours

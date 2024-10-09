@@ -15,7 +15,8 @@ pg.display.set_caption("passyBUIRLD")
 display = pg.Surface((800, 600))
 clock = pg.time.Clock()
 
-game = GameModel(dt=1, start_hour=6000)
+
+game = GameModel(dt=1, start_hour=6000, starting_cop=3)
 
 
 def quit_game():
@@ -55,10 +56,10 @@ def main_loop(
         renderer.camera.update()
         renderer.draw_background(game.hour)
 
-        renderer.render_curves(game.get_curves_data())
-
         renderer.draw_heat_particles(particle_manager.groups["heating"])
         renderer.draw_cool_particles(particle_manager.groups["cooling"])
+
+        renderer.render_curves(game.get_curves_data())
 
         renderer.render_ui(game.get_ui_data())
 
@@ -89,10 +90,7 @@ def menu_loop(screen, renderer: Renderer, menu_handler: InputHandler, clock):
     while running:
         running = menu_handler.update()
 
-        renderer.render_title(pos=(50, 50))
-        renderer.render_building_menu(game.model.building.__repr__())
-
-        renderer.render_hvac_menu(game.model.HVAC.__repr__())
+        renderer.render_menu(game.get_menu_data())
 
         for button in menu_handler.buttons:
             renderer.render_button(button)
@@ -161,8 +159,8 @@ menu_handler.bind_keypress(pg.K_RETURN, startgame)
 # menu_handler.bind_mousebutton(1, startgame)
 menu_handler.bind_keypress(pg.K_q, quit)
 menu_handler.bind_keypress(pg.K_ESCAPE, startgame)
-start_button = Button((10, 200), startgame, "Start the Game!")
-quit_button = Button((10, 250), quit_game, "Quit")
+start_button = Button((600, 480), startgame, "Start the Game!")
+quit_button = Button((600, 530), quit_game, "Quit")
 menu_handler.register_button(start_button)
 menu_handler.register_button(quit_button)
 
