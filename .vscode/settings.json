@@ -6,5 +6,6 @@
     },
     "workbench.colorCustomizations": {
         "titleBar.activeBackground": "#9a1053"
-    }
+    },
+    "jupyter.interactiveWindow.textEditor.executeSelection": true
 }
