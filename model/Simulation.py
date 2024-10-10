@@ -83,12 +83,10 @@ class EnergyModel:
         self.QS = np.genfromtxt(Path(DATA_PATH, "Solar_gains.csv"))  # W/m²
 
         self.simulated = False
-        self.dt = 1
 
-    def init_sim(self, dt=1):
+    def init_sim(self):
         # (re)load profiles from self.Usage
         # this is neccessary  if the PV model has changed inbetween simulations
-        self.dt = dt
         self.QI_winter = self.Usage["Qi Winter W/m²"].to_numpy()
         self.QI_summer = self.Usage["Qi Sommer W/m²"].to_numpy()
 
@@ -131,7 +129,7 @@ class EnergyModel:
 
     def calc_QV(self, t):
         """Ventilation heat losses [W/m²BGF] at timestep t"""
-        dT = self.TA[t - self.dt] - self.TI[t - self.dt]
+        dT = self.TA[t - 1] - self.TI[t - 1]
         room_height = self.building.net_storey_height
         cp_air = self.cp_air
         # thermally effective air change
@@ -143,7 +141,7 @@ class EnergyModel:
 
     def calc_QT(self, t):
         """Transmission heat losses [W/m²BGF] at timestep t"""
-        dT = self.TA[t - self.dt] - self.TI[t - self.dt]
+        dT = self.TA[t - 1] - self.TI[t - 1]
         self.QT[t] = self.building.LT * dT
 
     def calc_QI(self, t):
@@ -164,7 +162,7 @@ class EnergyModel:
         # determine losses
         self.Q_loss[t] = (self.QT[t] + self.QV[t]) + self.QS[t] + self.QI[t]
         # determine indoor temperature after losses
-        self.TI[t] = self.TI_after_Q(self.TI[t - self.dt], self.Q_loss[t])
+        self.TI[t] = self.TI_after_Q(self.TI[t - 1], self.Q_loss[t])
 
     def TI_after_Q(self, TI_before, Q):
         """cp = spec. building heat_capacity"""

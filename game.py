@@ -3,7 +3,7 @@ import pygame as pg
 from camera import Camera2D
 from model.GameModel import GameModel, create_game_model
 from handler import Button, InputHandler
-from renderer import Renderer, colors
+from renderer import Renderer
 from particles import ParticleManager
 
 pg.init()
