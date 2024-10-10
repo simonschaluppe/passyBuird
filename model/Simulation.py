@@ -11,6 +11,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 DATA_PATH = ROOT_PATH / "data"
 
 
+from model import conversion
 from model.Comfort import Comfortmodel
 from model.Building import Building
 from model.PV import PV
@@ -40,11 +41,6 @@ Heatpump cooling power {self.HP_cooling_power} W/m²
 
 class EnergyModel:
     simulated = []  # this is not strictly neccessary
-
-    # it uses a class variable to save
-    # all simulated instances of a model
-    # they get recorded at the end of the
-    # Model.simulate() method
 
     def __init__(
         self,
@@ -123,6 +119,10 @@ class EnergyModel:
         self.ED_grid = np.zeros(8760)
 
         self.Btt_to_ED = np.zeros(8760)
+
+        self.CO2 = conversion.get_default_co2_profile(
+            conversion.DEFAULT_PROFILES.ElectricityMap2018
+        )
 
         ## initialize starting conditions
         self.TI[0] = 20

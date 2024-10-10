@@ -1,5 +1,4 @@
 import sys
-import fontTools
 import pygame as pg
 import math
 from pathlib import Path
@@ -31,6 +30,8 @@ colors = {
     "Price": (50, 80, 30),
     "UI Text": (76, 37, 29),
     "Upgrade text": (153, 64, 154),
+    "Emission text": (66, 62, 56),
+    "Emissions": (105, 95, 78),
 }
 
 # Define color constants
@@ -322,6 +323,7 @@ class CurvesRenderer:
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"])
         self.draw_curve("red", data["Indoor Temperature"])
         self.draw_curve("blue", data["Outdoor Temperature"])
+        self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
         self.draw_TI_indicator(data["TI Indicator"])
         self.draw_TA_indicator(data["TA Indicator"])
 

@@ -93,6 +93,7 @@ class GameModel:
     curve_TA: Curve
     curve_comfort_min: Curve
     curve_comfort_max: Curve
+    curve_co2: Curve
 
     def update(self, hours: int):
         for _ in range(hours):
@@ -218,6 +219,7 @@ class GameModel:
         return {
             "Indoor Temperature": self.curve_TI.points_in_game(bc_index, self.hour),
             "Outdoor Temperature": self.curve_TA.points_in_game(bc_index, fc_index),
+            "Carbon Intensity": self.curve_co2.points_in_game(bc_index, fc_index),
             "Minimum Comfort Temperature": self.curve_comfort_min.points_in_game(
                 bc_index, fc_index
             ),
@@ -249,6 +251,7 @@ class GameModel:
                 "Comfort": {"dT": self.comfort_diff, "score": self.comfort_score},
             },
             "Price": f"Price: {self.model.price_grid} €/Wh",
+            "CO2": f"CO2: {self.model.CO2[self._mh]} g/kWh",
             "COP": f"Efficiency    {self.get_cop()*100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
         }
@@ -298,6 +301,11 @@ def create_game_model(
     game.curve_comfort_max = Curve(
         "Minimum comfort temperature",
         points=[(h, game.model.comfort.maximum_room_temperature) for h in range(8760)],
+    )
+
+    game.curve_co2 = Curve(
+        "CO2 Intensity",
+        points=[(h, co2 * 50 - 25) for h, co2 in zip(range(8760), game.model.CO2)],
     )
 
     game.cleanup()
