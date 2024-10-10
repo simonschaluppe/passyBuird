@@ -1,7 +1,7 @@
 # Import required modules and classes
 import pygame as pg
 from camera import Camera2D
-from model.GameModel import GameModel
+from model.GameModel import GameModel, create_game_model
 from handler import Button, InputHandler
 from renderer import Renderer, colors
 from particles import ParticleManager
@@ -14,9 +14,6 @@ pg.display.set_caption("passyBUIRLD")
 # Create another surface to perform off-screen drawing
 display = pg.Surface((800, 600))
 clock = pg.time.Clock()
-
-
-game = GameModel(dt=1, start_hour=6000, starting_cop=3)
 
 
 def quit_game():
@@ -37,21 +34,20 @@ def main_loop(
     running = True
     accumulated_gamehours = 0
     while running:
-
         running = input_handler.update()
+
+        dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
+        accumulated_gamehours += dt_real * game.speed * (not game.paused)  # h/s
+
         if game.paused:
             continue
 
-        dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
-        accumulated_gamehours += dt_real * game.speed  # h/s
-
         if accumulated_gamehours >= 1:
-            game.dt = int(accumulated_gamehours)
-            accumulated_gamehours -= game.dt
-            game.update()
+            hours = int(accumulated_gamehours)
+            accumulated_gamehours -= hours
+            game.update(hours=hours)
 
         particle_manager.update()
-
         # render
         renderer.camera.update()
         renderer.draw_background(game.hour)
@@ -100,21 +96,22 @@ def menu_loop(screen, renderer: Renderer, menu_handler: InputHandler, clock):
         clock.tick(60)
 
 
-# new
+game = create_game_model()
+
 particle_manager = ParticleManager()
 
 
 def heat():
     game.heat()
     particle_manager.heat(
-        game.position, (game.dt, -game.qh / game.model.building.heat_capacity * 10)
+        game.position, (0, -game.qh / game.model.building.heat_capacity * 10)
     )
 
 
 def cool():
     game.cool()
     particle_manager.cool(
-        game.position, (game.dt, -game.qc / game.model.building.heat_capacity * 10)
+        game.position, (0, -game.qc / game.model.building.heat_capacity * 10)
     )
 
 
@@ -143,14 +140,16 @@ startgame = lambda: main_loop(
 input_handler.bind_camera(camera)
 input_handler.bind_continuous_keypress(pg.K_UP, heat)
 input_handler.bind_continuous_keypress(pg.K_DOWN, cool)
+input_handler.bind_continuous_mousebutton(0, heat)
+input_handler.bind_continuous_mousebutton(1, heat)
 input_handler.bind_keypress(pg.K_p, game.toggle_pause)
 input_handler.bind_keypress(pg.K_1, lambda: game.set_speed(12))
 input_handler.bind_keypress(pg.K_2, lambda: game.set_speed(24))
 input_handler.bind_keypress(pg.K_3, lambda: game.set_speed(24 * 7))
 input_handler.bind_keypress(pg.K_4, lambda: game.set_speed(24 * 7 * 2))
 input_handler.bind_keypress(pg.K_5, lambda: game.set_speed(24 * 7 * 4))
-input_handler.bind_keypress(pg.K_w, lambda: game.set_cop(0.5))
-input_handler.bind_keypress(pg.K_s, lambda: game.set_cop(-0.5))
+input_handler.bind_keypress(pg.K_w, lambda: game.increment_cop(0.5))
+input_handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
 input_handler.bind_keypress(pg.K_q, quit_game)
 input_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
 

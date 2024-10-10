@@ -11,6 +11,27 @@ DATA_PATH = ROOT_PATH / "data"
 
 from model.Simulation import EnergyModel
 
+UPGRADES = [
+    {
+        "name": "Wall Insulation",
+        "cost": 1000,
+        "image": "wall.png",
+        "available": True,
+    },
+    {
+        "name": "New Windows",
+        "cost": 1500,
+        "image": "window.png",
+        "available": False,
+    },
+    {
+        "name": "HVAC Upgrade",
+        "cost": 2000,
+        "image": "hvac.png",
+        "available": True,
+    },
+]
+
 
 class Curve:
     """Manages game time of timeseries in model time"""
@@ -55,78 +76,66 @@ class Curve:
 
 
 class GameModel:
-    def __init__(
-        self, dt=1, start_hour=8700, starting_power=15, starting_cop=1, start_TI=22
-    ) -> None:
+    money: int
 
-        self.dt = dt
-        self.speed = 24  # simulated hours / game second
+    forecast_hours: int
+    backcast_hours: int
 
-        self.paused = False
-        self.finished = False
-        self.money = 100_000
+    speed: int
+    paused: bool
+    finished: bool
+    heat_on: bool
+    cool_on: bool
 
-        if not (0 <= start_hour <= 8759):
-            raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
-        self.hour = start_hour  # ever increasing
-        self._mh = start_hour  # model hour always in [0-8759]
-        self.model = EnergyModel()
-        self.model.init_sim(dt=self.dt)
-        self.model.TI[start_hour] = start_TI
+    model: EnergyModel
+    hour: int  # ever increasing game hour
+    _mh: int  # model hour (0-8759)
+    final_hour_of_the_year: int  # after a year, wrap and reset
 
-        self.model.HVAC.HP_heating_power = starting_power
-        self.model.HVAC.HP_cooling_power = starting_power
-        self.model.HVAC.HP_COP = starting_cop
+    curve_TI: Curve
+    curve_TA: Curve
+    curve_comfort_min: Curve
+    curve_comfort_max: Curve
 
-        self.heat_on = False
-        self.cool_on = False
+    def update(self, hours: int):
+        for _ in range(hours):
+            year, self._mh = divmod(self.hour, 8760)
+            if self._mh == self.final_hour_of_the_year:
+                print("next year")
+                self.next_year(year)
 
-        self.forecast_hours = 72
-        self.backcast_hours = 72
+            self.model.timestep(hour=self._mh)
 
-        self.curve_TI = Curve(
-            "TI", points=[(h, ti) for h, ti in zip(range(8760), self.model.TI)]
-        )
-        self.curve_TA = Curve(
-            "TA", points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)]
-        )
-        self.curve_comfort_min = Curve(
-            "Minimum comfort temperature",
-            points=[
-                (h, self.model.comfort.minimum_room_temperature) for h in range(8760)
-            ],
-        )
-        self.curve_comfort_max = Curve(
-            "Minimum comfort temperature",
-            points=[
-                (h, self.model.comfort.maximum_room_temperature) for h in range(8760)
-            ],
-        )
+            if self.heat_on:
+                self.model.apply_heat(self._mh)
+            if self.cool_on:
+                self.model.apply_cool(self._mh)
 
-        self.upgrades = [
-            {
-                "name": "Wall Insulation",
-                "cost": 1000,
-                "image": "wall.png",
-                "available": True,
-            },
-            {
-                "name": "New Windows",
-                "cost": 1500,
-                "image": "window.png",
-                "available": False,
-            },
-            {
-                "name": "HVAC Upgrade",
-                "cost": 2000,
-                "image": "hvac.png",
-                "available": True,
-            },
-        ]
+            self.model.calc_ED(self._mh)
+            self.money -= self.model.ED[self._mh] * self.model.price_grid
+
+            self.curve_TI.update((self.hour, self.TI))
+
+            self.hour += 1
+
+    def next_year(self, year):
+        self.model.init_sim()
 
     def set_speed(self, simhours_per_second):
         """sets how many hours should be simulated for each second of the game"""
         self.speed = simhours_per_second
+
+    def set_cop(self, cop):
+        self.model.HVAC.HP_COP = cop
+
+    def increment_cop(self, cop_change):
+        self.model.HVAC.HP_COP += cop_change
+
+    def set_heating_power(self, power):
+        self.model.HVAC.HP_heating_power = power
+
+    def set_cooling_power(self, power):
+        self.model.HVAC.HP_cooling_power = power
 
     @property
     def TI(self):
@@ -168,6 +177,7 @@ class GameModel:
     def toggle_pause(self):
         """Toggle the paused state of the game."""
         self.paused = not self.paused
+
         print(f"Game is {'paused' if self.paused else 'running'}")
 
     def heat(self):
@@ -175,27 +185,6 @@ class GameModel:
 
     def cool(self):
         self.cool_on = True
-
-    def set_cop(self, cop_change):
-        self.model.HVAC.HP_COP += cop_change
-
-    def update(self):
-        for _ in range(self.dt):
-
-            self._mh = self.hour % 8760
-            self.model.timestep(hour=self._mh)
-
-            if self.heat_on:
-                self.model.apply_heat(self._mh)
-            if self.cool_on:
-                self.model.apply_cool(self._mh)
-
-            self.model.calc_ED(self._mh)
-            self.money -= self.model.ED[self._mh] * self.model.price_grid
-
-            self.curve_TI.update((self.hour, self.TI))
-
-            self.hour += 1
 
     def cleanup(self):
         """cleans up logic and other flags for the next time step"""
@@ -269,6 +258,53 @@ class GameModel:
 
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
+
+
+def create_game_model(
+    start_hour=0, start_TI=22, starting_power=15, starting_cop=3
+) -> GameModel:
+
+    game = GameModel()
+    game.speed = 24  # simulated hours / game second
+    game.paused = False
+    game.finished = False
+    game.money = 100_000
+
+    if not (0 <= start_hour <= 8759):
+        raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
+    game.hour = start_hour  # ever increasing
+    game.final_hour_of_the_year = (start_hour - 1) % 8760
+    game._mh = start_hour  # model hour always in [0-8759]
+    game.model = EnergyModel()
+    game.model.init_sim()
+    game.model.TI[start_hour] = start_TI
+
+    game.set_heating_power(starting_power)
+    game.set_cooling_power(starting_power)
+    game.set_cop(starting_cop)
+
+    game.upgrades = UPGRADES
+
+    game.forecast_hours = 72
+    game.backcast_hours = 72
+
+    game.curve_TI = Curve(
+        "TI", points=[(h, ti) for h, ti in zip(range(8760), game.model.TI)]
+    )
+    game.curve_TA = Curve(
+        "TA", points=[(h, ta) for h, ta in zip(range(8760), game.model.TA)]
+    )
+    game.curve_comfort_min = Curve(
+        "Minimum comfort temperature",
+        points=[(h, game.model.comfort.minimum_room_temperature) for h in range(8760)],
+    )
+    game.curve_comfort_max = Curve(
+        "Minimum comfort temperature",
+        points=[(h, game.model.comfort.maximum_room_temperature) for h in range(8760)],
+    )
+
+    game.cleanup()
+    return game
 
 
 if __name__ == "__main__":
