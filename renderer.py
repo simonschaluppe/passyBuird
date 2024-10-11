@@ -121,12 +121,19 @@ class Renderer:
         font.render(onto, text, (px, py), size, color)
 
     def render_lines(
-        self, text: str, color=ALMOSTBLACK, pos=(0, 0), size=20, font=None, onto=None
+        self,
+        text: str,
+        color=ALMOSTBLACK,
+        pos=(0, 0),
+        size=20,
+        font=None,
+        onto=None,
+        lineheight=None,
     ):
         px, py = pos
         dy = 0
         for line in text.splitlines():
-            dy += self.lineheight
+            dy += lineheight if lineheight else self.lineheight
             self.render_line(line, color, (px, py + dy), size, font=font, onto=onto)
 
     def draw_grid(self, spacing, color=BLACK):
@@ -203,7 +210,7 @@ class MenuRenderer:
         self.render_lines = renderer.render_lines
 
         self.topleft = (40, 40)  # corner anchor
-        self.tile_size = (80, 80)  # Size for each upgrade tile
+        self.tile_size = (100, 100)  # Size for each upgrade tile
 
         self.stats_text_color = ALMOSTBLACK
 
@@ -233,7 +240,7 @@ class MenuRenderer:
         self.render_title(self.topleft)
 
     def render_title(self, pos):
-        title = "PassyBUIRLD"
+        title = "PassyBUIRD"
         self.render_line(
             title, colors["Title"], pos, font=self.renderer.titlefont, size=50
         )
@@ -255,7 +262,7 @@ class MenuRenderer:
         tile_surf = pg.Surface(self.tile_size)
 
         # Render the tile image
-        tile_image = pg.image.load(IMAGE_PATH / "upgrade.png").convert_alpha()
+        tile_image = pg.image.load(IMAGE_PATH / upgrade["image"]).convert_alpha()
         tile_image = pg.transform.scale(tile_image, size=self.tile_size)
 
         if not upgrade["available"]:
@@ -324,7 +331,7 @@ class CurvesRenderer:
         self.draw_curve("red", data["Indoor Temperature"])
         self.draw_curve("blue", data["Outdoor Temperature"])
         self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
-        self.draw_TI_indicator(data["TI Indicator"])
+        self.draw_house_indicator(data["TI Indicator"])
         self.draw_TA_indicator(data["TA Indicator"])
 
     # curve renderer
@@ -343,7 +350,7 @@ class CurvesRenderer:
             width=self.curve_width,
         )
 
-    def draw_TI_indicator(self, data):
+    def draw_house_indicator(self, data):
         """Draw game objects like players or enemies."""
         x, y = self.screen_coords(data["Position"])
         color = color_indicator(data["Comfort dT"])
@@ -353,16 +360,23 @@ class CurvesRenderer:
         self.renderer.outline(self.house, (x - 15, y - 15), 2)
         self.renderer.display.blit(self.house, (x - 15, y - 15))
 
+    def draw_indicator(self, gamepos1, gamepos2, color):
+        screenpos1 = self.screen_coords(gamepos1)
+        screenpos2 = self.screen_coords(gamepos2)
+        pg.draw.line(self.renderer.display, color, screenpos1, screenpos2)
+
     def draw_TA_indicator(self, data):
-        hour, TA = data["Position"]
+        hour, TA = data["TA"]
+        TA_pos = self.screen_coords((hour, TA))
         textcolor = seasonalcolor(hour)
         bordercolor = color_interpolation(textcolor, (255, 255, 255), 0.8)
         textcolor = color_interpolation(textcolor, (0, 0, 0), 0.5)
+        self.draw_indicator((hour, TA), data["TI"], "blue")
         text = f"Outdoor Temp {TA:+2.1f}°C"
         self.renderer.render_line(
             text,
             textcolor,
-            pos=self.screen_coords((hour, 10)),
+            pos=self.screen_coords((hour - 100, TA)),
             border_color=bordercolor,
         )
 
@@ -381,8 +395,9 @@ class UIRenderer:
         self.comfort_score(score=comfort_data["score"], dT=comfort_data["dT"])
 
         self.render_line(ui_data["Price"], pos=(550, 80), color=colors["Price"])
-        self.render_line(ui_data["COP"], pos=(550, 100), color=colors["UI Text"])
-        self.render_line(ui_data["Power"], pos=(550, 120), color=colors["UI Text"])
+        self.render_line(ui_data["CO2"], pos=(550, 100), color=colors["Emission text"])
+        self.render_line(ui_data["COP"], pos=(550, 120), color=colors["UI Text"])
+        self.render_line(ui_data["Power"], pos=(550, 140), color=colors["UI Text"])
 
     def energybalance(self, balance_data):
         """Render energy balance as waterfall diagram."""

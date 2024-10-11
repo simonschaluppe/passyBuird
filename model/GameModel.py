@@ -231,7 +231,10 @@ class GameModel:
                 "Comfort dT": self.comfort_diff,
                 "Scale": 1 + 0.5 * (self.heat_on + self.cool_on),
             },
-            "TA Indicator": {"Position": (self.hour, self.model.TA[self._mh])},
+            "TA Indicator": {
+                "TA": (self.hour, self.model.TA[self._mh]),
+                "TI": self.position,
+            },
         }
 
     def get_ui_data(self):
@@ -251,7 +254,7 @@ class GameModel:
                 "Comfort": {"dT": self.comfort_diff, "score": self.comfort_score},
             },
             "Price": f"Price: {self.model.price_grid} €/Wh",
-            "CO2": f"CO2: {self.model.CO2[self._mh]} g/kWh",
+            "CO2": f"CO2: {self.model.CO2[self._mh]*1000:.0f} g/kWh",
             "COP": f"Efficiency    {self.get_cop()*100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
         }
@@ -305,7 +308,7 @@ def create_game_model(
 
     game.curve_co2 = Curve(
         "CO2 Intensity",
-        points=[(h, co2 * 50 - 25) for h, co2 in zip(range(8760), game.model.CO2)],
+        points=[(h, co2 * 200) for h, co2 in zip(range(8760), game.model.CO2)],
     )
 
     game.cleanup()
