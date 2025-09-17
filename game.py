@@ -39,6 +39,12 @@ def main_loop(
         dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
         accumulated_gamehours += dt_real * game.speed * (not game.paused)  # h/s
 
+        if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
+            # game.finished = True
+            game.next_year()
+            end_of_level_screen(screen, renderer, game, clock)
+            enter_menu()
+
         if game.paused:
             continue
 
@@ -94,6 +100,49 @@ def menu_loop(screen, renderer: Renderer, menu_handler: InputHandler, clock):
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
         clock.tick(60)
+
+
+def end_of_level_screen(screen, renderer: Renderer, game: GameModel, clock):
+    """Displays end-of-level summary before returning to menu."""
+    end_running = True
+    end_handler = InputHandler()
+
+    def continue_to_menu():
+        nonlocal end_running
+        end_running = False
+
+    kpi_data = game.get_kpis()
+
+    end_handler.bind_keypress(pg.K_RETURN, continue_to_menu)
+    end_handler.bind_keypress(pg.K_ESCAPE, continue_to_menu)
+
+    line_size = 24
+    line_spacing = 30  # slightly more than size to avoid overlap
+    y = 50
+
+    while end_running:
+        end_handler.update()
+        renderer.display.fill((0, 0, 0))  # Clear background
+
+        renderer.render_line(
+            "End of Level Results:",
+            pos=(100, y),
+            size=32,
+            color=(255, 255, 255),
+            font=renderer.titlefont,
+        )
+        y += 50  # Larger space after title
+
+        for label, value in kpi_data.items():
+            renderer.render_line(
+                f"{label}: {value}",
+                pos=(120, y),
+                size=line_size,
+                color=(200, 200, 200),
+            )
+            y += line_spacing
+
+        screen.blit(renderer.display, (0, 0))
 
 
 game = create_game_model()

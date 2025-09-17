@@ -124,6 +124,8 @@ class EnergyModel:
             conversion.DEFAULT_PROFILES.ElectricityMap2018
         )
 
+        self.comfort_score_tsd = np.zeros(8760)
+
         ## initialize starting conditions
         self.TI[0] = 20
 
@@ -166,7 +168,7 @@ class EnergyModel:
 
     def TI_after_Q(self, TI_before, Q):
         """cp = spec. building heat_capacity"""
-        return TI_before + Q / self.building.heat_capacity
+        return TI_before + Q / self.building.heat_capacity # W/m²K
 
     def is_heating_on(self, t, TI_new):
         if not self.HVAC.heating_system:

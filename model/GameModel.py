@@ -111,12 +111,15 @@ class GameModel:
 
             self.model.calc_ED(self._mh)
             self.money -= self.model.ED[self._mh] * self.model.price_grid
+            self.model.comfort_score_tsd[self._mh] = self.comfort_score
 
             self.curve_TI.update((self.hour, self.TI))
 
             self.hour += 1
 
-    def next_year(self, year):
+    def next_year(self, year=2020):
+        self.hour = 0
+        self._mh = 0
         self.model.init_sim()
 
     def set_speed(self, simhours_per_second):
@@ -259,12 +262,24 @@ class GameModel:
             "Power": f"Heating Power {self.get_power()} W/m²",
         }
 
+    def get_kpis(self) -> dict:
+        """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
+        return {
+            "Wärmebedarf (QH)": f"{self.model.QH.sum():.1f} Wh",
+            "Kältebedarf (QC)": f"{self.model.QC.sum():.1f} Wh",
+            "Stromeinsatz (ED)": f"{self.model.ED.sum():.1f} Wh",
+            "CO₂-Emissionen": f"{sum(self.model.CO2)/1000:.0f} kg",
+            "Ø Strompreis": f"{self.model.price_grid:.3f} e/Wh",
+            "Geldstand": f"{self.money:.2f} e",
+            "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
+        }
+
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
 
 
 def create_game_model(
-    start_hour=0, start_TI=22, starting_power=15, starting_cop=3
+    start_hour=0, start_TI=22, starting_power=15, starting_cop=3, final_hour=8759
 ) -> GameModel:
 
     game = GameModel()
@@ -276,7 +291,7 @@ def create_game_model(
     if not (0 <= start_hour <= 8759):
         raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
     game.hour = start_hour  # ever increasing
-    game.final_hour_of_the_year = (start_hour - 1) % 8760
+    game.final_hour_of_the_year = (final_hour) % 8760
     game._mh = start_hour  # model hour always in [0-8759]
     game.model = EnergyModel()
     game.model.init_sim()
