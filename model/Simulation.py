@@ -7,8 +7,12 @@ import sys
 
 ROOT_PATH = Path(__file__).parent.parent
 sys.path.append(str(Path(__file__).parent.parent))
-
 DATA_PATH = ROOT_PATH / "data"
+
+DEFAULT_PATH_BUILDING = Path("building_oib_16linie.xlsx")
+DEFAULT_PATH_PV = Path("pv_1kWp.csv")
+DEFAULT_PATH_USAGES = Path("usage_profiles.csv")
+
 
 
 from model import conversion
@@ -44,7 +48,7 @@ class EnergyModel:
 
     def __init__(
         self,
-        building_path=Path(DATA_PATH, "building_oib_16linie.xlsx"),
+        building_path=Path(DATA_PATH, DEFAULT_PATH_BUILDING),
         kWp=1,  # PV kWp
         battery_kWh=1,
     ):  # Battery kWh
@@ -55,7 +59,7 @@ class EnergyModel:
         self.HVAC = HVACSYSTEM()
         self.comfort = Comfortmodel()
 
-        self.PV = PV(csv=Path(DATA_PATH, "pv_1kWp.csv"), kWp=1)
+        self.PV = PV(csv=Path(DATA_PATH, DEFAULT_PATH_PV), kWp=1)
         self.PV.set_kWp(kWp)
 
         self.battery = Battery(kWh=battery_kWh)
@@ -70,7 +74,7 @@ class EnergyModel:
         # load Usage characteristics
         self.include_user_plugloads = False
         self.Usage = pd.read_csv(
-            Path(DATA_PATH, "usage_profiles.csv"), encoding="cp1252"
+            Path(DATA_PATH, DEFAULT_PATH_USAGES), encoding="cp1252"
         )
 
         # load climate data

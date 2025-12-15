@@ -257,7 +257,7 @@ class GameModel:
                 "Comfort": {"dT": self.comfort_diff, "score": self.comfort_score},
             },
             "Price": f"Price: {self.model.price_grid} €/Wh",
-            "CO2": f"CO2: {self.model.CO2[self._mh]*1000:.0f} g/kWh",
+            "CO2": f"CO2: {self.model.signals.co2_intensity[self._mh]*1000:.0f} g/kWh",
             "COP": f"Efficiency    {self.get_cop()*100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
         }
@@ -268,7 +268,7 @@ class GameModel:
             "Wärmebedarf (QH)": f"{self.model.QH.sum():.1f} Wh",
             "Kältebedarf (QC)": f"{self.model.QC.sum():.1f} Wh",
             "Stromeinsatz (ED)": f"{self.model.ED.sum():.1f} Wh",
-            "CO₂-Emissionen": f"{sum(self.model.CO2)/1000:.0f} kg",
+            "CO₂-Emissionen": f"{sum(self.model.signals.co2_intensity)/1000:.0f} kg",
             "Ø Strompreis": f"{self.model.price_grid:.3f} e/Wh",
             "Geldstand": f"{self.money:.2f} e",
             "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
@@ -323,7 +323,7 @@ def create_game_model(
 
     game.curve_co2 = Curve(
         "CO2 Intensity",
-        points=[(h, co2 * 200) for h, co2 in zip(range(8760), game.model.CO2)],
+        points=[(h, co2 * 200) for h, co2 in zip(range(8760), game.model.signals.co2_intensity)],
     )
 
     game.cleanup()
