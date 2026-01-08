@@ -111,7 +111,7 @@ class GameModel:
 
             self.model.calc_ED(self._mh)
             self.money -= self.model.ED[self._mh] * self.model.price_grid
-            self.model.comfort_score_tsd[self._mh] = self.comfort_score
+            self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.model.TI[self._mh])
 
             self.curve_TI.update((self.hour, self.TI))
 
@@ -156,22 +156,6 @@ class GameModel:
         return self.model.QH[self._mh]
 
     @property
-    def comfort_diff(self):
-        """Kelvin difference to comfortable temp"""
-        dmin = self.TI - self.model.comfort.minimum_room_temperature
-        dmax = self.TI - self.model.comfort.maximum_room_temperature
-        if dmin < 0:
-            return dmin
-        elif dmax > 0:
-            return dmax
-        else:
-            return 0
-
-    @property
-    def comfort_score(self):
-        return max(100 - 20 * abs(self.comfort_diff), 0)
-
-    @property
     def qc(self):
         return self.model.QC[self._mh]
 
@@ -211,7 +195,7 @@ class GameModel:
     def get_menu_data(self) -> dict:
         return {
             "upgrades": self.upgrades,
-            "player": {"money": self.money},
+            "player": {"money": round(self.money,0)},
             "hull": self.get_hull_data(),
             "hvac": self.get_hvac_data(),
         }
@@ -231,7 +215,7 @@ class GameModel:
             ),
             "TI Indicator": {
                 "Position": self.position,
-                "Comfort dT": self.comfort_diff,
+                "Comfort dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
                 "Scale": 1 + 0.5 * (self.heat_on + self.cool_on),
             },
             "TA Indicator": {
@@ -254,7 +238,7 @@ class GameModel:
             },
             "Scores": {
                 "Money": int(self.money),
-                "Comfort": {"dT": self.comfort_diff, "score": self.comfort_score},
+                "Comfort": {"dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]), "score": self.model.comfort.comfort_score(self.model.TI[self._mh])},
             },
             "Price": f"Price: {self.model.price_grid} €/Wh",
             "CO2": f"CO2: {self.model.CO2[self._mh]*1000:.0f} g/kWh",
@@ -286,7 +270,7 @@ def create_game_model(
     game.speed = 24  # simulated hours / game second
     game.paused = False
     game.finished = False
-    game.money = 100_000
+    game.money = 1_000
 
     if not (0 <= start_hour <= 8759):
         raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
@@ -314,11 +298,11 @@ def create_game_model(
     )
     game.curve_comfort_min = Curve(
         "Minimum comfort temperature",
-        points=[(h, game.model.comfort.minimum_room_temperature) for h in range(8760)],
+        points=[(h, p) for h, p in zip(range(8760), game.model.comfort.TI_minimum_setpoints)]
     )
     game.curve_comfort_max = Curve(
         "Minimum comfort temperature",
-        points=[(h, game.model.comfort.maximum_room_temperature) for h in range(8760)],
+        points=[(h, p) for h, p in zip(range(8760), game.model.comfort.TI_maximum_setpoints)],
     )
 
     game.curve_co2 = Curve(

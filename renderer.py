@@ -339,9 +339,7 @@ class CurvesRenderer:
         """Draw curves representing game data."""
         if len(curve) < 2:
             return
-        screencoords = [
-            self.screen_coords(point) for point in curve
-        ]  # Only last 300 points
+        screencoords = [self.screen_coords(point) for point in curve]  # Only last 300 points
         pg.draw.lines(
             self.renderer.display,
             color,
@@ -392,7 +390,7 @@ class UIRenderer:
         self.money(ui_data["Scores"]["Money"])
 
         comfort_data = ui_data["Scores"]["Comfort"]
-        self.comfort_score(score=comfort_data["score"], dT=comfort_data["dT"])
+        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"])
 
         self.render_line(ui_data["Price"], pos=(550, 80), color=colors["Price"])
         self.render_line(ui_data["CO2"], pos=(550, 100), color=colors["Emission text"])
@@ -477,11 +475,11 @@ class UIRenderer:
             font=self.renderer.titlefont,
         )
 
-    def comfort_score(self, score, dT, pos=(550, 50)):
+    def render_comfort_score(self, score, dT, pos=(550, 50)):
         text = f"Comfort {score:.1f} %"
         color = color_indicator(dT)
         color = color_interpolation(color, GREEN, score / 100)
-        self.render_line(text, color, pos=pos, size=20)
+        self.render_line(text, color, pos=pos, size=30)
 
 
 # test code
