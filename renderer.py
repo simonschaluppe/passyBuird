@@ -201,6 +201,41 @@ class Renderer:
     def render_menu(self, data):
         self.menu_renderer.render(data)
 
+    def render_popup(self, title:str, body:list):
+        line_size = 24
+        line_spacing = 30  # slightly more than size to avoid overlap
+
+        self.menu_renderer.render_background()
+        panel_rect = pg.Rect(80, 30, 640, 640)
+        pg.draw.rect(
+            self.display,
+            (30, 30, 30),   # fill color
+            panel_rect,
+            border_radius=8
+        )
+        pg.draw.rect(
+            self.display,
+            (220, 220, 220),  # border color
+            panel_rect,
+            width=2,
+            border_radius=8
+        )
+   
+        self.render_line(
+            title,
+            pos=(120, 80),
+            size=50,
+            font=self.titlefont,
+        )
+        y = 150  # Larger space after title
+
+        for line in body:
+            self.render_line(
+                line,
+                pos=(120, y),
+                size=line_size,
+            )
+            y += line_spacing
 
 class MenuRenderer:
     def __init__(self, renderer: Renderer) -> None:
@@ -221,7 +256,7 @@ class MenuRenderer:
     def render(self, data):
         """Render the upgrade menu including background, tiles, and costs."""
         # Draw the menu background first
-        self.display.blit(self.menu_background, (0, 0))
+        self.render_background()
 
         # self.renderer.draw_grid(100)
 
@@ -238,6 +273,9 @@ class MenuRenderer:
         self.render_player_stats(data["player"], pos=(600, 50))
 
         self.render_title(self.topleft)
+
+    def render_background(self):
+        self.display.blit(self.menu_background, (0, 0))
 
     def render_title(self, pos):
         title = "PassyBUIRD"

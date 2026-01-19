@@ -84,7 +84,7 @@ class EnergyModel:
 
         self.simulated = False
 
-    def init_sim(self):
+    def init_sim(self, TI_init=20, start_hour=0):
         # (re)load profiles from self.Usage
         # this is neccessary  if the PV model has changed inbetween simulations
         self.QI_winter = self.Usage["Qi Winter W/m²"].to_numpy()
@@ -131,7 +131,8 @@ class EnergyModel:
         self.comfort_score_tsd = np.zeros(8760)
 
         ## initialize starting conditions
-        self.TI[0] = 20
+        
+        self.TI[0:start_hour] = TI_init
 
     def calc_QV(self, t):
         """Ventilation heat losses [W/m²BGF] at timestep t"""

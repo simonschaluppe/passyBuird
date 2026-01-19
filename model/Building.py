@@ -21,7 +21,7 @@ class Component:
         return self.u_value * self.area * self.temp_factor  # = U * A * f_T [W/K]
 
     def __repr__(self):
-        return f"{self.name[:10]:<10}: {self.area:>5.0f} m² @ {self.u_value:>3.2f} W/m²K"
+        return f"{self.name[:10]:<10}: {self.area:>5.0f} m2 @ {self.u_value:>3.2f} W/m²K"
 
 
 class Building:

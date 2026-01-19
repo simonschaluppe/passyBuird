@@ -29,7 +29,6 @@ UPGRADES = [
     },
 ]
 
-
 class Curve:
     """Manages game time of timeseries in model time"""
 
@@ -95,12 +94,69 @@ class GameModel:
     curve_comfort_max: Curve
     curve_co2: Curve
 
+    def __init__(self):
+        self.speed = 24  # simulated hours / game second
+        self.paused = False
+        self.finished = False
+        self.model = EnergyModel()
+        self.model.init_sim()
+        self.hour = 0
+        self._mh = 0
+        self.setup_new_game()
+
+    def setup_new_game(self,
+              starting_power=15, 
+              starting_cop=3, 
+              ):
+        self.money = 1_000
+        self.set_heating_power(starting_power)
+        self.set_cooling_power(starting_power)
+        self.set_cop(starting_cop)
+        self.upgrades = UPGRADES
+
+    def setup_sim(self,
+              start_hour=8000, 
+              start_TI=22, 
+              final_hour=8759):
+        
+        if not (0 <= start_hour <= 8759):
+            raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
+        self.hour = start_hour  # ever increasing
+        self.final_hour_of_the_year = (final_hour) % 8760
+        self._mh = start_hour  # model hour always in [0-8759]
+
+        self.model.init_sim(start_hour=start_hour, TI_init=start_TI)
+
+        self.forecast_hours = 72
+        self.backcast_hours = 72
+        self.curve_TI = Curve(
+            "TI", points=[(h, ti) for h, ti in zip(range(8760), self.model.TI)]
+        )
+        self.curve_TA = Curve(
+            "TA", points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)]
+        )
+        self.curve_comfort_min = Curve(
+            "Minimum comfort temperature",
+            points=[(h, p) for h, p in zip(range(8760), self.model.comfort.TI_minimum_setpoints)]
+        )
+        self.curve_comfort_max = Curve(
+            "Minimum comfort temperature",
+            points=[(h, p) for h, p in zip(range(8760), self.model.comfort.TI_maximum_setpoints)],
+        )
+        self.curve_co2 = Curve(
+            "CO2 Intensity",
+            points=[(h, co2 * 200) for h, co2 in zip(range(8760), self.model.CO2)],
+        )
+        self.cleanup()
+
     def update(self, hours: int):
         for _ in range(hours):
             year, self._mh = divmod(self.hour, 8760)
+            
             if self._mh == self.final_hour_of_the_year:
-                print("next year")
-                self.next_year(year)
+                return
+                # print("next year")
+                # self.next_year(year)
 
             self.model.timestep(hour=self._mh)
 
@@ -120,7 +176,8 @@ class GameModel:
     def next_year(self, year=2020):
         self.hour = 0
         self._mh = 0
-        self.model.init_sim()
+    
+        self.model.init_sim(TI_init=self.model.TI[-1])
 
     def set_speed(self, simhours_per_second):
         """sets how many hours should be simulated for each second of the game"""
@@ -153,11 +210,11 @@ class GameModel:
 
     @property
     def qh(self):
-        return self.model.QH[self._mh]
+        return self.model.QH[self._mh] / self.model.building.heat_capacity * 10
 
     @property
     def qc(self):
-        return self.model.QC[self._mh]
+        return self.model.QC[self._mh] / self.model.building.heat_capacity * 10
 
     def toggle_pause(self):
         """Toggle the paused state of the game."""
@@ -249,11 +306,11 @@ class GameModel:
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
-            "Wärmebedarf (QH)": f"{self.model.QH.sum():.1f} Wh",
-            "Kältebedarf (QC)": f"{self.model.QC.sum():.1f} Wh",
-            "Stromeinsatz (ED)": f"{self.model.ED.sum():.1f} Wh",
-            "CO₂-Emissionen": f"{sum(self.model.CO2)/1000:.0f} kg",
-            "Ø Strompreis": f"{self.model.price_grid:.3f} e/Wh",
+            "Waermebedarf (QH)": f"{self.model.QH.sum()/1000:.1f} kWh",
+            "Kaeltebedarf (QC)": f"{self.model.QC.sum()/1000:.1f} kWh",
+            "Stromeinsatz (ED)": f"{self.model.ED.sum()/1000:.1f} kWh",
+            "CO2-Emissionen": f"{sum(self.model.CO2)/1000:.0f} kg",
+            "Mittlerer Strompreis": f"{self.model.price_grid:.3f} e/Wh",
             "Geldstand": f"{self.money:.2f} e",
             "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
         }
@@ -262,56 +319,6 @@ class GameModel:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
 
 
-def create_game_model(
-    start_hour=0, start_TI=22, starting_power=15, starting_cop=3, final_hour=8759
-) -> GameModel:
-
-    game = GameModel()
-    game.speed = 24  # simulated hours / game second
-    game.paused = False
-    game.finished = False
-    game.money = 1_000
-
-    if not (0 <= start_hour <= 8759):
-        raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
-    game.hour = start_hour  # ever increasing
-    game.final_hour_of_the_year = (final_hour) % 8760
-    game._mh = start_hour  # model hour always in [0-8759]
-    game.model = EnergyModel()
-    game.model.init_sim()
-    game.model.TI[start_hour] = start_TI
-
-    game.set_heating_power(starting_power)
-    game.set_cooling_power(starting_power)
-    game.set_cop(starting_cop)
-
-    game.upgrades = UPGRADES
-
-    game.forecast_hours = 72
-    game.backcast_hours = 72
-
-    game.curve_TI = Curve(
-        "TI", points=[(h, ti) for h, ti in zip(range(8760), game.model.TI)]
-    )
-    game.curve_TA = Curve(
-        "TA", points=[(h, ta) for h, ta in zip(range(8760), game.model.TA)]
-    )
-    game.curve_comfort_min = Curve(
-        "Minimum comfort temperature",
-        points=[(h, p) for h, p in zip(range(8760), game.model.comfort.TI_minimum_setpoints)]
-    )
-    game.curve_comfort_max = Curve(
-        "Minimum comfort temperature",
-        points=[(h, p) for h, p in zip(range(8760), game.model.comfort.TI_maximum_setpoints)],
-    )
-
-    game.curve_co2 = Curve(
-        "CO2 Intensity",
-        points=[(h, co2 * 200) for h, co2 in zip(range(8760), game.model.CO2)],
-    )
-
-    game.cleanup()
-    return game
 
 
 if __name__ == "__main__":
