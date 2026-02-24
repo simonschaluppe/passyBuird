@@ -1,3 +1,27 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
+# Python
+**/__pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Installer
+*.exe
+*.msi
+
+# Logs
+*.log
+
+.idea
+data/
+*.csv
+*.spec
+*.sqlite
+/docs/_build/
+/docs/_static/
+/docs/_templates/
+/misc
