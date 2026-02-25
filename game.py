@@ -180,15 +180,16 @@ level_fail = lambda: level_fail_popup(
     screen, renderer=renderer, game=game)
 
 # shop handler
-start_button = Button((600, 480), start_game, "Start the Game!")
-quit_button = Button((600, 530), quit_game, "Quit")
+shop_buttons = [
+    Button((600, 480), start_game, "Start the Game!"),
+    Button((600, 530), quit_game, "Quit"),
+]
 
 shop_handler.bind_keypress(pg.K_RETURN, start_game)
 shop_handler.bind_keypress(pg.K_q, quit)
 shop_handler.bind_keypress(pg.K_ESCAPE, quit_game)
-shop_handler.register_button(start_button)
-shop_handler.register_button(quit_button)
 # menu_handler.bind_mousebutton(1, startgame)
+[shop_handler.register_button(button) for button in shop_buttons]
 
 # level handler
 level_handler.bind_camera(camera)
