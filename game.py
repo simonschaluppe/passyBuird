@@ -7,15 +7,6 @@ from handler import Button, InputHandler
 from renderer import Renderer
 from particles import ParticleManager
 
-pg.init()
-print(pg.version)
-# Set up the main display surface
-screen = pg.display.set_mode((800, 600))
-pg.display.set_caption("passyBUIRLD")
-# Create another surface to perform off-screen drawing
-display = pg.Surface((800, 600))
-clock = pg.time.Clock()
-
 
 def quit_game():
     print("Quitting game...")
@@ -24,12 +15,12 @@ def quit_game():
 
 
 def main_loop(
-    screen,
-    game: GameModel,
-    renderer: Renderer,
-    input_handler: InputHandler,
-    clock: pg.time.Clock,
-    particle_manager: ParticleManager,
+        screen,
+        game: GameModel,
+        renderer: Renderer,
+        input_handler: InputHandler,
+        clock: pg.time.Clock,
+        particle_manager: ParticleManager,
 ):
     """The main game loop responsible for processing events, updating game state, and rendering."""
     running = True
@@ -102,7 +93,6 @@ def menu_loop(screen, renderer: Renderer, menu_handler: InputHandler, clock):
         clock.tick(60)
 
 
-
 def end_of_year_screen(screen, renderer: Renderer, game: GameModel):
     """Displays end-of-level summary before returning to menu."""
     end_running = True
@@ -114,6 +104,7 @@ def end_of_year_screen(screen, renderer: Renderer, game: GameModel):
             renderer.render_button(button)
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
+
 
 def out_of_money_screen(screen, renderer: Renderer, game: GameModel):
     end_running = True
@@ -127,11 +118,6 @@ def out_of_money_screen(screen, renderer: Renderer, game: GameModel):
 
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
-
-
-game = GameModel()
-
-particle_manager = ParticleManager()
 
 
 def heat():
@@ -148,6 +134,31 @@ def cool():
     )
 
 
+def start_year():
+    game.setup_sim()
+    main_loop(
+        screen=screen,
+        game=game,
+        renderer=renderer,
+        input_handler=game_input_handler,
+        clock=clock,
+        particle_manager=particle_manager,
+    )
+
+
+pg.init()
+print(pg.version)
+# Set up the main display surface
+screen = pg.display.set_mode((800, 600))
+pg.display.set_caption("passyBUIRLD")
+# Create another surface to perform off-screen drawing
+display = pg.Surface((800, 600))
+clock = pg.time.Clock()
+
+game = GameModel()
+
+particle_manager = ParticleManager()
+
 # Set up the camera with a zoom feature
 camera = Camera2D(surface=display, game_world_position=game.position, zoom=(2, 5))
 camera.follow(game, maxdist=0)
@@ -161,33 +172,25 @@ popup_handler = InputHandler()
 enter_menu = lambda: menu_loop(
     screen, renderer=renderer, menu_handler=menu_handler, clock=clock
 )
-def start_year():
-    game.setup_sim()
-    main_loop(
-        screen=screen,
-        game=game,
-        renderer=renderer,
-        input_handler=game_input_handler,
-        clock=clock,
-        particle_manager=particle_manager,
-)
+
 level_finished = lambda: end_of_year_screen(
     screen, renderer=renderer, game=game)
 
 out_of_money = lambda: out_of_money_screen(
     screen, renderer=renderer, game=game)
 
-
-
-menu_handler.bind_keypress(pg.K_RETURN, start_year)
-# menu_handler.bind_mousebutton(1, startgame)
-menu_handler.bind_keypress(pg.K_q, quit)
-menu_handler.bind_keypress(pg.K_ESCAPE, quit_game)
+# menu handler
 start_button = Button((600, 480), start_year, "Start the Game!")
 quit_button = Button((600, 530), quit_game, "Quit")
+
+menu_handler.bind_keypress(pg.K_RETURN, start_year)
+menu_handler.bind_keypress(pg.K_q, quit)
+menu_handler.bind_keypress(pg.K_ESCAPE, quit_game)
 menu_handler.register_button(start_button)
 menu_handler.register_button(quit_button)
+# menu_handler.bind_mousebutton(1, startgame)
 
+# main loop handler
 game_input_handler.bind_camera(camera)
 game_input_handler.bind_continuous_keypress(pg.K_UP, heat)
 game_input_handler.bind_continuous_keypress(pg.K_DOWN, cool)
@@ -204,12 +207,11 @@ game_input_handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
 game_input_handler.bind_keypress(pg.K_q, quit_game)
 game_input_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
 
+# popup handler
+ok_button = Button((120, 480), enter_menu, "OK")
+
 popup_handler.bind_keypress(pg.K_RETURN, enter_menu)
 popup_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
-ok_button = Button((120, 480), enter_menu, "OK")
 popup_handler.register_button(ok_button)
-
-
-
 
 enter_menu()
