@@ -14,7 +14,7 @@ def quit_game():
     quit()
 
 
-def main_loop(
+def level_loop(
         screen,
         game: GameModel,
         renderer: Renderer,
@@ -33,7 +33,7 @@ def main_loop(
         print(game.hour, accumulated_gamehours)
 
         if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
-            level_finished()
+            level_success()
 
         if game.paused:
             continue
@@ -44,7 +44,7 @@ def main_loop(
             game.update(hours=hours)
 
         if game.money <= 0:
-            out_of_money()
+            level_fail()
 
         particle_manager.update()
         # render
@@ -78,7 +78,7 @@ def main_loop(
             running = False
 
 
-def menu_loop(screen, renderer: Renderer, menu_handler: InputHandler, clock):
+def shop_screen(screen, renderer: Renderer, menu_handler: InputHandler, clock):
     running = True
     while running:
         running = menu_handler.update()
@@ -93,7 +93,7 @@ def menu_loop(screen, renderer: Renderer, menu_handler: InputHandler, clock):
         clock.tick(60)
 
 
-def end_of_year_screen(screen, renderer: Renderer, game: GameModel):
+def level_success_popup(screen, renderer: Renderer, game: GameModel):
     """Displays end-of-level summary before returning to menu."""
     end_running = True
     lines = [f"{label}: {value}" for label, value in game.get_kpis().items()]
@@ -106,7 +106,7 @@ def end_of_year_screen(screen, renderer: Renderer, game: GameModel):
         pg.display.update()
 
 
-def out_of_money_screen(screen, renderer: Renderer, game: GameModel):
+def level_fail_popup(screen, renderer: Renderer, game: GameModel):
     end_running = True
     lines = [f"{label}: {value}" for label, value in game.get_kpis().items()]
     game.setup_new_game()
@@ -134,13 +134,13 @@ def cool():
     )
 
 
-def start_year():
+def start_game():
     game.setup_sim()
-    main_loop(
+    level_loop(
         screen=screen,
         game=game,
         renderer=renderer,
-        input_handler=game_input_handler,
+        input_handler=level_handler,
         clock=clock,
         particle_manager=particle_manager,
     )
@@ -165,53 +165,54 @@ camera.follow(game, maxdist=0)
 
 renderer = Renderer(display, camera, clock)
 
-menu_handler = InputHandler()
-game_input_handler = InputHandler()
+shop_handler = InputHandler()
+level_handler = InputHandler()
 popup_handler = InputHandler()
 
-enter_menu = lambda: menu_loop(
-    screen, renderer=renderer, menu_handler=menu_handler, clock=clock
+enter_shop = lambda: shop_screen(
+    screen, renderer=renderer, menu_handler=shop_handler, clock=clock
 )
 
-level_finished = lambda: end_of_year_screen(
+level_success = lambda: level_success_popup(
     screen, renderer=renderer, game=game)
 
-out_of_money = lambda: out_of_money_screen(
+level_fail = lambda: level_fail_popup(
     screen, renderer=renderer, game=game)
 
-# menu handler
-start_button = Button((600, 480), start_year, "Start the Game!")
+# shop handler
+start_button = Button((600, 480), start_game, "Start the Game!")
 quit_button = Button((600, 530), quit_game, "Quit")
 
-menu_handler.bind_keypress(pg.K_RETURN, start_year)
-menu_handler.bind_keypress(pg.K_q, quit)
-menu_handler.bind_keypress(pg.K_ESCAPE, quit_game)
-menu_handler.register_button(start_button)
-menu_handler.register_button(quit_button)
+shop_handler.bind_keypress(pg.K_RETURN, start_game)
+shop_handler.bind_keypress(pg.K_q, quit)
+shop_handler.bind_keypress(pg.K_ESCAPE, quit_game)
+shop_handler.register_button(start_button)
+shop_handler.register_button(quit_button)
 # menu_handler.bind_mousebutton(1, startgame)
 
-# main loop handler
-game_input_handler.bind_camera(camera)
-game_input_handler.bind_continuous_keypress(pg.K_UP, heat)
-game_input_handler.bind_continuous_keypress(pg.K_DOWN, cool)
-game_input_handler.bind_continuous_mousebutton(0, heat)
-game_input_handler.bind_continuous_mousebutton(2, cool)
-game_input_handler.bind_keypress(pg.K_p, game.toggle_pause)
-game_input_handler.bind_keypress(pg.K_1, lambda: game.set_speed(12))
-game_input_handler.bind_keypress(pg.K_2, lambda: game.set_speed(24))
-game_input_handler.bind_keypress(pg.K_3, lambda: game.set_speed(24 * 7))
-game_input_handler.bind_keypress(pg.K_4, lambda: game.set_speed(24 * 7 * 2))
-game_input_handler.bind_keypress(pg.K_5, lambda: game.set_speed(24 * 7 * 4))
-game_input_handler.bind_keypress(pg.K_w, lambda: game.increment_cop(0.5))
-game_input_handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
-game_input_handler.bind_keypress(pg.K_q, quit_game)
-game_input_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
+# level handler
+level_handler.bind_camera(camera)
+level_handler.bind_continuous_keypress(pg.K_UP, heat)
+level_handler.bind_continuous_keypress(pg.K_DOWN, cool)
+level_handler.bind_continuous_mousebutton(0, heat)
+level_handler.bind_continuous_mousebutton(2, cool)
+level_handler.bind_keypress(pg.K_p, game.toggle_pause)
+level_handler.bind_keypress(pg.K_1, lambda: game.set_speed(12))
+level_handler.bind_keypress(pg.K_2, lambda: game.set_speed(24))
+level_handler.bind_keypress(pg.K_3, lambda: game.set_speed(24 * 7))
+level_handler.bind_keypress(pg.K_4, lambda: game.set_speed(24 * 7 * 2))
+level_handler.bind_keypress(pg.K_5, lambda: game.set_speed(24 * 7 * 4))
+level_handler.bind_keypress(pg.K_w, lambda: game.increment_cop(0.5))
+level_handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
+level_handler.bind_keypress(pg.K_q, quit_game)
+level_handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
 # popup handler
-ok_button = Button((120, 480), enter_menu, "OK")
+ok_button = Button((120, 480), enter_shop, "OK")
 
-popup_handler.bind_keypress(pg.K_RETURN, enter_menu)
-popup_handler.bind_keypress(pg.K_ESCAPE, enter_menu)
+popup_handler.bind_keypress(pg.K_RETURN, enter_shop)
+popup_handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 popup_handler.register_button(ok_button)
 
-enter_menu()
+# start by entering shop
+enter_shop()
