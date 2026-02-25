@@ -93,6 +93,22 @@ def shop_screen(screen, renderer: Renderer, menu_handler: InputHandler, clock):
         clock.tick(60)
 
 
+def title_screen(screen, renderer: Renderer, handler: InputHandler, clock):
+    running = True
+    description = ["This game is fun!", "This game is cool!"]
+    while running:
+        running = handler.update()
+
+        renderer.render_title_screen(title="Welcome to PassyBuirld!",body=description)
+
+        for button in handler.buttons:
+            renderer.render_button(button)
+
+        screen.blit(renderer.display, (0, 0))
+        pg.display.update()
+        clock.tick(60)
+
+
 def level_success_popup(screen, renderer: Renderer, game: GameModel):
     """Displays end-of-level summary before returning to menu."""
     end_running = True
@@ -168,6 +184,9 @@ renderer = Renderer(display, camera, clock)
 shop_handler = InputHandler()
 level_handler = InputHandler()
 popup_handler = InputHandler()
+title_screen_handler = InputHandler()
+
+enter_title_screen = lambda : title_screen(screen=screen, renderer=renderer, handler=title_screen_handler, clock=clock)
 
 enter_shop = lambda: shop_screen(
     screen, renderer=renderer, menu_handler=shop_handler, clock=clock
@@ -215,5 +234,12 @@ popup_handler.bind_keypress(pg.K_RETURN, enter_shop)
 popup_handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 popup_handler.register_button(ok_button)
 
+# title screen handler
+title_screen_buttons = [
+    Button((120, 480), enter_shop, "Start the Game!"),
+]
+[title_screen_handler.register_button(button) for button in title_screen_buttons]
+shop_handler.bind_keypress(pg.K_RETURN, enter_shop)
+
 # start by entering shop
-enter_shop()
+enter_title_screen()
