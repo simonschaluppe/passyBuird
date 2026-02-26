@@ -10,6 +10,26 @@ from handler import Button, InputHandler
 from renderer import Renderer
 from particles import ParticleManager
 
+pg.init()
+print(pg.version)
+
+# Set up the main display surface
+screen = pg.display.set_mode((800, 600))
+pg.display.set_caption("passyBUIRLD")
+
+# Create another surface to perform off-screen drawing
+display = pg.Surface((800, 600))
+
+clock = pg.time.Clock()
+game = GameModel()
+particle_manager = ParticleManager()
+
+# Set up the camera with a zoom feature
+camera = Camera2D(surface=display, game_world_position=game.position, zoom=(2, 5))
+camera.follow(game, maxdist=0)
+
+renderer = Renderer(display, camera, clock)
+
 
 def quit_game():
     print("Quitting game...")
@@ -42,12 +62,7 @@ level_fail = lambda: level_fail_popup.loop()
 
 
 class Screen:
-    def __init__(self, screen, renderer, clock):
-        self.screen = screen
-        self.renderer = renderer
-        self.clock = clock
-
-        # handler
+    def __init__(self):
         self.handler = InputHandler()
         self.config_handler()
 
@@ -56,7 +71,7 @@ class Screen:
         while running:
             running = self.handler.update()
             self.render()
-            self.clock.tick(60)
+            clock.tick(60)
 
     def config_handler(self):
         ...
@@ -81,12 +96,12 @@ class TitleScreen(Screen):
     @override
     def render(self):
         description = ["This game is fun!", "This game is cool!"]
-        self.renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
+        renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
 
         for button in self.handler.buttons:
-            self.renderer.render_button(button)
+            renderer.render_button(button)
 
-        self.screen.blit(self.renderer.display, (0, 0))
+        screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
 
@@ -108,12 +123,12 @@ class ShopScreen(Screen):
 
     @override
     def render(self):
-        self.renderer.render_menu(game.get_menu_data())
+        renderer.render_menu(game.get_menu_data())
 
         for button in self.handler.buttons:
-            self.renderer.render_button(button)
+            renderer.render_button(button)
 
-        self.screen.blit(self.renderer.display, (0, 0))
+        screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
 
@@ -177,7 +192,7 @@ class LevelScreen(Screen):
                 "State": game.__repr__,
                 "Speed": lambda: f"{game.speed:.0f} h/s",
             }
-            self.renderer.debug(debug)
+            renderer.debug(debug)
 
             self.render()
 
@@ -190,26 +205,26 @@ class LevelScreen(Screen):
     def render(self):
 
         # render
-        self.renderer.camera.update()
-        self.renderer.draw_background(game.hour)
+        renderer.camera.update()
+        renderer.draw_background(game.hour)
 
-        self.renderer.draw_heat_particles(particle_manager.groups["heating"])
-        self.renderer.draw_cool_particles(particle_manager.groups["cooling"])
-        self.renderer.render_curves(game.get_curves_data())
-        self.renderer.render_ui(game.get_ui_data())
+        renderer.draw_heat_particles(particle_manager.groups["heating"])
+        renderer.draw_cool_particles(particle_manager.groups["cooling"])
+        renderer.render_curves(game.get_curves_data())
+        renderer.render_ui(game.get_ui_data())
 
         for button in self.handler.buttons:
-            self.renderer.render_button(button)
+            renderer.render_button(button)
 
-        screen.blit(self.renderer.display, (0, 0))
+        screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
 
 class Popup(Screen):
-    def __init__(self, screen, renderer, clock, title, body):
+    def __init__(self, title, body):
         self.title = title
         self.body = body
-        super().__init__(screen, renderer, clock)
+        super().__init__()
 
     @override
     def config_handler(self):
@@ -241,41 +256,16 @@ class Popup(Screen):
         pg.display.update()
 
 
-pg.init()
-print(pg.version)
-# Set up the main display surface
-screen = pg.display.set_mode((800, 600))
-pg.display.set_caption("passyBUIRLD")
-# Create another surface to perform off-screen drawing
-display = pg.Surface((800, 600))
-clock = pg.time.Clock()
-
-game = GameModel()
-
-particle_manager = ParticleManager()
-
-# Set up the camera with a zoom feature
-camera = Camera2D(surface=display, game_world_position=game.position, zoom=(2, 5))
-camera.follow(game, maxdist=0)
-
-renderer = Renderer(display, camera, clock)
-
-title_screen = TitleScreen(screen=screen, renderer=renderer, clock=clock)
-shop_screen = ShopScreen(screen=screen, renderer=renderer, clock=clock)
-level_screen = LevelScreen(screen=screen, renderer=renderer, clock=clock)
+title_screen = TitleScreen()
+shop_screen = ShopScreen()
+level_screen = LevelScreen()
 
 level_success_popup = Popup(
-    screen=screen,
-    renderer=renderer,
-    clock=clock,
     title="You survived the year!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
 )
 
 level_fail_popup = Popup(
-    screen=screen,
-    renderer=renderer,
-    clock=clock,
     title="Du hast kein Geld mehr!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
 )
