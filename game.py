@@ -14,19 +14,6 @@ def quit_game():
     quit()
 
 
-def level_success_popup(screen, renderer: Renderer, game: GameModel):
-    """Displays end-of-level summary before returning to menu."""
-    end_running = True
-    lines = [f"{label}: {value}" for label, value in game.get_kpis().items()]
-    while end_running:
-        popup_handler.update()
-        renderer.render_popup("You survived the year!", lines)
-        for button in popup_handler.buttons:
-            renderer.render_button(button)
-        screen.blit(renderer.display, (0, 0))
-        pg.display.update()
-
-
 def level_fail_popup(screen, renderer: Renderer, game: GameModel):
     end_running = True
     lines = [f"{label}: {value}" for label, value in game.get_kpis().items()]
@@ -61,6 +48,7 @@ def start_game():
 
 
 enter_shop = lambda: shop_screen.loop()
+level_success = lambda: level_success_popup.loop()
 
 
 class TitleScreen:
@@ -234,6 +222,45 @@ class LevelScreen:
         pg.display.update()
 
 
+class LevelSuccessPopup:
+    def __init__(self, screen, renderer, game):
+        self.screen = screen
+        self.renderer = renderer
+        self.game = game
+
+        # handler
+        self.handler = InputHandler()
+        self.config_handler()
+
+    def config_handler(self):
+
+        # register buttons
+        buttons = [
+            Button((120, 480), enter_shop, "OK"),
+        ]
+        [self.handler.register_button(button) for button in buttons]
+
+        # bind key presses
+        self.handler.bind_keypress(pg.K_RETURN, enter_shop)
+        self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
+
+    def loop(self):
+        """Displays end-of-level summary before returning to menu."""
+        end_running = True
+        while end_running:
+            self.handler.update()
+            self.render()
+
+    def render(self):
+
+        lines = [f"{label}: {value}" for label, value in game.get_kpis().items()]
+        renderer.render_popup("You survived the year!", lines)
+        for button in self.handler.buttons:
+            renderer.render_button(button)
+        screen.blit(renderer.display, (0, 0))
+        pg.display.update()
+
+
 pg.init()
 print(pg.version)
 # Set up the main display surface
@@ -254,16 +281,14 @@ camera.follow(game, maxdist=0)
 renderer = Renderer(display, camera, clock)
 
 popup_handler = InputHandler()
-
-level_success = lambda: level_success_popup(
-    screen, renderer=renderer, game=game)
-
 level_fail = lambda: level_fail_popup(
     screen, renderer=renderer, game=game)
 
 title_screen = TitleScreen(screen=screen, renderer=renderer, clock=clock)
 shop_screen = ShopScreen(screen=screen, renderer=renderer, clock=clock)
 level_screen = LevelScreen(screen=screen, renderer=renderer, clock=clock)
+
+level_success_popup = LevelSuccessPopup(screen=screen, renderer=renderer, game=game)
 
 # popup handler
 ok_button = Button((120, 480), enter_shop, "OK")
