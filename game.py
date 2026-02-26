@@ -14,70 +14,6 @@ def quit_game():
     quit()
 
 
-def level_loop(
-        screen,
-        game: GameModel,
-        renderer: Renderer,
-        input_handler: InputHandler,
-        clock: pg.time.Clock,
-        particle_manager: ParticleManager,
-):
-    """The main game loop responsible for processing events, updating game state, and rendering."""
-    running = True
-    accumulated_gamehours = 0
-    while running:
-        running = input_handler.update()
-
-        dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
-        accumulated_gamehours += dt_real * game.speed * (not game.paused)  # h/s
-        print(game.hour, accumulated_gamehours)
-
-        if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
-            level_success()
-
-        if game.paused:
-            continue
-
-        if accumulated_gamehours >= 1:
-            hours = int(accumulated_gamehours)
-            accumulated_gamehours -= hours
-            game.update(hours=hours)
-
-        if game.money <= 0:
-            level_fail()
-
-        particle_manager.update()
-        # render
-        renderer.camera.update()
-        renderer.draw_background(game.hour)
-
-        renderer.draw_heat_particles(particle_manager.groups["heating"])
-        renderer.draw_cool_particles(particle_manager.groups["cooling"])
-        renderer.render_curves(game.get_curves_data())
-        renderer.render_ui(game.get_ui_data())
-
-        for button in input_handler.buttons:
-            renderer.render_button(button)
-
-        fps = clock.get_fps()
-        renderer.debug(
-            {
-                "FPS": lambda: f"{fps:2.1f}",
-                "Acc. hours": lambda: f"{accumulated_gamehours:.2f} h",
-                "State": game.__repr__,
-                "Speed": lambda: f"{game.speed:.0f} h/s",
-            }
-        )
-
-        screen.blit(renderer.display, (0, 0))
-        pg.display.update()
-
-        game.cleanup()
-
-        if game.finished:
-            running = False
-
-
 def level_success_popup(screen, renderer: Renderer, game: GameModel):
     """Displays end-of-level summary before returning to menu."""
     end_running = True
@@ -121,14 +57,7 @@ def cool():
 
 def start_game():
     game.setup_sim()
-    level_loop(
-        screen=screen,
-        game=game,
-        renderer=renderer,
-        input_handler=level_handler,
-        clock=clock,
-        particle_manager=particle_manager,
-    )
+    level_screen.loop()
 
 
 enter_shop = lambda: shop_screen.loop()
@@ -212,6 +141,99 @@ class ShopScreen:
         pg.display.update()
 
 
+class LevelScreen:
+    def __init__(self, screen, renderer, clock):
+        self.screen = screen
+        self.renderer = renderer
+        self.clock = clock
+
+        # handler
+        self.handler = InputHandler()
+        self.config_handler()
+
+    def config_handler(self):
+
+        # bind camera
+        self.handler.bind_camera(camera)
+
+        # bind key presses
+        self.handler.bind_continuous_keypress(pg.K_UP, heat)
+        self.handler.bind_continuous_keypress(pg.K_DOWN, cool)
+        self.handler.bind_continuous_mousebutton(0, heat)
+        self.handler.bind_continuous_mousebutton(2, cool)
+        self.handler.bind_keypress(pg.K_p, game.toggle_pause)
+        self.handler.bind_keypress(pg.K_1, lambda: game.set_speed(12))
+        self.handler.bind_keypress(pg.K_2, lambda: game.set_speed(24))
+        self.handler.bind_keypress(pg.K_3, lambda: game.set_speed(24 * 7))
+        self.handler.bind_keypress(pg.K_4, lambda: game.set_speed(24 * 7 * 2))
+        self.handler.bind_keypress(pg.K_5, lambda: game.set_speed(24 * 7 * 4))
+        self.handler.bind_keypress(pg.K_w, lambda: game.increment_cop(0.5))
+        self.handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
+        self.handler.bind_keypress(pg.K_q, quit_game)
+        self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
+
+    def loop(self):
+        """The main game loop responsible for processing events, updating game state, and rendering."""
+        running = True
+        accumulated_gamehours = 0
+        while running:
+            running = self.handler.update()
+
+            dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
+            accumulated_gamehours += dt_real * game.speed * (not game.paused)  # h/s
+            print(game.hour, accumulated_gamehours)
+
+            if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
+                level_success()
+
+            if game.paused:
+                continue
+
+            if accumulated_gamehours >= 1:
+                hours = int(accumulated_gamehours)
+                accumulated_gamehours -= hours
+                game.update(hours=hours)
+
+            if game.money <= 0:
+                level_fail()
+
+            particle_manager.update()
+
+            fps = clock.get_fps()
+            debug = {
+                "FPS": lambda: f"{fps:2.1f}",
+                "Acc. hours": lambda: f"{accumulated_gamehours:.2f} h",
+                "State": game.__repr__,
+                "Speed": lambda: f"{game.speed:.0f} h/s",
+            }
+
+            self.render(debug=debug)
+
+            game.cleanup()
+
+            if game.finished:
+                running = False
+
+    def render(self, debug):
+
+        # render
+        self.renderer.camera.update()
+        self.renderer.draw_background(game.hour)
+
+        self.renderer.draw_heat_particles(particle_manager.groups["heating"])
+        self.renderer.draw_cool_particles(particle_manager.groups["cooling"])
+        self.renderer.render_curves(game.get_curves_data())
+        self.renderer.render_ui(game.get_ui_data())
+
+        for button in self.handler.buttons:
+            self.renderer.render_button(button)
+
+        self.renderer.debug(debug)
+
+        screen.blit(self.renderer.display, (0, 0))
+        pg.display.update()
+
+
 pg.init()
 print(pg.version)
 # Set up the main display surface
@@ -231,7 +253,6 @@ camera.follow(game, maxdist=0)
 
 renderer = Renderer(display, camera, clock)
 
-level_handler = InputHandler()
 popup_handler = InputHandler()
 
 level_success = lambda: level_success_popup(
@@ -242,23 +263,7 @@ level_fail = lambda: level_fail_popup(
 
 title_screen = TitleScreen(screen=screen, renderer=renderer, clock=clock)
 shop_screen = ShopScreen(screen=screen, renderer=renderer, clock=clock)
-
-# level handler
-level_handler.bind_camera(camera)
-level_handler.bind_continuous_keypress(pg.K_UP, heat)
-level_handler.bind_continuous_keypress(pg.K_DOWN, cool)
-level_handler.bind_continuous_mousebutton(0, heat)
-level_handler.bind_continuous_mousebutton(2, cool)
-level_handler.bind_keypress(pg.K_p, game.toggle_pause)
-level_handler.bind_keypress(pg.K_1, lambda: game.set_speed(12))
-level_handler.bind_keypress(pg.K_2, lambda: game.set_speed(24))
-level_handler.bind_keypress(pg.K_3, lambda: game.set_speed(24 * 7))
-level_handler.bind_keypress(pg.K_4, lambda: game.set_speed(24 * 7 * 2))
-level_handler.bind_keypress(pg.K_5, lambda: game.set_speed(24 * 7 * 4))
-level_handler.bind_keypress(pg.K_w, lambda: game.increment_cop(0.5))
-level_handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
-level_handler.bind_keypress(pg.K_q, quit_game)
-level_handler.bind_keypress(pg.K_ESCAPE, enter_shop)
+level_screen = LevelScreen(screen=screen, renderer=renderer, clock=clock)
 
 # popup handler
 ok_button = Button((120, 480), enter_shop, "OK")
