@@ -1,15 +1,14 @@
-# Import required modules and classes
-
 import pygame as pg
 
 from typing import override
 
 from camera import Camera2D
-from model.GameModel import GameModel
 from handler import Button, InputHandler
 from renderer import Renderer
 from particles import ParticleManager
+from model.GameModel import GameModel
 
+# Initialize pygame
 pg.init()
 print(pg.version)
 
@@ -28,6 +27,7 @@ particle_manager = ParticleManager()
 camera = Camera2D(surface=display, game_world_position=game.position, zoom=(2, 5))
 camera.follow(game, maxdist=0)
 
+# Set up renderer
 renderer = Renderer(display, camera, clock)
 
 
@@ -164,7 +164,7 @@ class LevelScreen(Screen):
             print(game.hour, accumulated_gamehours)
 
             if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
-                level_success_popup.loop()()
+                level_success_popup.loop()
 
             if game.paused:
                 continue
@@ -175,7 +175,7 @@ class LevelScreen(Screen):
                 game.update(hours=hours)
 
             if game.money <= 0:
-                level_fail_popup.loop()()
+                level_fail_popup.loop()
 
             particle_manager.update()
 
@@ -251,15 +251,16 @@ class Popup(Screen):
         pg.display.update()
 
 
+# Screen instances
 title_screen = TitleScreen()
 shop_screen = ShopScreen()
 level_screen = LevelScreen()
 
+# Popup screen instances
 level_success_popup = Popup(
     title="You survived the year!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
 )
-
 level_fail_popup = Popup(
     title="Du hast kein Geld mehr!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
