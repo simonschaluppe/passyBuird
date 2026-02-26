@@ -1,6 +1,9 @@
 # Import required modules and classes
 
 import pygame as pg
+
+from typing import override
+
 from camera import Camera2D
 from model.GameModel import GameModel
 from handler import Button, InputHandler
@@ -38,7 +41,7 @@ level_success = lambda: level_success_popup.loop()
 level_fail = lambda: level_fail_popup.loop()
 
 
-class TitleScreen:
+class Screen:
     def __init__(self, screen, renderer, clock):
         self.screen = screen
         self.renderer = renderer
@@ -48,6 +51,23 @@ class TitleScreen:
         self.handler = InputHandler()
         self.config_handler()
 
+    def loop(self):
+        running = True
+        while running:
+            running = self.handler.update()
+            self.render()
+            self.clock.tick(60)
+
+    def config_handler(self):
+        ...
+
+    def render(self):
+        ...
+
+
+class TitleScreen(Screen):
+
+    @override
     def config_handler(self):
         # register buttons
         buttons = [
@@ -58,13 +78,7 @@ class TitleScreen:
         # bind key presses
         self.handler.bind_keypress(pg.K_RETURN, enter_shop)
 
-    def loop(self):
-        running = True
-        while running:
-            running = self.handler.update()
-            self.render()
-            self.clock.tick(60)
-
+    @override
     def render(self):
         description = ["This game is fun!", "This game is cool!"]
         self.renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
@@ -76,16 +90,9 @@ class TitleScreen:
         pg.display.update()
 
 
-class ShopScreen:
-    def __init__(self, screen, renderer, clock):
-        self.screen = screen
-        self.renderer = renderer
-        self.clock = clock
+class ShopScreen(Screen):
 
-        # handler
-        self.handler = InputHandler()
-        self.config_handler()
-
+    @override
     def config_handler(self):
         # register buttons
         buttons = [
@@ -99,13 +106,7 @@ class ShopScreen:
         self.handler.bind_keypress(pg.K_q, quit)
         self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
-    def loop(self):
-        running = True
-        while running:
-            running = self.handler.update()
-            self.render()
-            self.clock.tick(60)
-
+    @override
     def render(self):
         self.renderer.render_menu(game.get_menu_data())
 
@@ -116,16 +117,9 @@ class ShopScreen:
         pg.display.update()
 
 
-class LevelScreen:
-    def __init__(self, screen, renderer, clock):
-        self.screen = screen
-        self.renderer = renderer
-        self.clock = clock
+class LevelScreen(Screen):
 
-        # handler
-        self.handler = InputHandler()
-        self.config_handler()
-
+    @override
     def config_handler(self):
 
         # bind camera
@@ -147,6 +141,7 @@ class LevelScreen:
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
+    @override
     def loop(self):
         """The main game loop responsible for processing events, updating game state, and rendering."""
         running = True
@@ -174,6 +169,7 @@ class LevelScreen:
 
             particle_manager.update()
 
+            # debug
             fps = clock.get_fps()
             debug = {
                 "FPS": lambda: f"{fps:2.1f}",
@@ -181,15 +177,17 @@ class LevelScreen:
                 "State": game.__repr__,
                 "Speed": lambda: f"{game.speed:.0f} h/s",
             }
+            self.renderer.debug(debug)
 
-            self.render(debug=debug)
+            self.render()
 
             game.cleanup()
 
             if game.finished:
                 running = False
 
-    def render(self, debug):
+    @override
+    def render(self):
 
         # render
         self.renderer.camera.update()
@@ -202,8 +200,6 @@ class LevelScreen:
 
         for button in self.handler.buttons:
             self.renderer.render_button(button)
-
-        self.renderer.debug(debug)
 
         screen.blit(self.renderer.display, (0, 0))
         pg.display.update()
