@@ -205,16 +205,13 @@ class LevelScreen(Screen):
         pg.display.update()
 
 
-class LevelSuccessPopup:
-    def __init__(self, screen, renderer, game):
-        self.screen = screen
-        self.renderer = renderer
-        self.game = game
+class Popup(Screen):
+    def __init__(self, screen, renderer, clock, title, body):
+        self.title = title
+        self.body = body
+        super().__init__(screen, renderer, clock)
 
-        # handler
-        self.handler = InputHandler()
-        self.config_handler()
-
+    @override
     def config_handler(self):
 
         # register buttons
@@ -227,6 +224,7 @@ class LevelSuccessPopup:
         self.handler.bind_keypress(pg.K_RETURN, enter_shop)
         self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
+    @override
     def loop(self):
         """Displays end-of-level summary before returning to menu."""
         end_running = True
@@ -234,52 +232,9 @@ class LevelSuccessPopup:
             self.handler.update()
             self.render()
 
+    @override
     def render(self):
-
-        lines = [f"{label}: {value}" for label, value in game.get_kpis().items()]
-        renderer.render_popup("You survived the year!", lines)
-        for button in self.handler.buttons:
-            renderer.render_button(button)
-        screen.blit(renderer.display, (0, 0))
-        pg.display.update()
-
-
-class LevelFailPopup:
-    def __init__(self, screen, renderer, game):
-        self.screen = screen
-        self.renderer = renderer
-        self.game = game
-
-        # handler
-        self.handler = InputHandler()
-        self.config_handler()
-
-    def config_handler(self):
-
-        # register buttons
-        buttons = [
-            Button((120, 480), enter_shop, "OK"),
-        ]
-        [self.handler.register_button(button) for button in buttons]
-
-        # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, enter_shop)
-        self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
-
-    def loop(self):
-        """Displays end-of-level summary before returning to menu."""
-
-        game.setup_new_game()
-
-        end_running = True
-        while end_running:
-            self.handler.update()
-            self.render()
-
-    def render(self):
-
-        lines = [f"{label}: {value}" for label, value in game.get_kpis().items()]
-        renderer.render_popup("Du hast kein Geld mehr!", lines)
+        renderer.render_popup(title=self.title, body=self.body)
         for button in self.handler.buttons:
             renderer.render_button(button)
         screen.blit(renderer.display, (0, 0))
@@ -309,8 +264,21 @@ title_screen = TitleScreen(screen=screen, renderer=renderer, clock=clock)
 shop_screen = ShopScreen(screen=screen, renderer=renderer, clock=clock)
 level_screen = LevelScreen(screen=screen, renderer=renderer, clock=clock)
 
-level_success_popup = LevelSuccessPopup(screen=screen, renderer=renderer, game=game)
-level_fail_popup = LevelFailPopup(screen=screen, renderer=renderer, game=game)
+level_success_popup = Popup(
+    screen=screen,
+    renderer=renderer,
+    clock=clock,
+    title="You survived the year!",
+    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+)
+
+level_fail_popup = Popup(
+    screen=screen,
+    renderer=renderer,
+    clock=clock,
+    title="Du hast kein Geld mehr!",
+    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+)
 
 # start by entering title screen
 title_screen.loop()
