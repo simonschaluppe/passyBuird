@@ -78,21 +78,6 @@ def level_loop(
             running = False
 
 
-def shop_screen(screen, renderer: Renderer, menu_handler: InputHandler, clock):
-    running = True
-    while running:
-        running = menu_handler.update()
-
-        renderer.render_menu(game.get_menu_data())
-
-        for button in menu_handler.buttons:
-            renderer.render_button(button)
-
-        screen.blit(renderer.display, (0, 0))
-        pg.display.update()
-        clock.tick(60)
-
-
 def level_success_popup(screen, renderer: Renderer, game: GameModel):
     """Displays end-of-level summary before returning to menu."""
     end_running = True
@@ -146,6 +131,9 @@ def start_game():
     )
 
 
+enter_shop = lambda: shop_screen.loop()
+
+
 class TitleScreen:
     def __init__(self, screen, renderer, clock):
         self.screen = screen
@@ -184,6 +172,46 @@ class TitleScreen:
         pg.display.update()
 
 
+class ShopScreen:
+    def __init__(self, screen, renderer, clock):
+        self.screen = screen
+        self.renderer = renderer
+        self.clock = clock
+
+        # handler
+        self.handler = InputHandler()
+        self.config_handler()
+
+    def config_handler(self):
+        # register buttons
+        buttons = [
+            Button((600, 480), start_game, "Start the Game!"),
+            Button((600, 530), quit_game, "Quit"),
+        ]
+        [self.handler.register_button(button) for button in buttons]
+
+        # bind key presses
+        self.handler.bind_keypress(pg.K_RETURN, start_game)
+        self.handler.bind_keypress(pg.K_q, quit)
+        self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
+
+    def loop(self):
+        running = True
+        while running:
+            running = self.handler.update()
+            self.render()
+            self.clock.tick(60)
+
+    def render(self):
+        self.renderer.render_menu(game.get_menu_data())
+
+        for button in self.handler.buttons:
+            self.renderer.render_button(button)
+
+        self.screen.blit(self.renderer.display, (0, 0))
+        pg.display.update()
+
+
 pg.init()
 print(pg.version)
 # Set up the main display surface
@@ -203,13 +231,8 @@ camera.follow(game, maxdist=0)
 
 renderer = Renderer(display, camera, clock)
 
-shop_handler = InputHandler()
 level_handler = InputHandler()
 popup_handler = InputHandler()
-
-enter_shop = lambda: shop_screen(
-    screen, renderer=renderer, menu_handler=shop_handler, clock=clock
-)
 
 level_success = lambda: level_success_popup(
     screen, renderer=renderer, game=game)
@@ -217,17 +240,8 @@ level_success = lambda: level_success_popup(
 level_fail = lambda: level_fail_popup(
     screen, renderer=renderer, game=game)
 
-# shop handler
-shop_buttons = [
-    Button((600, 480), start_game, "Start the Game!"),
-    Button((600, 530), quit_game, "Quit"),
-]
-
-shop_handler.bind_keypress(pg.K_RETURN, start_game)
-shop_handler.bind_keypress(pg.K_q, quit)
-shop_handler.bind_keypress(pg.K_ESCAPE, quit_game)
-# menu_handler.bind_mousebutton(1, startgame)
-[shop_handler.register_button(button) for button in shop_buttons]
+title_screen = TitleScreen(screen=screen, renderer=renderer, clock=clock)
+shop_screen = ShopScreen(screen=screen, renderer=renderer, clock=clock)
 
 # level handler
 level_handler.bind_camera(camera)
@@ -252,8 +266,6 @@ ok_button = Button((120, 480), enter_shop, "OK")
 popup_handler.bind_keypress(pg.K_RETURN, enter_shop)
 popup_handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 popup_handler.register_button(ok_button)
-
-title_screen = TitleScreen(screen=screen, renderer=renderer, clock=clock)
 
 # start by entering title screen
 title_screen.loop()
