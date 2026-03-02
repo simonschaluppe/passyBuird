@@ -60,9 +60,9 @@ def cool():
     )
 
 
-def start_game():
+def start_new_game():
     game.setup_sim()
-    level_screen.loop()
+    level_entry()
 
 
 """Classes"""
@@ -99,13 +99,12 @@ class TitleScreen(Screen):
     def config_handler(self):
         # register buttons
         buttons = [
-            Button((120, 480), enter_shop, "Start the Game!"),
+            Button((120, 480), start_new_game, "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, enter_shop)
-
+        self.handler.bind_keypress(pg.K_RETURN, start_new_game)
 
     @override
     def render(self):
@@ -126,15 +125,15 @@ class ShopScreen(Screen):
     def config_handler(self):
         # register buttons
         buttons = [
-            Button((600, 480), start_game, "Start the Game!"),
+            Button((600, 480), level_entry, "Start the Game!"),
             Button((600, 530), quit_game, "Quit"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, start_game)
+        self.handler.bind_keypress(pg.K_RETURN, level_entry)
         self.handler.bind_keypress(pg.K_q, quit)
-        self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
+        # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
     @override
     def render(self):
@@ -277,11 +276,11 @@ level_entry_popup = Popup(
     title="Ready?",
     body=["Ready?"],
     buttons=[
-        Button((120, 480), enter_shop, "OK")
+        Button((120, 480), start_level, "OK")
     ],
     keys=[
-        (pg.K_RETURN, enter_shop),
-        (pg.K_ESCAPE, enter_shop),
+        (pg.K_RETURN, start_level),
+        (pg.K_ESCAPE, return_home),
     ],
 )
 level_success_popup = Popup(
@@ -299,15 +298,15 @@ level_fail_popup = Popup(
     title="Du hast kein Geld mehr!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button((120, 480), enter_shop, "OK")
+        Button((120, 480), return_home, "OK")
     ],
     keys=[
-        (pg.K_RETURN, enter_shop),
-        (pg.K_ESCAPE, enter_shop),
+        (pg.K_RETURN, return_home),
+        (pg.K_ESCAPE, return_home),
     ],
 )
 
 """Start"""
 
 # start by entering title screen
-title_screen.loop()
+return_home()
