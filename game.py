@@ -30,11 +30,14 @@ camera.follow(game, maxdist=0)
 # Set up renderer
 renderer = Renderer(display, camera, clock)
 
+"""Callback functions"""
+
 
 def quit_game():
     print("Quitting game...")
     pg.quit()
     quit()
+
 
 def heat():
     game.heat()
@@ -58,6 +61,8 @@ def start_game():
 enter_shop = lambda: shop_screen.loop()
 level_success = lambda: level_success_popup.loop()
 level_fail = lambda: level_fail_popup.loop()
+
+"""Classes"""
 
 
 class Screen:
@@ -257,12 +262,14 @@ class Popup(Screen):
             [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]
 
 
-# Screen instances
+"""Screen instances"""
+
 title_screen = TitleScreen()
 shop_screen = ShopScreen()
 level_screen = LevelScreen()
 
-# Popup screen instances
+"""Popup screen instances"""
+
 level_entry_popup = Popup(
     title="Ready?",
     body=["Ready?"],
@@ -296,6 +303,8 @@ level_fail_popup = Popup(
         (pg.K_ESCAPE, enter_shop),
     ],
 )
+
+"""Start"""
 
 # start by entering title screen
 title_screen.loop()
