@@ -58,7 +58,10 @@ def start_game():
     level_screen.loop()
 
 
+return_home = lambda: title_screen.loop()
+start_level = lambda: level_screen.loop()
 enter_shop = lambda: shop_screen.loop()
+level_entry = lambda: level_entry_popup.loop()
 level_success = lambda: level_success_popup.loop()
 level_fail = lambda: level_fail_popup.loop()
 
