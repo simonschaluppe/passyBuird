@@ -233,30 +233,13 @@ class Popup(Screen):
 
     Generally has a title, text body (message) and simple buttons (e.g. 'Back', 'Continue')."""
 
-    def __init__(self, title, body):
+    def __init__(self, title: str, body: list[str], buttons: list[Button] = None,
+                 keys: list[tuple[int, callable]] = None):
         self.title = title
         self.body = body
+        self.buttons = buttons
+        self.keys = keys
         super().__init__()
-
-    @override
-    def config_handler(self):
-
-        # register buttons
-        buttons = [
-            Button((120, 480), enter_shop, "OK"),
-        ]
-        [self.handler.register_button(button) for button in buttons]
-
-        # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, enter_shop)
-        self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
-
-    @override
-    def loop(self):
-        end_running = True
-        while end_running:
-            self.handler.update()
-            self.render()
 
     @override
     def render(self):
@@ -266,6 +249,13 @@ class Popup(Screen):
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
+    @override
+    def config_handler(self):
+        if self.buttons:
+            [self.handler.register_button(button) for button in self.buttons]
+        if self.keys:
+            [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]
+
 
 # Screen instances
 title_screen = TitleScreen()
@@ -273,13 +263,38 @@ shop_screen = ShopScreen()
 level_screen = LevelScreen()
 
 # Popup screen instances
+level_entry_popup = Popup(
+    title="Ready?",
+    body=["Ready?"],
+    buttons=[
+        Button((120, 480), enter_shop, "OK")
+    ],
+    keys=[
+        (pg.K_RETURN, enter_shop),
+        (pg.K_ESCAPE, enter_shop),
+    ],
+)
 level_success_popup = Popup(
     title="You survived the year!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+    buttons=[
+        Button((120, 480), enter_shop, "OK")
+    ],
+    keys=[
+        (pg.K_RETURN, enter_shop),
+        (pg.K_ESCAPE, enter_shop),
+    ],
 )
 level_fail_popup = Popup(
     title="Du hast kein Geld mehr!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+    buttons=[
+        Button((120, 480), enter_shop, "OK")
+    ],
+    keys=[
+        (pg.K_RETURN, enter_shop),
+        (pg.K_ESCAPE, enter_shop),
+    ],
 )
 
 # start by entering title screen
