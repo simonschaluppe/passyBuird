@@ -36,7 +36,6 @@ def quit_game():
     pg.quit()
     quit()
 
-
 def heat():
     game.heat()
     particle_manager.heat(
@@ -54,6 +53,11 @@ def cool():
 def start_game():
     game.setup_sim()
     level_screen.loop()
+
+
+enter_shop = lambda: shop_screen.loop()
+level_success = lambda: level_success_popup.loop()
+level_fail = lambda: level_fail_popup.loop()
 
 
 class Screen:
@@ -87,12 +91,13 @@ class TitleScreen(Screen):
     def config_handler(self):
         # register buttons
         buttons = [
-            Button((120, 480), lambda: shop_screen.loop(), "Start the Game!"),
+            Button((120, 480), enter_shop, "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, lambda: shop_screen.loop())
+        self.handler.bind_keypress(pg.K_RETURN, enter_shop)
+
 
     @override
     def render(self):
@@ -157,7 +162,7 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_w, lambda: game.increment_cop(0.5))
         self.handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
         self.handler.bind_keypress(pg.K_q, quit_game)
-        self.handler.bind_keypress(pg.K_ESCAPE, shop_screen.loop())
+        self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
     @override
     def loop(self):
@@ -172,7 +177,7 @@ class LevelScreen(Screen):
             print(game.hour, accumulated_gamehours)
 
             if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
-                level_success_popup.loop()
+                level_success()
 
             if game.paused:
                 continue
@@ -183,7 +188,7 @@ class LevelScreen(Screen):
                 game.update(hours=hours)
 
             if game.money <= 0:
-                level_fail_popup.loop()
+                level_fail()
 
             particle_manager.update()
 
@@ -238,13 +243,13 @@ class Popup(Screen):
 
         # register buttons
         buttons = [
-            Button((120, 480), shop_screen.loop(), "OK"),
+            Button((120, 480), enter_shop, "OK"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, shop_screen.loop())
-        self.handler.bind_keypress(pg.K_ESCAPE, shop_screen.loop())
+        self.handler.bind_keypress(pg.K_RETURN, enter_shop)
+        self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
     @override
     def loop(self):
