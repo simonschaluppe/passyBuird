@@ -57,11 +57,14 @@ def start_game():
 
 
 class Screen:
+    """Basic Screen class."""
+
     def __init__(self):
         self.handler = InputHandler()
         self.config_handler()
 
     def loop(self):
+        """Basic handler/render loop."""
         running = True
         while running:
             running = self.handler.update()
@@ -69,24 +72,27 @@ class Screen:
             clock.tick(60)
 
     def config_handler(self):
+        """Put handler configuration here."""
         ...
 
     def render(self):
+        """Put render lines here."""
         ...
 
 
 class TitleScreen(Screen):
+    """Title screen serves as Home/Welcome page."""
 
     @override
     def config_handler(self):
         # register buttons
         buttons = [
-            Button((120, 480), shop_screen.loop(), "Start the Game!"),
+            Button((120, 480), lambda: shop_screen.loop(), "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, shop_screen.loop())
+        self.handler.bind_keypress(pg.K_RETURN, lambda: shop_screen.loop())
 
     @override
     def render(self):
@@ -101,6 +107,7 @@ class TitleScreen(Screen):
 
 
 class ShopScreen(Screen):
+    """Shop screen, where player can view and purchase upgrades."""
 
     @override
     def config_handler(self):
@@ -128,6 +135,7 @@ class ShopScreen(Screen):
 
 
 class LevelScreen(Screen):
+    """Level screen, where the actual gameplay happens."""
 
     @override
     def config_handler(self):
@@ -153,7 +161,7 @@ class LevelScreen(Screen):
 
     @override
     def loop(self):
-        """The main game loop responsible for processing events, updating game state, and rendering."""
+        """The level loop responsible for processing events, updating game state, and rendering."""
         running = True
         accumulated_gamehours = 0
         while running:
@@ -216,6 +224,10 @@ class LevelScreen(Screen):
 
 
 class Popup(Screen):
+    """Basic popup screen for short messages to the player.
+
+    Generally has a title, text body (message) and simple buttons (e.g. 'Back', 'Continue')."""
+
     def __init__(self, title, body):
         self.title = title
         self.body = body
@@ -236,7 +248,6 @@ class Popup(Screen):
 
     @override
     def loop(self):
-        """Displays end-of-level summary before returning to menu."""
         end_running = True
         while end_running:
             self.handler.update()
