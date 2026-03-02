@@ -32,6 +32,7 @@ renderer = Renderer(display, camera, clock)
 
 """Callback functions"""
 
+# Single line functions
 return_home = lambda: title_screen.loop()
 start_level = lambda: level_screen.loop()
 enter_shop = lambda: shop_screen.loop()
@@ -40,6 +41,7 @@ level_success = lambda: level_success_popup.loop()
 level_fail = lambda: level_fail_popup.loop()
 
 
+# Multi line functions
 def quit_game():
     print("Quitting game...")
     pg.quit()
@@ -125,7 +127,7 @@ class ShopScreen(Screen):
     def config_handler(self):
         # register buttons
         buttons = [
-            Button((600, 480), level_entry, "Start the Game!"),
+            Button((600, 480), level_entry, "Next level"),
             Button((600, 530), quit_game, "Quit"),
         ]
         [self.handler.register_button(button) for button in buttons]
