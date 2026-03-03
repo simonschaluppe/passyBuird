@@ -13,7 +13,7 @@ pg.init()
 print(pg.version)
 
 # Set up the main display surface
-screen = pg.display.set_mode((800, 600))
+screen: pg.Surface = pg.display.set_mode((800, 600))
 pg.display.set_caption("passyBUIRLD")
 
 # Create another surface to perform off-screen drawing
@@ -77,7 +77,7 @@ class Screen:
         self.handler = InputHandler()
         self.config_handler()
 
-    def loop(self):
+    def loop(self) -> None:
         """Basic handler/render loop."""
         running = True
         while running:
@@ -85,11 +85,11 @@ class Screen:
             self.render()
             clock.tick(60)
 
-    def config_handler(self):
+    def config_handler(self) -> None:
         """Put handler configuration here."""
         ...
 
-    def render(self):
+    def render(self) -> None:
         """Put render lines here."""
         ...
 
@@ -98,7 +98,7 @@ class TitleScreen(Screen):
     """Title screen serves as Home/Welcome page."""
 
     @override
-    def config_handler(self):
+    def config_handler(self) -> None:
         # register buttons
         buttons = [
             Button((120, 480), start_new_game, "Start the Game!"),
@@ -109,7 +109,7 @@ class TitleScreen(Screen):
         self.handler.bind_keypress(pg.K_RETURN, start_new_game)
 
     @override
-    def render(self):
+    def render(self) -> None:
         description = ["This game is fun!", "This game is cool!"]
         renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
 
@@ -124,7 +124,7 @@ class ShopScreen(Screen):
     """Shop screen, where player can view and purchase upgrades."""
 
     @override
-    def config_handler(self):
+    def config_handler(self) -> None:
         # register buttons
         buttons = [
             Button((600, 480), level_entry, "Next level"),
@@ -138,7 +138,7 @@ class ShopScreen(Screen):
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
     @override
-    def render(self):
+    def render(self) -> None:
         renderer.render_menu(game.get_menu_data())
 
         for button in self.handler.buttons:
@@ -152,7 +152,7 @@ class LevelScreen(Screen):
     """Level screen, where the actual gameplay happens."""
 
     @override
-    def config_handler(self):
+    def config_handler(self) -> None:
 
         # bind camera
         self.handler.bind_camera(camera)
@@ -174,7 +174,7 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
     @override
-    def loop(self):
+    def loop(self) -> None:
         """The level loop responsible for processing events, updating game state, and rendering."""
         running = True
         accumulated_gamehours = 0
@@ -219,7 +219,7 @@ class LevelScreen(Screen):
                 running = False
 
     @override
-    def render(self):
+    def render(self) -> None:
 
         # render
         renderer.camera.update()
@@ -251,7 +251,7 @@ class Popup(Screen):
         super().__init__()
 
     @override
-    def render(self):
+    def render(self) -> None:
         renderer.render_popup(title=self.title, body=self.body)
         for button in self.handler.buttons:
             renderer.render_button(button)
@@ -259,7 +259,7 @@ class Popup(Screen):
         pg.display.update()
 
     @override
-    def config_handler(self):
+    def config_handler(self) -> None:
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
         if self.keys:
