@@ -305,11 +305,11 @@ level_fail_popup = Popup(
     title="Du hast kein Geld mehr!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button((120, 480), return_home, "OK")
+        Button((120, 480), start_new_game, "OK")
     ],
     keys=[
-        (pg.K_RETURN, return_home),
-        (pg.K_ESCAPE, return_home),
+        (pg.K_RETURN, start_new_game),
+        (pg.K_ESCAPE, start_new_game),
     ],
 )
 
