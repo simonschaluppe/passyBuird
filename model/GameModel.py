@@ -114,10 +114,10 @@ class GameModel:
         self.set_cop(starting_cop)
         self.upgrades = UPGRADES
 
-    def setup_sim(self,
-              start_hour=8000, 
-              start_TI=22, 
-              final_hour=8759):
+    def setup_new_level(self,
+                        start_hour=8000,
+                        start_TI=22,
+                        final_hour=8759):
         
         if not (0 <= start_hour <= 8759):
             raise ValueError("Invalid start_hour. Must be between [0 and 8759].")

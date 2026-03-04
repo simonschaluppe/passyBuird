@@ -62,9 +62,14 @@ def cool():
     )
 
 
-def start_new_game():
-    game.setup_sim()
+def start_new_level():
+    game.setup_new_level()
     level_entry()
+
+
+def start_new_game():
+    game.setup_new_game()
+    return_home()
 
 
 """Classes"""
@@ -101,12 +106,12 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button((120, 480), start_new_game, "Start the Game!"),
+            Button((120, 480), start_new_level, "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, start_new_game)
+        self.handler.bind_keypress(pg.K_RETURN, start_new_level)
 
     @override
     def render(self) -> None:
@@ -127,13 +132,13 @@ class ShopScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button((600, 480), level_entry, "Next level"),
+            Button((600, 480), start_new_level, "Next level"),
             Button((600, 530), quit_game, "Quit"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, level_entry)
+        self.handler.bind_keypress(pg.K_RETURN, start_new_level)
         self.handler.bind_keypress(pg.K_q, quit)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
