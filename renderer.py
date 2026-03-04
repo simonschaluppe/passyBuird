@@ -237,6 +237,47 @@ class Renderer:
             )
             y += line_spacing
 
+    def render_title_screen(self, title: str, body: list):
+        line_size = 24
+        line_spacing = 30  # slightly more than size to avoid overlap
+
+        self.menu_renderer.render_background()
+        panel_rect = pg.Rect(80, 30, 640, 640)
+        pg.draw.rect(
+            self.display,
+            (30, 30, 30),  # fill color
+            panel_rect,
+            border_radius=8
+        )
+        pg.draw.rect(
+            self.display,
+            (220, 220, 220),  # border color
+            panel_rect,
+            width=2,
+            border_radius=8
+        )
+
+        self.render_line(
+            title,
+            pos=(120, 80),
+            size=50,
+            font=self.titlefont,
+        )
+        y = 150  # Larger space after title
+
+        for line in body:
+            self.render_line(
+                line,
+                pos=(120, y),
+                size=line_size,
+            )
+            y += line_spacing
+
+        # load QR code
+        qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
+        qr_code = pg.transform.scale(qr_code, size=(100,100))
+        self.display.blit(qr_code, (250,250))
+        
 class MenuRenderer:
     def __init__(self, renderer: Renderer) -> None:
         self.renderer = renderer
