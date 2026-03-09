@@ -134,6 +134,7 @@ class ShopScreen(Screen):
         buttons = [
             Button((600, 480), start_new_level, "Next level"),
             Button((600, 530), quit_game, "Quit"),
+            Button( (320, 300),game.upgrades['power'].callback,f"{game.upgrades['power'].upgrade_text}  {game.upgrades['power'].cost}€", size=(180, 30))
         ]
         [self.handler.register_button(button) for button in buttons]
 
