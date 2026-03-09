@@ -106,7 +106,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button((120, 480), start_new_level, "Start the Game!"),
+            Button((120, 480), enter_shop, "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
