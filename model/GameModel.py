@@ -6,7 +6,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 DATA_PATH = ROOT_PATH / "data"
 
-from upgrades import UPGRADES
+from upgrades import Upgrades, UPGRADES
 from model.Simulation import EnergyModel
 
 
@@ -83,6 +83,7 @@ class GameModel:
         self.model.init_sim()
         self.hour = 0
         self._mh = 0
+        self.upgrades:dict[str, Upgrades] = UPGRADES
         self.setup_new_game()
 
     def setup_new_game(self,
@@ -93,7 +94,7 @@ class GameModel:
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
         self.set_cop(starting_cop)
-        self.upgrades = UPGRADES
+        self.setup_upgrades()
 
     def setup_new_level(self,
                         start_hour=8000,
@@ -295,6 +296,24 @@ class GameModel:
             "Geldstand": f"{self.money:.2f} e",
             "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
         }
+
+    def setup_upgrades(self):
+        def upgrade(upgrade: Upgrades, fn: callable):
+            if upgrade.cost > self.money:
+                print("Not enough money!")
+                return
+
+            upgrade.level += 1
+            self.money -= upgrade.cost
+            fn()
+
+        def power():
+            self.set_heating_power(self.model.HVAC.HP_heating_power + 1)
+            self.set_cooling_power(self.model.HVAC.HP_cooling_power + 1)
+
+        self.upgrades['power'].callback = lambda: upgrade(self.upgrades['power'], power)
+
+
 
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
