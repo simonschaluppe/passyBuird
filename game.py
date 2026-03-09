@@ -137,7 +137,10 @@ class ShopScreen(Screen):
         buttons = [
             Button((600, 480), start_new_level, "Next level"),
             Button((600, 530), quit_game, "Quit"),
-            upgrade_button(game.upgrades['power'], (320, 300))
+            upgrade_button(game.upgrades['power'], (335, 290)),
+            upgrade_button(game.upgrades['power'], (335, 340)),
+            upgrade_button(game.upgrades['power'], (335, 390)),
+            upgrade_button(game.upgrades['power'], (335, 440)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
