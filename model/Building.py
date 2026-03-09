@@ -45,14 +45,14 @@ class Building:
 
         self.hull = self.load_hull(path)  # from excel
 
-        self.components = []
+        self.components = {}
         # Außenwand
         # Dach
         # fenster
         # Bodenplatte
         for i, row in self.hull.iterrows():
             bauteil = Component(row)
-            self.components.append(bauteil)
+            self.components.update({bauteil.name:bauteil})
 
     def load_params(self, path, sheetname="params"):
         """loads the sheet "params" of a excel at path and returns it as a dataframe"""
@@ -87,7 +87,7 @@ Net storey height:  {self.net_storey_height:>{data}} m
 Eff. Heat capacity: {self.heat_capacity:>{data}} Wh/m²/K
 LT:                 {self.LT:>{data}.2f} W/K/m²
 """  # triple quote strings preserve linebreaks and indentation
-        for c in self.components:
+        for key, c in self.components.items():
             string += str(c) + "\n"
 
         return string
@@ -97,4 +97,4 @@ if __name__ == "__main__":
     # print(Building())
     test = Building(path=Path(DATA_DIR, "building_ph.xlsx"))
     print(test)
-    bauteil = test.components[0]
+    bauteil = next(iter(test.components.items()))
