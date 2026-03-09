@@ -316,6 +316,7 @@ class MenuRenderer:
         self.render_player_stats(data["player"], pos=(600, 50))
 
         self.render_title(self.topleft)
+        self.render_text((self.topleft[0], 100))
 
     def render_background(self):
         self.display.blit(self.menu_background, (0, 0))
@@ -324,6 +325,12 @@ class MenuRenderer:
         title = "PassyBUIRD"
         self.render_line(
             title, colors["Title"], pos, font=self.renderer.titlefont, size=50
+        )
+
+    def render_text(self, pos):
+        text = "This is the shop. Here you can use your money to upgrade your building."
+        self.render_line(
+            text, colors["Title"], pos, font=self.renderer.titlefont, size=30
         )
 
     def render_upgrade_tiles(self, upgrades, pos):
