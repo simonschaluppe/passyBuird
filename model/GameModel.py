@@ -240,7 +240,7 @@ Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating
 Heat Pump Efficiency: Lvl {0} ({self.model.HVAC.HP_COP * 100} %)"
 
 Electricity Price Discount: Lvl {0} ({100} %)
-"""}
+"""}  # todo: DUMMIES
 
     def get_menu_data(self) -> dict:
         return {

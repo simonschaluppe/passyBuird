@@ -137,7 +137,7 @@ class ShopScreen(Screen):
         buttons = [
             Button((600, 480), start_new_level, "Next level"),
             Button((600, 530), quit_game, "Quit"),
-            upgrade_button(game.upgrades['power'], (335, 290)),
+            upgrade_button(game.upgrades['power'], (335, 290)),  # todo: DUMMIES
             upgrade_button(game.upgrades['power'], (335, 340)),
             upgrade_button(game.upgrades['power'], (335, 390)),
             upgrade_button(game.upgrades['power'], (335, 440)),
