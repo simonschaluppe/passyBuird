@@ -1,12 +1,12 @@
-import pygame as pg
-
 from typing import override
+
+import pygame as pg
 
 from camera import Camera2D
 from handler import Button, InputHandler
-from renderer import Renderer
-from particles import ParticleManager
 from model.GameModel import GameModel
+from particles import ParticleManager
+from renderer import Renderer
 
 # Initialize pygame
 pg.init()
@@ -132,12 +132,12 @@ class ShopScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         upgrade_button = lambda upgrade, pos: Button(
-            pos, upgrade.callback, f"{upgrade.upgrade_text}  {upgrade.cost}€",size=(180, 30)
+            pos, upgrade.callback, f"{upgrade.upgrade_text}  {upgrade.cost}€", size=(180, 30)
         )
         buttons = [
             Button((600, 480), start_new_level, "Next level"),
             Button((600, 530), quit_game, "Quit"),
-            upgrade_button(game.upgrades['power'], (320,300))
+            upgrade_button(game.upgrades['power'], (320, 300))
         ]
         [self.handler.register_button(button) for button in buttons]
 

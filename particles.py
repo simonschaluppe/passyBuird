@@ -1,5 +1,7 @@
 import random
+
 import pygame as pg
+
 
 class Particle:
     def __init__(self, pos, speed, lifetime):
@@ -7,21 +9,21 @@ class Particle:
         self.speed = speed
         self.lifetime = lifetime
 
-    
+
 class ParticleManager:
     def __init__(self):
         self.groups = {}
         self.groups["heating"] = []
         self.groups["cooling"] = []
-    
+
     def add(self, list_name, position, velocity, lifetime):
         if list_name not in self.groups:
             raise KeyError(f"{list_name=} not in {__name__}.particleLists")
         p = Particle(
-            pos=pg.Vector2(position), 
-            speed=pg.Vector2(velocity).rotate(random.randint(-30,30)),
+            pos=pg.Vector2(position),
+            speed=pg.Vector2(velocity).rotate(random.randint(-30, 30)),
             lifetime=lifetime
-            )
+        )
         self.groups[list_name].append(p)
 
     def heat(self, position, velocity):
@@ -34,13 +36,13 @@ class ParticleManager:
         for name, container in self.groups.items():
             for i, p in sorted(enumerate(container), reverse=True):
                 p.lifetime -= 1
-                if p.lifetime <= 0: 
+                if p.lifetime <= 0:
                     container.pop(i)
                     continue
-                #p.speed.scale_to_length(p.lifetime/50)
+                # p.speed.scale_to_length(p.lifetime/50)
                 p.pos += p.speed
                 vx, vy = p.speed
-                p.speed = (vx, vy*0.9)
+                p.speed = (vx, vy * 0.9)
 
 
 def test_draw_particles(container, screen):

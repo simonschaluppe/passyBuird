@@ -4,6 +4,7 @@ import pandas as pd
 
 DATA_DIR = Path("data")
 
+
 class Component:
     """
     A representation of a building component of the thermal hull
@@ -68,8 +69,6 @@ class Building:
         hull = pd.read_excel(path, sheet_name="thermal_hull")
         return hull  # returns a dataframe
 
-
-
     @property
     def LT(self):
         """calculates the LT [W/K/m²BGF] from a Hull Dataframe"""
@@ -89,14 +88,13 @@ Eff. Heat capacity: {self.heat_capacity:>{data}} Wh/m²/K
 LT:                 {self.LT:>{data}.2f} W/K/m²
 """  # triple quote strings preserve linebreaks and indentation
         for c in self.components:
-            string+=str(c)+"\n"
+            string += str(c) + "\n"
 
         return string
 
 
 if __name__ == "__main__":
-
-    #print(Building())
-    test = Building(path=Path(DATA_DIR,"building_ph.xlsx"))
+    # print(Building())
+    test = Building(path=Path(DATA_DIR, "building_ph.xlsx"))
     print(test)
     bauteil = test.components[0]

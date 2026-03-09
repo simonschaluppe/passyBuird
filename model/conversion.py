@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -24,9 +25,9 @@ class DEFAULT_PROFILES:
 
 
 def get_profile(
-    file_name,
-    sheet_name,
-    profile: str,
+        file_name,
+        sheet_name,
+        profile: str,
 ) -> np.array:
     df = pd.read_excel(file_name, sheet_name=sheet_name)
     if profile not in df.columns:

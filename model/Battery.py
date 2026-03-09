@@ -1,17 +1,16 @@
-
-
 class Battery:
     """a Simple Battery"""
+
     def __init__(self, kWh):
-        self.capacity = kWh # kWh
-        self.charge_power_max = 10 # kW
-        self.discharge_power_max = 10 # kW
+        self.capacity = kWh  # kWh
+        self.charge_power_max = 10  # kW
+        self.discharge_power_max = 10  # kW
         self.charge_efficiency = 0.9
         self.discharge_efficiency = 0.9
         self.discharge_per_hour = 0.00012
-        self.cost_kWh = 1000 # cost per kWh
+        self.cost_kWh = 1000  # cost per kWh
         self.cost = self.capacity * self.cost_kWh
-        self.SoC = 0. #kWh State of Charge
+        self.SoC = 0.  # kWh State of Charge
 
     def charge(self, kW):
         """
@@ -24,7 +23,7 @@ class Battery:
         self.SoC += accepted_energy * self.charge_efficiency
         return accepted_energy
 
-    def discharge(self, kW:float):
+    def discharge(self, kW: float):
         """
         takes a desired discharge in kW (kWh for an hour),
         calculates the actual dischargebale energy, change the current_charge of the Battery

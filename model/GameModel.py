@@ -83,13 +83,13 @@ class GameModel:
         self.model.init_sim()
         self.hour = 0
         self._mh = 0
-        self.upgrades:dict[str, Upgrades] = UPGRADES
+        self.upgrades: dict[str, Upgrades] = UPGRADES
         self.setup_new_game()
 
     def setup_new_game(self,
-              starting_power=15, 
-              starting_cop=3, 
-              ):
+                       starting_power=15,
+                       starting_cop=3,
+                       ):
         self.money = 1_000
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
@@ -100,7 +100,7 @@ class GameModel:
                         start_hour=8000,
                         start_TI=22,
                         final_hour=8759):
-        
+
         if not (0 <= start_hour <= 8759):
             raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
         self.hour = start_hour  # ever increasing
@@ -134,7 +134,7 @@ class GameModel:
     def update(self, hours: int):
         for _ in range(hours):
             year, self._mh = divmod(self.hour, 8760)
-            
+
             if self._mh == self.final_hour_of_the_year:
                 return
                 # print("next year")
@@ -158,7 +158,7 @@ class GameModel:
     def next_year(self, year=2020):
         self.hour = 0
         self._mh = 0
-    
+
         self.model.init_sim(TI_init=self.model.TI[-1])
 
     def set_speed(self, simhours_per_second):
@@ -234,7 +234,7 @@ class GameModel:
     def get_menu_data(self) -> dict:
         return {
             "upgrades": self.upgrades,
-            "player": {"money": round(self.money,0)},
+            "player": {"money": round(self.money, 0)},
             "hull": self.get_hull_data(),
             "hvac": self.get_hvac_data(),
         }
@@ -277,21 +277,22 @@ class GameModel:
             },
             "Scores": {
                 "Money": int(self.money),
-                "Comfort": {"dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]), "score": self.model.comfort.comfort_score(self.model.TI[self._mh])},
+                "Comfort": {"dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
+                            "score": self.model.comfort.comfort_score(self.model.TI[self._mh])},
             },
             "Price": f"Price: {self.model.price_grid} €/Wh",
-            "CO2": f"CO2: {self.model.CO2[self._mh]*1000:.0f} g/kWh",
-            "COP": f"Efficiency    {self.get_cop()*100:.0f}%",
+            "CO2": f"CO2: {self.model.CO2[self._mh] * 1000:.0f} g/kWh",
+            "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
         }
 
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
-            "Waermebedarf (QH)": f"{self.model.QH.sum()/1000:.1f} kWh",
-            "Kaeltebedarf (QC)": f"{self.model.QC.sum()/1000:.1f} kWh",
-            "Stromeinsatz (ED)": f"{self.model.ED.sum()/1000:.1f} kWh",
-            "CO2-Emissionen": f"{sum(self.model.CO2)/1000:.0f} kg",
+            "Waermebedarf (QH)": f"{self.model.QH.sum() / 1000:.1f} kWh",
+            "Kaeltebedarf (QC)": f"{self.model.QC.sum() / 1000:.1f} kWh",
+            "Stromeinsatz (ED)": f"{self.model.ED.sum() / 1000:.1f} kWh",
+            "CO2-Emissionen": f"{sum(self.model.CO2) / 1000:.0f} kg",
             "Mittlerer Strompreis": f"{self.model.price_grid:.3f} e/Wh",
             "Geldstand": f"{self.money:.2f} e",
             "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
@@ -313,12 +314,8 @@ class GameModel:
 
         self.upgrades['power'].callback = lambda: upgrade(self.upgrades['power'], power)
 
-
-
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
-
-
 
 
 if __name__ == "__main__":

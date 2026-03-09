@@ -1,13 +1,13 @@
 import sys
-import pygame as pg
-import math
 from pathlib import Path
+
+import pygame as pg
 
 from camera import Camera2D
 from font import Font
 from handler import Button  # necessary?
 from upgrades import Upgrades
-from utils import color_interpolation, seasonalcolor, circle_surf, change_color
+from utils import color_interpolation, seasonalcolor, circle_surf
 
 ROOT_PATH = Path(__file__).parent
 sys.path.append(ROOT_PATH)
@@ -56,7 +56,7 @@ def color_indicator(dT):
 
 class Renderer:
     def __init__(
-        self, display: pg.Surface, camera: Camera2D, clock: pg.time.Clock, scale=1.0
+            self, display: pg.Surface, camera: Camera2D, clock: pg.time.Clock, scale=1.0
     ):
         self.display = display
         self.cx, self.cy = display.get_width() // 2, display.get_height() // 2
@@ -101,15 +101,15 @@ class Renderer:
         onto.blit(mask_surf, (x - pixel, y + pixel))
 
     def render_line(
-        self,
-        text: str,
-        color=ALMOSTBLACK,
-        pos=(0, 0),
-        size=20,
-        border_width=2,
-        border_color=WHITE,
-        font=None,
-        onto=None,
+            self,
+            text: str,
+            color=ALMOSTBLACK,
+            pos=(0, 0),
+            size=20,
+            border_width=2,
+            border_color=WHITE,
+            font=None,
+            onto=None,
     ):
         """Render a single text line onto a surface."""
         if not font:
@@ -122,14 +122,14 @@ class Renderer:
         font.render(onto, text, (px, py), size, color)
 
     def render_lines(
-        self,
-        text: str,
-        color=ALMOSTBLACK,
-        pos=(0, 0),
-        size=20,
-        font=None,
-        onto=None,
-        lineheight=None,
+            self,
+            text: str,
+            color=ALMOSTBLACK,
+            pos=(0, 0),
+            size=20,
+            font=None,
+            onto=None,
+            lineheight=None,
     ):
         px, py = pos
         dy = 0
@@ -202,7 +202,7 @@ class Renderer:
     def render_menu(self, data):
         self.menu_renderer.render(data)
 
-    def render_popup(self, title:str, body:list):
+    def render_popup(self, title: str, body: list):
         line_size = 24
         line_spacing = 30  # slightly more than size to avoid overlap
 
@@ -210,7 +210,7 @@ class Renderer:
         panel_rect = pg.Rect(80, 30, 640, 640)
         pg.draw.rect(
             self.display,
-            (30, 30, 30),   # fill color
+            (30, 30, 30),  # fill color
             panel_rect,
             border_radius=8
         )
@@ -221,7 +221,7 @@ class Renderer:
             width=2,
             border_radius=8
         )
-   
+
         self.render_line(
             title,
             pos=(120, 80),
@@ -276,9 +276,10 @@ class Renderer:
 
         # load QR code
         qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
-        qr_code = pg.transform.scale(qr_code, size=(100,100))
-        self.display.blit(qr_code, (250,250))
-        
+        qr_code = pg.transform.scale(qr_code, size=(100, 100))
+        self.display.blit(qr_code, (250, 250))
+
+
 class MenuRenderer:
     def __init__(self, renderer: Renderer) -> None:
         self.renderer = renderer
@@ -384,10 +385,10 @@ class MenuRenderer:
         )
 
     def render_hvac_stats(
-        self,
-        data,
-        pos,
-        color,
+            self,
+            data,
+            pos,
+            color,
     ):
         self.render_lines(data["lines"], color=color, pos=pos)
 
@@ -570,7 +571,6 @@ def test():
     from pygame.math import Vector2  # For handling positions
     import random
     from camera import Camera2D  # Assuming you have a simple Camera2D implementation
-    from font import Font  # Your Font class for text rendering
     from renderer import Renderer  # The Renderer class
     from particles import Particle
 
