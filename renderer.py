@@ -303,16 +303,16 @@ class MenuRenderer:
 
         # self.renderer.draw_grid(100)
 
-        self.render_hull_stats(
-            data["hull"], pos=(self.topleft[0], 200), color=self.stats_text_color
-        )
-
-        self.render_hvac_stats(
-            data["hvac"], (self.topleft[0], 400), self.stats_text_color
-        )
+        # self.render_hull_stats(
+        #     data["hull"], pos=(self.topleft[0], 200), color=self.stats_text_color
+        # )
+        #
+        # self.render_hvac_stats(
+        #     data["hvac"], (self.topleft[0], 400), self.stats_text_color
+        # )
 
         # Render upgrade tiles and costs
-        self.render_upgrade_tiles(data["upgrades"], pos=(600, 100))
+        # self.render_upgrade_tiles(data["upgrades"], pos=(600, 100))
         self.render_player_stats(data["player"], pos=(600, 50))
 
         self.render_title(self.topleft)
