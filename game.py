@@ -135,8 +135,8 @@ class ShopScreen(Screen):
             pos, upgrade.callback, f"{upgrade.upgrade_text}  {upgrade.cost}€", size=(180, 30)
         )
         buttons = [
-            Button((600, 480), start_new_level, "Next level"),
-            Button((600, 530), quit_game, "Quit"),
+            Button((600, 530), start_new_level, "Next level"),
+            Button((25, 530), quit_game, "Quit Run"),
             upgrade_button(game.upgrades['power'], (335, 290)),  # todo: DUMMIES
             upgrade_button(game.upgrades['power'], (335, 340)),
             upgrade_button(game.upgrades['power'], (335, 390)),
