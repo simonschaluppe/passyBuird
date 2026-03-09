@@ -317,6 +317,7 @@ class MenuRenderer:
 
         self.render_title(self.topleft)
         self.render_text((self.topleft[0], 100))
+        self.render_updrade_text(data["upgrade_text"], (30, 250), self.stats_text_color)
 
     def render_background(self):
         self.display.blit(self.menu_background, (0, 0))
@@ -400,6 +401,9 @@ class MenuRenderer:
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_hull_stats(self, data, pos, color):
+        self.render_lines(data["lines"], color=color, pos=pos)
+
+    def render_updrade_text(self, data, pos, color):
         self.render_lines(data["lines"], color=color, pos=pos)
 
 

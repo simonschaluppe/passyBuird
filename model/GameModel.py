@@ -231,12 +231,24 @@ class GameModel:
     def get_hvac_data(self) -> dict:
         return {"lines": self.model.HVAC.__repr__()}
 
+    def get_upgrade_text(self) -> dict:
+        return {"lines": f"""
+Insulation: Lvl {0} ({1} W/m²K)"
+
+Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²) "
+
+Heat Pump Efficiency: Lvl {0} ({self.model.HVAC.HP_COP * 100} %)"
+
+Electricity Price Discount: Lvl {0} ({100} %)
+"""}
+
     def get_menu_data(self) -> dict:
         return {
             "upgrades": self.upgrades,
             "player": {"money": round(self.money, 0)},
             "hull": self.get_hull_data(),
             "hvac": self.get_hvac_data(),
+            "upgrade_text": self.get_upgrade_text()
         }
 
     def get_curves_data(self):
