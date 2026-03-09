@@ -6,6 +6,7 @@ from pathlib import Path
 from camera import Camera2D
 from font import Font
 from handler import Button  # necessary?
+from upgrades import Upgrades
 from utils import color_interpolation, seasonalcolor, circle_surf, change_color
 
 ROOT_PATH = Path(__file__).parent
@@ -329,22 +330,24 @@ class MenuRenderer:
         start_x, start_y = pos  # Starting position for the grid of tiles
         padding = 10  # Space between tiles
 
-        for idx, upgrade in enumerate(upgrades):
+        idx = 0
+        for key, upgrade in upgrades.items():
             x = start_x + (idx // 3) * (self.tile_size[0] + padding)
             y = start_y + (idx % 3) * (self.tile_size[1] + padding)
 
             # Render the upgrade tile
             self.render_upgrade_tile(upgrade, (x, y))
+            idx += 1
 
-    def render_upgrade_tile(self, upgrade: dict, pos):
+    def render_upgrade_tile(self, upgrade: Upgrades, pos):
         """Render a single upgrade tile with its cost and state."""
         tile_surf = pg.Surface(self.tile_size)
 
         # Render the tile image
-        tile_image = pg.image.load(IMAGE_PATH / upgrade["image"]).convert_alpha()
+        tile_image = pg.image.load(IMAGE_PATH / upgrade.image).convert_alpha()
         tile_image = pg.transform.scale(tile_image, size=self.tile_size)
 
-        if not upgrade["available"]:
+        if not upgrade.available:
             grey_surf = pg.Surface(self.tile_size)
             grey_surf.fill((150, 150, 150, 100))
             grey_surf.blit(tile_image, (0, 0))
@@ -353,7 +356,7 @@ class MenuRenderer:
         tile_surf.set_colorkey((0, 0, 0))
 
         self.render_line(
-            f"{upgrade['name']}",
+            f"{upgrade.upgrade_text}",
             pos=(10, 10),
             color=colors["Upgrade text"],
             size=20,
@@ -361,7 +364,7 @@ class MenuRenderer:
         )
         # Draw the cost below the tile
         self.render_line(
-            f"€{upgrade['cost']}",
+            f"€{upgrade.cost}",
             pos=(10, 45),
             color=colors["Upgrade text"],
             size=20,

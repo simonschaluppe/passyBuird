@@ -6,28 +6,9 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 DATA_PATH = ROOT_PATH / "data"
 
+from upgrades import UPGRADES
 from model.Simulation import EnergyModel
 
-UPGRADES = [
-    {
-        "name": "Wall Insulation",
-        "cost": 1000,
-        "image": "wall.png",
-        "available": True,
-    },
-    {
-        "name": "New Windows",
-        "cost": 1500,
-        "image": "window.png",
-        "available": False,
-    },
-    {
-        "name": "HVAC Upgrade",
-        "cost": 2000,
-        "image": "hvac.png",
-        "available": True,
-    },
-]
 
 class Curve:
     """Manages game time of timeseries in model time"""
