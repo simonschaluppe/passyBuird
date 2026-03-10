@@ -405,6 +405,7 @@ class MenuRenderer:
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_updrade_text(self, data, pos, color):
+        self.render_line("Upgrades", colors["Title"], pos, font=self.renderer.titlefont, size=40)
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_game_stats(self, data, pos, color):
