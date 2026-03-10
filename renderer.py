@@ -313,11 +313,12 @@ class MenuRenderer:
 
         # Render upgrade tiles and costs
         # self.render_upgrade_tiles(data["upgrades"], pos=(600, 100))
-        self.render_player_stats(data["player"], pos=(600, 50))
+        # self.render_player_stats(data["player"], pos=(600, 50))
 
         self.render_title(self.topleft)
         self.render_text((self.topleft[0], 100))
         self.render_updrade_text(data["upgrade_text"], (30, 250), self.stats_text_color)
+        self.render_game_stats(data["game_stats"], (500, 50), self.stats_text_color)
 
     def render_background(self):
         self.display.blit(self.menu_background, (0, 0))
@@ -404,6 +405,9 @@ class MenuRenderer:
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_updrade_text(self, data, pos, color):
+        self.render_lines(data["lines"], color=color, pos=pos)
+
+    def render_game_stats(self, data, pos, color):
         self.render_lines(data["lines"], color=color, pos=pos)
 
 

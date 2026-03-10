@@ -250,7 +250,8 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "player": {"money": round(self.money, 0)},
             "hull": self.get_hull_data(),
             "hvac": self.get_hvac_data(),
-            "upgrade_text": self.get_upgrade_text()
+            "upgrade_text": self.get_upgrade_text(),
+            "game_stats": self.get_game_stats(),
         }
 
     def get_curves_data(self):
@@ -311,6 +312,14 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "Geldstand": f"{self.money:.2f} e",
             "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
         }
+
+    def get_game_stats(self):
+        return {"lines": f"""
+            Current Level    {'dummy'}
+            Available Money  €{self.money}
+            Average Comfort  {'dummy'}%
+        """
+                }
 
     def setup_upgrades(self):
         def upgrade(upgrade: Upgrades, fn: callable):
