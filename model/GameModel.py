@@ -235,13 +235,13 @@ class GameModel:
 
     def get_upgrade_text(self) -> dict:
         return {"lines": f"""
-Insulation: Lvl {0} ({1} W/m²K)"
+Insulation: Lvl {self.upgrades['wall_insulation'].level} ({self.model.building.components["Aussenwand"].u_value} W/m²K)
 
-Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²) "
+Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²)
 
-Heat Pump Efficiency: Lvl {0} ({self.model.HVAC.HP_COP * 100} %)"
+Heat Pump Efficiency: Lvl {self.upgrades['heatpump_efficiency'].level} ({self.model.HVAC.HP_COP * 100} %)
 
-Electricity Price Discount: Lvl {0} ({self.energy_discount} %)
+Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({self.energy_discount} %)
 """}  # todo: DUMMIES
 
     def get_menu_data(self) -> dict:
@@ -321,12 +321,27 @@ Electricity Price Discount: Lvl {0} ({self.energy_discount} %)
             upgrade.level += 1
             self.money -= upgrade.cost
             fn()
-
+        # todo: Use proper setter/getter functions throughout!
         def power():
             self.set_heating_power(self.model.HVAC.HP_heating_power + 1)
             self.set_cooling_power(self.model.HVAC.HP_cooling_power + 1)
 
+        def wall_insulation():
+            # todo: Hard coded key
+            self.model.building.components['Aussenwand'].u_value -= 0.01
+
+        def heatpump_efficiency():
+            self.set_cop(self.model.HVAC.HP_COP + 1)
+
+        def electricity_price_discount():
+            self.energy_discount += 1
+
+        self.upgrades['wall_insulation'].callback = lambda: upgrade(self.upgrades['wall_insulation'], wall_insulation)
         self.upgrades['power'].callback = lambda: upgrade(self.upgrades['power'], power)
+        self.upgrades['heatpump_efficiency'].callback = \
+            lambda: upgrade(self.upgrades['heatpump_efficiency'], heatpump_efficiency)
+        self.upgrades['electricity_price_discount'].callback = \
+            lambda: upgrade(self.upgrades['electricity_price_discount'], electricity_price_discount)
 
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"

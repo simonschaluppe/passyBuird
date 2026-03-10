@@ -13,22 +13,38 @@ class Upgrades:
 
 
 UPGRADES = {
-    "power": Upgrades(
-        name="Power",
-        upgrade_text="Increase power",
-        cost=1000,
-        image="hvac.png",
-        available=True,
-    ),
 
     "wall_insulation": Upgrades(
         name="Wall Insulation",
-        upgrade_text='',
+        upgrade_text="Insulate Walls",
         cost=1000,
-        image="wall.png",
+        image="",
         available=True,
     ),
 
+    "power": Upgrades(
+        name="Power",
+        upgrade_text="Increase Power",
+        cost=1000,
+        image="",
+        available=True,
+    ),
+
+    "heatpump_efficiency": Upgrades(
+        name="Heat Pump Efficiency",
+        upgrade_text="Increase Efficiency",
+        cost=1500,
+        image="",
+        available=True,
+    ),
+
+    "electricity_price_discount": Upgrades(
+        name="Elect. Price Discount",
+        upgrade_text="Negotiate Discount",
+        cost=1500,
+        image="",
+        available=True,
+    ),
     "windows": Upgrades(
         name="Windows",
         upgrade_text="New Windows",
@@ -42,6 +58,6 @@ UPGRADES = {
         upgrade_text="HVAC Upgrade",
         cost=2000,
         image="hvac.png",
-        available=True,
+        available=False,
     )
 }

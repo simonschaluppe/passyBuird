@@ -132,15 +132,15 @@ class ShopScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         upgrade_button = lambda upgrade, pos: Button(
-            pos, upgrade.callback, f"{upgrade.upgrade_text}  {upgrade.cost}€", size=(180, 30)
+            pos, upgrade.callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(220, 30)
         )
         buttons = [
             Button((600, 530), start_new_level, "Next level"),
             Button((25, 530), quit_game, "Quit Run"),
-            upgrade_button(game.upgrades['power'], (335, 290)),  # todo: DUMMIES
+            upgrade_button(game.upgrades['wall_insulation'], (335, 290)),
             upgrade_button(game.upgrades['power'], (335, 340)),
-            upgrade_button(game.upgrades['power'], (335, 390)),
-            upgrade_button(game.upgrades['power'], (335, 440)),
+            upgrade_button(game.upgrades['heatpump_efficiency'], (335, 390)),
+            upgrade_button(game.upgrades['electricity_price_discount'], (335, 440)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
