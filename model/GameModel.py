@@ -104,7 +104,10 @@ class GameModel:
         self.setup_upgrades()
 
     def setup_next_level(self):
-        self.current_level = next(self.levels)  # todo: Produces error when out of levels
+        try:
+            self.current_level = next(self.levels)
+        except StopIteration:
+            return False
 
         start_hour = self.current_level.start
 
@@ -137,6 +140,8 @@ class GameModel:
             points=[(h, co2 * 200) for h, co2 in zip(range(8760), self.model.CO2)],
         )
         self.cleanup()
+
+        return True
 
     def update(self, hours: int):
         for _ in range(hours):

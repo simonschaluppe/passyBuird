@@ -62,8 +62,11 @@ def cool():
     )
 
 
-def start_new_level():
-    game.setup_next_level()
+def start_next_level():
+    victory = not game.setup_next_level()
+    if victory:
+        print("You've finished the game, Good Job!")
+        quit_game()
     level_entry()
 
 
@@ -111,7 +114,7 @@ class TitleScreen(Screen):
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, start_new_level)
+        self.handler.bind_keypress(pg.K_RETURN, start_next_level)
 
     @override
     def render(self) -> None:
@@ -135,7 +138,7 @@ class ShopScreen(Screen):
             pos, upgrade.callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(220, 30)
         )
         buttons = [
-            Button((600, 530), start_new_level, "Next level"),
+            Button((600, 530), start_next_level, "Next level"),
             Button((25, 530), quit_game, "Quit Run"),
             upgrade_button(game.upgrades['wall_insulation'], (335, 290)),
             upgrade_button(game.upgrades['power'], (335, 340)),
@@ -145,7 +148,7 @@ class ShopScreen(Screen):
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, start_new_level)
+        self.handler.bind_keypress(pg.K_RETURN, start_next_level)
         self.handler.bind_keypress(pg.K_q, quit)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
