@@ -37,11 +37,15 @@ return_home = lambda: title_screen.loop()
 start_level = lambda: level_screen.loop()
 enter_shop = lambda: shop_screen.loop()
 level_entry = lambda: level_entry_popup.loop()
-level_success = lambda: level_success_popup.loop()
 level_fail = lambda: level_fail_popup.loop()
 
 
 # Multi line functions
+def level_success():
+    game.money += game.current_level.reward
+    level_success_popup.loop()
+
+
 def quit_game():
     print("Quitting game...")
     pg.quit()
