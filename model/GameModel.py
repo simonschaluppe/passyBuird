@@ -54,6 +54,7 @@ class Curve:
 
 class GameModel:
     money: int
+    energy_discount:int
 
     forecast_hours: int
     backcast_hours: int
@@ -91,6 +92,7 @@ class GameModel:
                        starting_cop=3,
                        ):
         self.money = 1_000
+        self.energy_discount = 0    # 0-100 [%]
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
         self.set_cop(starting_cop)
@@ -148,7 +150,7 @@ class GameModel:
                 self.model.apply_cool(self._mh)
 
             self.model.calc_ED(self._mh)
-            self.money -= self.model.ED[self._mh] * self.model.price_grid
+            self.money -= self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.model.TI[self._mh])
 
             self.curve_TI.update((self.hour, self.TI))
@@ -239,7 +241,7 @@ Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating
 
 Heat Pump Efficiency: Lvl {0} ({self.model.HVAC.HP_COP * 100} %)"
 
-Electricity Price Discount: Lvl {0} ({100} %)
+Electricity Price Discount: Lvl {0} ({self.energy_discount} %)
 """}  # todo: DUMMIES
 
     def get_menu_data(self) -> dict:
