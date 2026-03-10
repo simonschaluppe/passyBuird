@@ -63,7 +63,7 @@ def cool():
 
 
 def start_new_level():
-    game.setup_new_level()
+    game.setup_next_level()
     level_entry()
 
 

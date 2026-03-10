@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Iterable
 
 ROOT_PATH = Path(__file__).parent.parent
 sys.path.append(str(Path(__file__).parent.parent))
@@ -7,6 +8,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 DATA_PATH = ROOT_PATH / "data"
 
 from upgrades import Upgrades, UPGRADES
+from levels import Level, LEVELS
 from model.Simulation import EnergyModel
 
 
@@ -76,6 +78,8 @@ class GameModel:
     curve_comfort_max: Curve
     curve_co2: Curve
 
+    current_level: Level
+
     def __init__(self):
         self.speed = 24  # simulated hours / game second
         self.paused = False
@@ -85,6 +89,7 @@ class GameModel:
         self.hour = 0
         self._mh = 0
         self.upgrades: dict[str, Upgrades] = UPGRADES
+        self.levels: Iterable[LEVELS] = iter(LEVELS)
         self.setup_new_game()
 
     def setup_new_game(self,
@@ -98,18 +103,18 @@ class GameModel:
         self.set_cop(starting_cop)
         self.setup_upgrades()
 
-    def setup_new_level(self,
-                        start_hour=8000,
-                        start_TI=22,
-                        final_hour=8759):
+    def setup_next_level(self):
+        self.current_level = next(self.levels)  # todo: Produces error when out of levels
+
+        start_hour = self.current_level.start
 
         if not (0 <= start_hour <= 8759):
             raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
         self.hour = start_hour  # ever increasing
-        self.final_hour_of_the_year = (final_hour) % 8760
+        self.final_hour_of_the_year = (self.current_level.end) % 8760
         self._mh = start_hour  # model hour always in [0-8759]
 
-        self.model.init_sim(start_hour=start_hour, TI_init=start_TI)
+        self.model.init_sim(start_hour=start_hour, TI_init=self.current_level.start_TI)
 
         self.forecast_hours = 72
         self.backcast_hours = 72
