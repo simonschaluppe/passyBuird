@@ -3,7 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Level:
-    intro: str
+    name: str
+    intro: list[str]
     start: int
     end: int
     start_TI: int
@@ -13,17 +14,20 @@ class Level:
 
 LEVELS = [
     Level(
-        intro="""
-It's a cold January day! Make sure the building stays warm and cozy and the temperature does not drop below the minimum setpoint temperature (orange line)
-
-How to play: Press LMB to heat
-Goal: 90 % Comfort rating
-Duration: 1 Week
-""",
-        start=8000,
-        end=8759,
+        name="Level 1",
+        intro=["It's a cold January day! Make sure the building",
+               "stays warm and cozy and the temperature does not",
+               "drop below the minimum setpoint temperature",
+               "(orange line)",
+               "",
+               "How to play: Press LMB to heat",
+               "Goal: 50 % Comfort rating",
+               "Duration: 1 Week",
+               ],
+        start=0,
+        end=7*24,
         start_TI=22,
-        min_comfort= 50,
-        reward = 1000,
-)
+        min_comfort=50,
+        reward=1000,
+    )
 ]
