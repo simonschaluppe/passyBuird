@@ -37,7 +37,9 @@ return_home = lambda: title_screen.loop()
 start_level = lambda: level_screen.loop()
 enter_shop = lambda: shop_screen.loop()
 level_entry = lambda: level_entry_popup.loop()
-level_fail = lambda: level_fail_popup.loop()
+money_death = lambda: money_death_popup.loop()
+heat_death = lambda: heat_death_popup.loop()
+freeze_death = lambda: freeze_death_popup.loop()
 
 
 # Multi line functions
@@ -216,7 +218,14 @@ class LevelScreen(Screen):
                 game.update(hours=hours)
 
             if game.money <= 0:
-                level_fail()
+                money_death()
+
+            TI = game.model.TI[game._mh]
+            if game.model.comfort.comfort_score(TI) < game.current_level.min_comfort:
+                if game.model.comfort.comfort_diff(TI) > 0:
+                    heat_death()
+                if game.model.comfort.comfort_diff(TI) < 0:
+                    freeze_death()
 
             particle_manager.update()
 
@@ -315,8 +324,32 @@ level_success_popup = Popup(
         (pg.K_ESCAPE, enter_shop),
     ],
 )
-level_fail_popup = Popup(
+money_death_popup = Popup(
     title="Du hast kein Geld mehr!",
+    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+    buttons=[
+        Button((120, 480), start_new_game, "OK")
+    ],
+    keys=[
+        (pg.K_RETURN, start_new_game),
+        (pg.K_ESCAPE, start_new_game),
+    ],
+)
+
+heat_death_popup = Popup(
+    title="Everyone died of heat stroke!",
+    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+    buttons=[
+        Button((120, 480), start_new_game, "OK")
+    ],
+    keys=[
+        (pg.K_RETURN, start_new_game),
+        (pg.K_ESCAPE, start_new_game),
+    ],
+)
+
+freeze_death_popup = Popup(
+    title="Everyone froze into icicles!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
         Button((120, 480), start_new_game, "OK")
