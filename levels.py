@@ -14,18 +14,69 @@ class Level:
 
 LEVELS = [
     Level(
-        name="Level 1",
-        intro=["It's a cold January day! Make sure the building",
-               "stays warm and cozy and the temperature does not",
-               "drop below the minimum setpoint temperature",
-               "(orange line)",
-               "",
-               "How to play: Press LMB to heat",
-               "Goal: 50 % Comfort rating",
-               "Duration: 1 Week",
-               ],
+        name="Level 1: Heating",
+        intro=[
+            "It's a cold January day! Make sure the building",
+            "stays warm and cozy and the temperature does not",
+            "drop below the minimum setpoint temperature",
+            "(orange line)",
+            "",
+            "How to play: Press LMB to heat",
+            "Goal: 50 % Comfort rating",
+            "Duration: 1 Week",
+        ],
         start=0,
-        end=7*24,
+        end=7 * 24,
+        start_TI=22,
+        min_comfort=50,
+        reward=1000,
+    ),
+
+    Level(
+        name="Level 2: Cooling",
+        intro=[
+            "Add Level description here!",
+        ],
+        start=0,
+        end=7 * 24,
+        start_TI=22,
+        min_comfort=50,
+        reward=1000,
+    ),
+
+    Level(
+        name="Level 3: CO2 Intensity",
+        intro=[
+            "Add Level description here!",
+        ],
+        start=0,
+        end=7 * 24,
+        start_TI=22,
+        min_comfort=50,
+        reward=1000,
+    ),
+
+    Level(
+        name="Level 4: Energy price shock!",
+        intro=[
+            "Add Level description here!",
+        ],
+        start=0,
+        end=7 * 24,
+        start_TI=22,
+        min_comfort=50,
+        reward=1000,
+    ),
+
+    Level(
+        name="Level 5: A whole year",
+        intro=[
+            "Now its time to test your mettle! can you juggle",
+            "fluctuating temperature demands, energy prices",
+            "and CO2 intensities and survive an entire year?",
+        ],
+        start=0,
+        end=7 * 24,
         start_TI=22,
         min_comfort=50,
         reward=1000,
