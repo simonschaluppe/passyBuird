@@ -129,7 +129,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button((120, 480), enter_shop, "Start the Game!"),
+            Button((120, 520), enter_shop, "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -138,7 +138,19 @@ class TitleScreen(Screen):
 
     @override
     def render(self) -> None:
-        description = ["This game is fun!", "This game is cool!"]
+        description = [
+            "PassyBuird is like FlappyBird. Except instead of",
+            "a bird, you prevent the room temperature of a",
+            "building from crashing. And instead of avoiding",
+            "pipes, you try to stay within the comfortable",
+            "temperature range. Instead of flapping, you apply",
+            "heating to increase your temperature (height).",
+            "",
+            "The game uses the same building energy simulation",
+            "that we use in research and teaching 'climate fit",
+            "buildings and districts' and our bachelor and",
+            "master programs 'renewable energy systems'",
+        ]
         renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
 
         for button in self.handler.buttons:

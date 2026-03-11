@@ -277,7 +277,10 @@ class Renderer:
         # load QR code
         qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
         qr_code = pg.transform.scale(qr_code, size=(100, 100))
-        self.display.blit(qr_code, (250, 250))
+
+        # self.draw_grid(100)
+
+        self.display.blit(qr_code, (350, 490))
 
 
 class MenuRenderer:
