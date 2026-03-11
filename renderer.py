@@ -6,7 +6,7 @@ import pygame as pg
 from camera import Camera2D
 from font import Font
 from handler import Button  # necessary?
-from upgrades import Upgrades
+from upgrades import Upgrade
 from utils import color_interpolation, seasonalcolor, circle_surf
 
 ROOT_PATH = Path(__file__).parent
@@ -349,7 +349,7 @@ class MenuRenderer:
             self.render_upgrade_tile(upgrade, (x, y))
             idx += 1
 
-    def render_upgrade_tile(self, upgrade: Upgrades, pos):
+    def render_upgrade_tile(self, upgrade: Upgrade, pos):
         """Render a single upgrade tile with its cost and state."""
         tile_surf = pg.Surface(self.tile_size)
 

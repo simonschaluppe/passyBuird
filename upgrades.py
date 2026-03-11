@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Upgrades:
+class Upgrade:
     name: str
     upgrade_text: str
     cost: int
@@ -14,7 +14,7 @@ class Upgrades:
 
 UPGRADES = {
 
-    "wall_insulation": Upgrades(
+    "wall_insulation": Upgrade(
         name="Wall Insulation",
         upgrade_text="Insulate Walls",
         cost=1000,
@@ -22,7 +22,7 @@ UPGRADES = {
         available=True,
     ),
 
-    "power": Upgrades(
+    "power": Upgrade(
         name="Power",
         upgrade_text="Increase Power",
         cost=1000,
@@ -30,7 +30,7 @@ UPGRADES = {
         available=True,
     ),
 
-    "heatpump_efficiency": Upgrades(
+    "heatpump_efficiency": Upgrade(
         name="Heat Pump Efficiency",
         upgrade_text="Increase Efficiency",
         cost=1500,
@@ -38,14 +38,14 @@ UPGRADES = {
         available=True,
     ),
 
-    "electricity_price_discount": Upgrades(
+    "electricity_price_discount": Upgrade(
         name="Elect. Price Discount",
         upgrade_text="Negotiate Discount",
         cost=1500,
         image="",
         available=True,
     ),
-    "windows": Upgrades(
+    "windows": Upgrade(
         name="Windows",
         upgrade_text="New Windows",
         cost=1500,
@@ -53,7 +53,7 @@ UPGRADES = {
         available=False,
     ),
 
-    "hvac": Upgrades(
+    "hvac": Upgrade(
         name="HVAC",
         upgrade_text="HVAC Upgrade",
         cost=2000,

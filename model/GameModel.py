@@ -7,7 +7,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 DATA_PATH = ROOT_PATH / "data"
 
-from upgrades import Upgrades, UPGRADES
+from upgrades import Upgrade, UPGRADES
 from levels import Level, LEVELS
 from model.Simulation import EnergyModel
 
@@ -88,7 +88,7 @@ class GameModel:
         self.model.init_sim()
         self.hour = 0
         self._mh = 0
-        self.upgrades: dict[str, Upgrades] = UPGRADES
+        self.upgrades: dict[str, Upgrade] = UPGRADES
         self.levels: Iterable[LEVELS] = iter(LEVELS)
         self.setup_new_game()
 
@@ -332,7 +332,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                 }
 
     def setup_upgrades(self):
-        def upgrade(upgrade: Upgrades, fn: callable):
+        def upgrade(upgrade: Upgrade, fn: callable):
             if upgrade.cost > self.money:
                 print("Not enough money!")
                 return
