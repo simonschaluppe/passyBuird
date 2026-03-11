@@ -7,6 +7,7 @@ class Level:
     start: int
     end: int
     start_TI: int
+    min_comfort: int  # level fail when falling below minimum comfort value [%]
     reward: int
 
 
@@ -22,6 +23,7 @@ Duration: 1 Week
         start=8000,
         end=8759,
         start_TI=22,
-        reward=1000,
-    )
+        min_comfort= 50,
+        reward = 1000,
+)
 ]
