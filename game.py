@@ -36,13 +36,27 @@ renderer = Renderer(display, camera, clock)
 return_home = lambda: title_screen.loop()
 start_level = lambda: level_screen.loop()
 enter_shop = lambda: shop_screen.loop()
-level_entry = lambda: level_entry_popup.loop()
 money_death = lambda: money_death_popup.loop()
 heat_death = lambda: heat_death_popup.loop()
 freeze_death = lambda: freeze_death_popup.loop()
 
 
 # Multi line functions
+def level_entry():
+    level_entry_popup = Popup(
+        title=game.current_level.name,
+        body=game.current_level.intro,
+        buttons=[
+            Button((120, 480), start_level, "OK")
+        ],
+        keys=[
+            (pg.K_RETURN, start_level),
+            (pg.K_ESCAPE, return_home),
+        ],
+    )
+    level_entry_popup.loop()
+
+
 def level_success():
     game.money += game.current_level.reward
     level_success_popup.loop()
@@ -302,17 +316,6 @@ level_screen = LevelScreen()
 
 """Popup screen instances"""
 
-level_entry_popup = Popup(
-    title="Ready?",
-    body=["Ready?"],
-    buttons=[
-        Button((120, 480), start_level, "OK")
-    ],
-    keys=[
-        (pg.K_RETURN, start_level),
-        (pg.K_ESCAPE, return_home),
-    ],
-)
 level_success_popup = Popup(
     title="You survived the year!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
