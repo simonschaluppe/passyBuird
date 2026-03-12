@@ -6,7 +6,7 @@ import pandas as pd
 
 
 class Comfortmodel:
-    def __init__(self, p_change: float = 0, alpha: float = 0, sigma: float = 0) -> None:
+    def __init__(self, random: bool = True, p_change: float = 0, alpha: float = 0, sigma: float = 0) -> None:
         self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]  # specify which months should the heating be useed
         self.minimum_room_temperature = 20.
 
@@ -21,8 +21,12 @@ class Comfortmodel:
         self.alpha = alpha  # pull strength toward center (applied only on change)
         self.sigma = sigma  # randomness on change
 
-        self.TI_minimum_setpoints = self.create_minimum_setpoints()
-        self.TI_maximum_setpoints = self.create_maximum_setpoints()
+        if random:
+            self.TI_minimum_setpoints = self.create_minimum_setpoints()
+            self.TI_maximum_setpoints = self.create_maximum_setpoints()
+        else:
+            self.TI_minimum_setpoints = [self.minimum_room_temperature] * 8760
+            self.TI_maximum_setpoints = [self.maximum_room_temperature] * 8760
 
         self.comfort_sensitivity = 1
 
