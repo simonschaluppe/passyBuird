@@ -378,6 +378,7 @@ freeze_death_popup = Popup(
 )
 
 """Start"""
-
+if GODMODE:
+    game.money = float("inf")
 # start by entering title screen
 return_home()
