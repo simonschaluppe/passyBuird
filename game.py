@@ -8,6 +8,8 @@ from model.GameModel import GameModel
 from particles import ParticleManager
 from renderer import Renderer
 
+GODMODE = False
+
 # Initialize pygame
 pg.init()
 print(pg.version)
@@ -243,11 +245,11 @@ class LevelScreen(Screen):
                 accumulated_gamehours -= hours
                 game.update(hours=hours)
 
-            if game.money <= 0:
+            if game.money <= 0 and not GODMODE:
                 money_death()
 
             TI = game.model.TI[game._mh]
-            if game.model.comfort.comfort_score(TI) < game.current_level.min_comfort:
+            if game.model.comfort.comfort_score(TI) < game.current_level.min_comfort and not GODMODE:
                 if game.model.comfort.comfort_diff(TI) > 0:
                     heat_death()
                 if game.model.comfort.comfort_diff(TI) < 0:
