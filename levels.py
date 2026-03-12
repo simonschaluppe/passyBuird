@@ -36,9 +36,8 @@ LEVELS = [
         min_comfort=50,
         reward=1000,
         comfort=Comfortmodel(
-            p_change=1 / 12,
-            alpha=0.25,
-            sigma=0.8
+            random=False,
+            maximum_room_temperature=100,
         )
     ),
 
