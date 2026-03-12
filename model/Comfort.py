@@ -6,12 +6,19 @@ import pandas as pd
 
 
 class Comfortmodel:
-    def __init__(self, random: bool = True, p_change: float = 0, alpha: float = 0, sigma: float = 0) -> None:
-        self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]  # specify which months should the heating be useed
-        self.minimum_room_temperature = 20.
+    def __init__(self,
+                 minimum_room_temperature: float = 20.,
+                 maximum_room_temperature: float = 26.,
+                 random: bool = True,
+                 p_change: float = 0,
+                 alpha: float = 0,
+                 sigma: float = 0) -> None:
 
+        self.minimum_room_temperature = minimum_room_temperature
+        self.maximum_room_temperature = maximum_room_temperature
+
+        self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]  # specify which months should the heating be useed
         self.cooling_months = [4, 5, 6, 7, 8, 9]
-        self.maximum_room_temperature = 26.
 
         self.timestamp = pd.Series(np.arange('2021-01-01 00:00', '2022-01-01 00:00', dtype='datetime64[h]'))
 
