@@ -21,9 +21,8 @@ LEVELS = [
     Level(
         name="Level 1: Heating",
         intro=[
-            "It's a cold January day! Make sure the building",
-            "stays warm and cozy and the temperature does not",
-            "drop below the minimum setpoint temperature",
+            "It's a cold January day! Make sure the building stays warm and cozy and the",
+            "temperature does not drop below the minimum setpoint temperature",
             "(orange line)",
             "",
             "How to play: Press LMB to heat",
@@ -37,7 +36,7 @@ LEVELS = [
         reward=1000,
         comfort=Comfortmodel(
             random=False,
-            maximum_room_temperature=100,
+            maximum_room_temperature=1000,
         )
     ),
 
@@ -95,9 +94,8 @@ LEVELS = [
     Level(
         name="Level 5: A whole year",
         intro=[
-            "Now its time to test your mettle! can you juggle",
-            "fluctuating temperature demands, energy prices",
-            "and CO2 intensities and survive an entire year?",
+            "Now its time to test your mettle! can you juggle fluctuating temperature",
+            "demands, energy prices and CO2 intensities and survive an entire year?",
         ],
         start=0,
         end=7 * 24,

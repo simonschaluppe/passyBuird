@@ -81,7 +81,7 @@ class Renderer:
         for i, (label, callback) in enumerate(statements.items()):
             debug_text = f"{label}: {callback()}"
             self.render_line(
-                debug_text, colors["DEBUG"], (10, 10 + i * self.lineheight)
+                debug_text, colors["DEBUG"], (16, 13 + i * self.lineheight)
             )
 
     # basic rendering
@@ -127,7 +127,7 @@ class Renderer:
             text: str,
             color=ALMOSTBLACK,
             pos=(0, 0),
-            size=20,
+            size=26,
             font=None,
             onto=None,
             lineheight=None,
@@ -211,7 +211,7 @@ class Renderer:
         line_spacing = 30  # slightly more than size to avoid overlap
 
         self.menu_renderer.render_background()
-        panel_rect = pg.Rect(80, 30, 640, 640)
+        panel_rect = pg.Rect(128, 40, 1024, 851)
         pg.draw.rect(
             self.display,
             (30, 30, 30),  # fill color
@@ -228,26 +228,26 @@ class Renderer:
 
         self.render_line(
             title,
-            pos=(120, 80),
+            pos=(192, 106),
             size=50,
             font=self.titlefont,
         )
-        y = 150  # Larger space after title
+        y = 200  # Larger space after title
 
         for line in body:
             self.render_line(
                 line,
-                pos=(120, y),
+                pos=(192, y),
                 size=line_size,
             )
             y += line_spacing
 
     def render_title_screen(self, title: str, body: list):
         line_size = 24
-        line_spacing = 30  # slightly more than size to avoid overlap
+        line_spacing = 48  # slightly more than size to avoid overlap
 
         self.menu_renderer.render_background()
-        panel_rect = pg.Rect(80, 30, 640, 640)
+        panel_rect = pg.Rect(128, 40, 1024, 851)
         pg.draw.rect(
             self.display,
             (30, 30, 30),  # fill color
@@ -264,27 +264,27 @@ class Renderer:
 
         self.render_line(
             title,
-            pos=(120, 80),
+            pos=(192, 106),
             size=50,
             font=self.titlefont,
         )
-        y = 150  # Larger space after title
+        y = 195  # Larger space after title
 
         for line in body:
             self.render_line(
                 line,
-                pos=(120, y),
+                pos=(192, y),
                 size=line_size,
             )
             y += line_spacing
 
         # load QR code
         qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
-        qr_code = pg.transform.scale(qr_code, size=(100, 100))
+        qr_code = pg.transform.scale(qr_code, size=(160, 133))
 
         # self.draw_grid(100)
 
-        self.display.blit(qr_code, (350, 490))
+        self.display.blit(qr_code, (560, 652))
 
 
 class MenuRenderer:
@@ -294,8 +294,8 @@ class MenuRenderer:
         self.render_line = renderer.render_line
         self.render_lines = renderer.render_lines
 
-        self.topleft = (40, 40)  # corner anchor
-        self.tile_size = (100, 100)  # Size for each upgrade tile
+        self.topleft = (64, 53)  # corner anchor
+        self.tile_size = (160, 133)  # Size for each upgrade tile
 
         self.stats_text_color = ALMOSTBLACK
 
@@ -308,7 +308,7 @@ class MenuRenderer:
         # Draw the menu background first
         self.render_background()
 
-        # self.renderer.draw_grid(100)
+        # self.renderer.draw_grid(50)
 
         # self.render_hull_stats(
         #     data["hull"], pos=(self.topleft[0], 200), color=self.stats_text_color
@@ -323,9 +323,9 @@ class MenuRenderer:
         # self.render_player_stats(data["player"], pos=(600, 50))
 
         self.render_title(self.topleft)
-        self.render_text((self.topleft[0], 100))
-        self.render_updrade_text(data["upgrade_text"], (30, 250), self.stats_text_color)
-        self.render_game_stats(data["game_stats"], (500, 50), self.stats_text_color)
+        self.render_text((self.topleft[0], 133))
+        self.render_updrade_text(data["upgrade_text"], (48, 332), self.stats_text_color)
+        self.render_game_stats(data["game_stats"], (800, 66), self.stats_text_color)
 
     def render_background(self):
         self.display.blit(self.menu_background, (0, 0))
@@ -333,14 +333,20 @@ class MenuRenderer:
     def render_title(self, pos):
         title = "PassyBUIRD"
         self.render_line(
-            title, colors["Title"], pos, font=self.renderer.titlefont, size=50
+            title, colors["Title"], pos, font=self.renderer.titlefont, size=66
         )
 
     def render_text(self, pos):
-        text = "This is the shop. Here you can use your money to upgrade your building."
-        self.render_line(
-            text, colors["Title"], pos, font=self.renderer.titlefont, size=30
-        )
+        text = [
+            "This is the shop. Here you can use your money to upgrade,",
+            "your building.",
+        ]
+        spacing = 0
+        for line in text:
+            self.render_line(
+                line, colors["Title"], (pos[0], pos[1]+spacing), font=self.renderer.titlefont, size=40
+            )
+            spacing+= 40
 
     def render_upgrade_tiles(self, upgrades, pos):
         """Render upgrade tiles on the screen."""
@@ -397,7 +403,7 @@ class MenuRenderer:
             f"€{player_data['money']}",
             color=GREEN,
             pos=pos,
-            size=40,
+            size=52,
         )
 
     def render_hvac_stats(
@@ -429,7 +435,7 @@ class CurvesRenderer:
         # Load the house image for the indicator
         house = pg.image.load(IMAGE_PATH / "glide.png").convert()
         house.set_colorkey((255, 255, 0))
-        self.house = pg.transform.scale(house, (40, 40))
+        self.house = pg.transform.scale(house, (64, 53))
 
     def render(self, data):
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
@@ -498,14 +504,14 @@ class UIRenderer:
         comfort_data = ui_data["Scores"]["Comfort"]
         self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"])
 
-        self.render_line(ui_data["Price"], pos=(550, 80), color=colors["Price"])
-        self.render_line(ui_data["CO2"], pos=(550, 100), color=colors["Emission text"])
-        self.render_line(ui_data["COP"], pos=(550, 120), color=colors["UI Text"])
-        self.render_line(ui_data["Power"], pos=(550, 140), color=colors["UI Text"])
+        self.render_line(ui_data["Price"], pos=(880, 106), color=colors["Price"])
+        self.render_line(ui_data["CO2"], pos=(880, 133), color=colors["Emission text"])
+        self.render_line(ui_data["COP"], pos=(880, 160), color=colors["UI Text"])
+        self.render_line(ui_data["Power"], pos=(880, 186), color=colors["UI Text"])
 
     def energybalance(self, balance_data):
         """Render energy balance as waterfall diagram."""
-        anchor_x, anchor_y = 600, self.renderer.cy
+        anchor_x, anchor_y = 960, self.renderer.cy
         first = balance_data["first"]
         second = balance_data["second"]
         QH = balance_data["QH"]
@@ -514,7 +520,7 @@ class UIRenderer:
         width = 10
         # Draw anchor point line (reference point)
         pg.draw.rect(
-            self.display, WHITE, pg.Rect(anchor_x, anchor_y, 120, 2)
+            self.display, WHITE, pg.Rect(anchor_x, anchor_y, 192, 2)
         )  # White anchor line
 
         # Initial position is the anchor point
@@ -552,7 +558,7 @@ class UIRenderer:
         # Render QH and QC bars relative to anchor point
         # QH (positive, down)
         pg.draw.rect(
-            self.display, colors["QH"], pg.Rect(anchor_x + 50, current_y - QH, 10, QH)
+            self.display, colors["QH"], pg.Rect(anchor_x + 80, current_y - QH, 10, QH)
         )
         if QH != 0:
             self.renderer.render_line(
@@ -563,7 +569,7 @@ class UIRenderer:
 
         # QC (negative, up)
         pg.draw.rect(
-            self.display, colors["QC"], pg.Rect(anchor_x + 50, current_y, 10, -QC)
+            self.display, colors["QC"], pg.Rect(anchor_x + 80, current_y, 10, -QC)
         )
         if QC != 0:
             self.renderer.render_line(
@@ -576,16 +582,16 @@ class UIRenderer:
         self.render_line(
             str(money),
             color=(100, 255, 120),
-            size=40,
+            size=52,
             pos=pos,
             font=self.renderer.titlefont,
         )
 
-    def render_comfort_score(self, score, dT, pos=(550, 50)):
+    def render_comfort_score(self, score, dT, pos=(880, 66)):
         text = f"Comfort {score:.1f} %"
         color = color_indicator(dT)
         color = color_interpolation(color, GREEN, score / 100)
-        self.render_line(text, color, pos=pos, size=30)
+        self.render_line(text, color, pos=pos, size=40)
 
 
 # test code

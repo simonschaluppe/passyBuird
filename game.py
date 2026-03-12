@@ -15,11 +15,11 @@ pg.init()
 print(pg.version)
 
 # Set up the main display surface
-screen: pg.Surface = pg.display.set_mode((800, 600))
+screen: pg.Surface = pg.display.set_mode((1280, 800))
 pg.display.set_caption("passyBUIRLD")
 
 # Create another surface to perform off-screen drawing
-display = pg.Surface((800, 600))
+display = pg.Surface((1280, 800))
 
 clock = pg.time.Clock()
 game = GameModel()
@@ -49,7 +49,7 @@ def level_entry():
         title=game.current_level.name,
         body=game.current_level.intro,
         buttons=[
-            Button((120, 480), start_level, "OK")
+            Button((192, 640), start_level, "OK")
         ],
         keys=[
             (pg.K_RETURN, start_level),
@@ -133,7 +133,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button((120, 520), enter_shop, "Start the Game!"),
+            Button((192, 691), enter_shop, "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -143,17 +143,14 @@ class TitleScreen(Screen):
     @override
     def render(self) -> None:
         description = [
-            "PassyBuird is like FlappyBird. Except instead of",
-            "a bird, you prevent the room temperature of a",
-            "building from crashing. And instead of avoiding",
-            "pipes, you try to stay within the comfortable",
-            "temperature range. Instead of flapping, you apply",
-            "heating to increase your temperature (height).",
+            "PassyBuird is like FlappyBird. Except instead of a bird, you prevent the room",
+            "temperature of a building from crashing. And instead of avoiding pipes, you",
+            "try to stay within the comfortable temperature range. Instead of flapping, you",
+            "apply heating to increase your temperature (height).",
             "",
-            "The game uses the same building energy simulation",
-            "that we use in research and teaching 'climate fit",
-            "buildings and districts' and our bachelor and",
-            "master programs 'renewable energy systems'",
+            "The game uses the same building energy simulation that we use in research and",
+            "teaching 'climate fit buildings and districts' and our bachelor and master",
+            "programs 'renewable energy systems'",
         ]
         renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
 
@@ -179,12 +176,12 @@ class ShopScreen(Screen):
             return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(220, 30))
 
         buttons = [
-            Button((600, 530), start_next_level, "Next level"),
-            Button((25, 530), quit_game, "Quit Run"),
-            upgrade_button(game.upgrades['wall_insulation'], (335, 290)),
-            upgrade_button(game.upgrades['power'], (335, 340)),
-            upgrade_button(game.upgrades['heatpump_efficiency'], (335, 390)),
-            upgrade_button(game.upgrades['electricity_price_discount'], (335, 440)),
+            Button((960, 705), start_next_level, "Next level"),
+            Button((40, 705), quit_game, "Quit Run"),
+            upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
+            upgrade_button(game.upgrades['power'], (500, 425)),
+            upgrade_button(game.upgrades['heatpump_efficiency'], (500, 475)),
+            upgrade_button(game.upgrades['electricity_price_discount'], (500, 525)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -342,7 +339,7 @@ level_success_popup = Popup(
     title="You survived the year!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button((120, 480), enter_shop, "OK")
+        Button((192, 640), enter_shop, "OK")
     ],
     keys=[
         (pg.K_RETURN, enter_shop),
@@ -353,7 +350,7 @@ money_death_popup = Popup(
     title="Du hast kein Geld mehr!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button((120, 480), start_new_game, "OK")
+        Button((192, 640), start_new_game, "OK")
     ],
     keys=[
         (pg.K_RETURN, start_new_game),
@@ -365,7 +362,7 @@ heat_death_popup = Popup(
     title="Everyone died of heat stroke!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button((120, 480), start_new_game, "OK")
+        Button((192, 640), start_new_game, "OK")
     ],
     keys=[
         (pg.K_RETURN, start_new_game),
@@ -377,7 +374,7 @@ freeze_death_popup = Popup(
     title="Everyone froze into icicles!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button((120, 480), start_new_game, "OK")
+        Button((192, 640), start_new_game, "OK")
     ],
     keys=[
         (pg.K_RETURN, start_new_game),
