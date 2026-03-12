@@ -33,6 +33,7 @@ colors = {
     "Upgrade text": (153, 64, 154),
     "Emission text": (66, 62, 56),
     "Emissions": (105, 95, 78),
+    "Purchase": (255, 165, 0),
 }
 
 # Define color constants
@@ -193,6 +194,9 @@ class Renderer:
 
     def draw_cool_particles(self, particleList):
         self.draw_particles(particleList, colors["QC"])
+
+    def draw_purchase_particles(self, particleList):
+        self.draw_particles(particleList, colors["Purchase"])
 
     # main game UI
     def render_ui(self, ui_data):

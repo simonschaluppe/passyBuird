@@ -173,7 +173,7 @@ class ShopScreen(Screen):
         def upgrade_button(upgrade, pos):
             def callback():
                 particale_amount = 10
-                [particle_manager.heat(position=game.position, velocity=(0, 1)) for _ in range(particale_amount)]
+                [particle_manager.purchase(position=game.position, velocity=(0, 1)) for _ in range(particale_amount)]
                 upgrade.callback()
 
             return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(220, 30))
@@ -196,7 +196,7 @@ class ShopScreen(Screen):
     @override
     def render(self) -> None:
         renderer.render_menu(game.get_menu_data())
-        renderer.draw_heat_particles(particle_manager.groups["heating"])
+        renderer.draw_purchase_particles(particle_manager.groups["purchase"])
 
         for button in self.handler.buttons:
             renderer.render_button(button)

@@ -15,6 +15,7 @@ class ParticleManager:
         self.groups = {}
         self.groups["heating"] = []
         self.groups["cooling"] = []
+        self.groups["purchase"] = []
 
     def add(self, list_name, position, velocity, lifetime):
         if list_name not in self.groups:
@@ -31,6 +32,9 @@ class ParticleManager:
 
     def cool(self, position, velocity):
         self.add("cooling", position, velocity, lifetime=50)
+
+    def purchase(self, position, velocity):
+        self.add("purchase", position, velocity, lifetime=50)
 
     def update(self):
         for name, container in self.groups.items():
