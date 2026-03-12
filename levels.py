@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from model.Comfort import Comfortmodel
+
 
 @dataclass
 class Level:
@@ -8,8 +10,11 @@ class Level:
     start: int
     end: int
     start_TI: int
-    min_comfort: int  # level fail when falling below minimum comfort value [%]
     reward: int
+
+    # level difficulty parameters
+    min_comfort: int  # level fail when falling below minimum comfort value [%]
+    comfort: Comfortmodel
 
 
 LEVELS = [
@@ -30,6 +35,11 @@ LEVELS = [
         start_TI=22,
         min_comfort=50,
         reward=1000,
+        comfort=Comfortmodel(
+            p_change=1 / 12,
+            alpha=0.25,
+            sigma=0.8
+        )
     ),
 
     Level(
@@ -42,6 +52,11 @@ LEVELS = [
         start_TI=22,
         min_comfort=50,
         reward=1000,
+        comfort=Comfortmodel(
+            p_change=1 / 6,
+            alpha=0.25,
+            sigma=0.8,
+        )
     ),
 
     Level(
@@ -54,6 +69,11 @@ LEVELS = [
         start_TI=22,
         min_comfort=50,
         reward=1000,
+        comfort=Comfortmodel(
+            p_change=1 / 12,
+            alpha=0.5,
+            sigma=0.8,
+        )
     ),
 
     Level(
@@ -66,6 +86,11 @@ LEVELS = [
         start_TI=22,
         min_comfort=50,
         reward=1000,
+        comfort=Comfortmodel(
+            p_change=1 / 12,
+            alpha=0.25,
+            sigma=1.6,
+        )
     ),
 
     Level(
@@ -80,5 +105,10 @@ LEVELS = [
         start_TI=22,
         min_comfort=50,
         reward=1000,
+        comfort=Comfortmodel(
+            p_change=1 / 12,
+            alpha=0.25,
+            sigma=0.8,
+        )
     )
 ]

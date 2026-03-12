@@ -6,7 +6,7 @@ import pandas as pd
 
 
 class Comfortmodel:
-    def __init__(self) -> None:
+    def __init__(self, p_change: float = 0, alpha: float = 0, sigma: float = 0) -> None:
         self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]  # specify which months should the heating be useed
         self.minimum_room_temperature = 20.
 
@@ -16,6 +16,10 @@ class Comfortmodel:
         self.timestamp = pd.Series(np.arange('2021-01-01 00:00', '2022-01-01 00:00', dtype='datetime64[h]'))
 
         self.comfort = np.ones(8760) * 100
+
+        self.p_change = p_change  # average one change per 12 hours
+        self.alpha = alpha  # pull strength toward center (applied only on change)
+        self.sigma = sigma  # randomness on change
 
         self.TI_minimum_setpoints = self.create_minimum_setpoints()
         self.TI_maximum_setpoints = self.create_maximum_setpoints()
@@ -30,19 +34,15 @@ class Comfortmodel:
     def create_minimum_setpoints(self):
         mu = self.minimum_room_temperature
 
-        p_change = 1 / 12  # average one change per 12 hours
-        alpha = 0.25  # pull strength toward center (applied only on change)
-        sigma = 0.8  # randomness on change
-
         points = [mu]
 
         for _ in range(1, 8760):
             x = points[-1]
 
-            if random.random() < p_change:
+            if random.random() < self.p_change:
                 # mean-reverting "step"
-                drift = alpha * (mu - x)
-                noise = random.gauss(0, sigma)
+                drift = self.alpha * (mu - x)
+                noise = random.gauss(0, self.sigma)
                 x = x + drift + noise
 
             points.append(x)
@@ -50,9 +50,6 @@ class Comfortmodel:
         return points
 
     def create_maximum_setpoints(self):
-        p_change = 1 / 12  # average one change per day
-        alpha = 0.4  # pull toward center of [1, 5]
-        sigma = 0.8  # randomness of change
 
         dT_min = 1.0
         dT_max = 5.0
@@ -62,9 +59,9 @@ class Comfortmodel:
         Tmax = []
 
         for Tmin in self.TI_minimum_setpoints:
-            if random.random() < p_change:
-                drift = alpha * (dT_center - dT)
-                noise = random.gauss(0, sigma)
+            if random.random() < self.p_change:
+                drift = self.alpha * (dT_center - dT)
+                noise = random.gauss(0, self.sigma)
                 dT = dT + drift + noise
 
                 # enforce bounds

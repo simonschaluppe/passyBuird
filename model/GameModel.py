@@ -117,6 +117,7 @@ class GameModel:
         self.final_hour_of_the_year = (self.current_level.end) % 8760
         self._mh = start_hour  # model hour always in [0-8759]
 
+        self.model.comfort = self.current_level.comfort
         self.model.init_sim(start_hour=start_hour, TI_init=self.current_level.start_TI)
 
         self.forecast_hours = 72
