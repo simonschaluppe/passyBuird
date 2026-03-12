@@ -175,10 +175,11 @@ class Renderer:
     def render_curves(self, curve_data):
         self.curves_renderer.render(curve_data)
 
+
     # particle renderer
-    def draw_particles(self, particleList, color):
+    def draw_particles(self, particleList, color, game_coords=False):
         for p in particleList:
-            pos = self.camera.screen_coords(p.pos)
+            pos = self.camera.screen_coords(p.pos) if game_coords else p.pos
             x, y = pos
             pg.draw.circle(self.display, color, pos, p.lifetime / 8)
             glow_color = color_interpolation((0, 0, 0), color, 0.2)
@@ -190,13 +191,13 @@ class Renderer:
             )
 
     def draw_heat_particles(self, particleList):
-        self.draw_particles(particleList, colors["QH"])
+        self.draw_particles(particleList, colors["QH"], game_coords=True)
 
     def draw_cool_particles(self, particleList):
-        self.draw_particles(particleList, colors["QC"])
+        self.draw_particles(particleList, colors["QC"], game_coords=True)
 
     def draw_purchase_particles(self, particleList):
-        self.draw_particles(particleList, colors["Purchase"])
+        self.draw_particles(particleList, colors["Purchase"], game_coords=False)
 
     # main game UI
     def render_ui(self, ui_data):
