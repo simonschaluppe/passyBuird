@@ -5,6 +5,7 @@ from model.Comfort import Comfortmodel
 
 @dataclass
 class Level:
+    number: int
     name: str
     intro: list[str]
     start: int
@@ -19,6 +20,7 @@ class Level:
 
 LEVELS = [
     Level(
+        number=1,
         name="Level 1: Heating",
         intro=[
             "It's a cold January day! Make sure the building stays warm and cozy and the",
@@ -41,6 +43,7 @@ LEVELS = [
     ),
 
     Level(
+        number=2,
         name="Level 2: Cooling",
         intro=[
             "Add Level description here!",
@@ -58,6 +61,7 @@ LEVELS = [
     ),
 
     Level(
+        number=3,
         name="Level 3: CO2 Intensity",
         intro=[
             "Add Level description here!",
@@ -75,6 +79,7 @@ LEVELS = [
     ),
 
     Level(
+        number=4,
         name="Level 4: Energy price shock!",
         intro=[
             "Add Level description here!",
@@ -92,6 +97,7 @@ LEVELS = [
     ),
 
     Level(
+        number=5,
         name="Level 5: A whole year",
         intro=[
             "Now its time to test your mettle! can you juggle fluctuating temperature",
