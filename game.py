@@ -38,9 +38,9 @@ renderer = Renderer(display, camera, clock)
 return_home = lambda: title_screen.loop()
 start_level = lambda: level_screen.loop()
 enter_shop = lambda: shop_screen.loop()
-money_death = lambda: money_death_popup.loop()
-heat_death = lambda: heat_death_popup.loop()
-freeze_death = lambda: freeze_death_popup.loop()
+money_death = lambda: level_fail('money')
+heat_death = lambda: level_fail('heat')
+freeze_death = lambda: level_fail('freeze')
 
 
 # Multi line functions
@@ -67,6 +67,29 @@ def level_success():
         print("You've finished the game, Good Job!")
         quit_game()
     level_success_popup.loop()
+
+
+def level_fail(cause: str):
+
+    match cause:
+        case "money":
+            title = "Du hast kein Geld mehr!"
+        case "heat":
+            title = "Everyone died of heat stroke!"
+        case "freeze":
+            title = "Everyone froze into icicles!"
+
+    Popup(
+        title=title,
+        body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+        buttons=[
+            Button((192, 640), start_new_game, "OK")
+        ],
+        keys=[
+            (pg.K_RETURN, start_new_game),
+            (pg.K_ESCAPE, start_new_game),
+        ],
+    ).loop()
 
 
 def quit_game():
@@ -344,41 +367,6 @@ level_success_popup = Popup(
     keys=[
         (pg.K_RETURN, enter_shop),
         (pg.K_ESCAPE, enter_shop),
-    ],
-)
-money_death_popup = Popup(
-    title="Du hast kein Geld mehr!",
-    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
-    buttons=[
-        Button((192, 640), start_new_game, "OK")
-    ],
-    keys=[
-        (pg.K_RETURN, start_new_game),
-        (pg.K_ESCAPE, start_new_game),
-    ],
-)
-
-heat_death_popup = Popup(
-    title="Everyone died of heat stroke!",
-    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
-    buttons=[
-        Button((192, 640), start_new_game, "OK")
-    ],
-    keys=[
-        (pg.K_RETURN, start_new_game),
-        (pg.K_ESCAPE, start_new_game),
-    ],
-)
-
-freeze_death_popup = Popup(
-    title="Everyone froze into icicles!",
-    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
-    buttons=[
-        Button((192, 640), start_new_game, "OK")
-    ],
-    keys=[
-        (pg.K_RETURN, start_new_game),
-        (pg.K_ESCAPE, start_new_game),
     ],
 )
 
