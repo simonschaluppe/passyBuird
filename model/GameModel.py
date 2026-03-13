@@ -56,7 +56,7 @@ class Curve:
 
 class GameModel:
     money: int
-    energy_discount:int
+    energy_discount: int
 
     forecast_hours: int
     backcast_hours: int
@@ -97,7 +97,7 @@ class GameModel:
                        starting_cop=3,
                        ):
         self.money = 1_000
-        self.energy_discount = 0    # 0-100 [%]
+        self.energy_discount = 0  # 0-100 [%]
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
         self.set_cop(starting_cop)
@@ -341,6 +341,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             upgrade.level += 1
             self.money -= upgrade.cost
             fn()
+
         # todo: Use proper setter/getter functions throughout!
         def power():
             self.set_heating_power(self.model.HVAC.HP_heating_power + 1)

@@ -344,9 +344,9 @@ class MenuRenderer:
         spacing = 0
         for line in text:
             self.render_line(
-                line, colors["Title"], (pos[0], pos[1]+spacing), font=self.renderer.titlefont, size=40
+                line, colors["Title"], (pos[0], pos[1] + spacing), font=self.renderer.titlefont, size=40
             )
-            spacing+= 40
+            spacing += 40
 
     def render_upgrade_tiles(self, upgrades, pos):
         """Render upgrade tiles on the screen."""
