@@ -61,6 +61,7 @@ def level_entry():
 
 def level_success():
     game.money += game.current_level.reward
+    level_success_popup.body = [f"{label}: {value}" for label, value in game.get_kpis().items()]
     victory = not game.setup_next_level()
     if victory:
         print("You've finished the game, Good Job!")
