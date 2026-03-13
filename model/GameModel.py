@@ -78,6 +78,7 @@ class GameModel:
     curve_comfort_max: Curve
     curve_co2: Curve
 
+    levels: Iterable[LEVELS]
     current_level: Level
 
     def __init__(self):
@@ -89,7 +90,6 @@ class GameModel:
         self.hour = 0
         self._mh = 0
         self.upgrades: dict[str, Upgrade] = UPGRADES
-        self.levels: Iterable[LEVELS] = iter(LEVELS)
         self.setup_new_game()
 
     def setup_new_game(self,
@@ -102,6 +102,11 @@ class GameModel:
         self.set_cooling_power(starting_power)
         self.set_cop(starting_cop)
         self.setup_upgrades()
+        self.reset_levels()
+
+    def reset_levels(self):
+        self.levels = iter(LEVELS)
+        self.setup_next_level() # setup level 1
 
     def setup_next_level(self):
         try:
