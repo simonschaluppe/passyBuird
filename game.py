@@ -61,6 +61,10 @@ def level_entry():
 
 def level_success():
     game.money += game.current_level.reward
+    victory = not game.setup_next_level()
+    if victory:
+        print("You've finished the game, Good Job!")
+        quit_game()
     level_success_popup.loop()
 
 
@@ -82,14 +86,6 @@ def cool():
     particle_manager.cool(
         game.position, (0, -game.qc)
     )
-
-
-def start_next_level():
-    victory = not game.setup_next_level()
-    if victory:
-        print("You've finished the game, Good Job!")
-        quit_game()
-    level_entry()
 
 
 def start_new_game():
@@ -138,7 +134,7 @@ class TitleScreen(Screen):
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, start_next_level)
+        self.handler.bind_keypress(pg.K_RETURN, level_entry)
 
     @override
     def render(self) -> None:
@@ -176,7 +172,7 @@ class ShopScreen(Screen):
             return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(220, 30))
 
         buttons = [
-            Button((960, 705), start_next_level, "Next level"),
+            Button((960, 705), level_entry, "Next level"),
             Button((40, 705), quit_game, "Quit Run"),
             upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
             upgrade_button(game.upgrades['power'], (500, 425)),
@@ -186,7 +182,7 @@ class ShopScreen(Screen):
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, start_next_level)
+        self.handler.bind_keypress(pg.K_RETURN, level_entry)
         self.handler.bind_keypress(pg.K_q, quit)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
