@@ -48,8 +48,8 @@ LEVELS = [
         intro=[
             "Add Level description here!",
         ],
-        start=0,
-        end=7 * 24,
+        start = 4000,
+        end= 4000 + 7 * 24,
         start_TI=22,
         min_comfort=50,
         reward=1000,
