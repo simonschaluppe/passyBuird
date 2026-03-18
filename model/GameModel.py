@@ -12,6 +12,8 @@ from levels import Level, LEVELS
 from model.Simulation import EnergyModel
 
 
+DEFAULT_SPEED = 24
+
 class Curve:
     """Manages game time of timeseries in model time"""
 
@@ -82,7 +84,7 @@ class GameModel:
     current_level: Level
 
     def __init__(self):
-        self.speed = 24  # simulated hours / game second
+        self.speed = DEFAULT_SPEED  # simulated hours / game second
         self.paused = False
         self.finished = False
         self.model = EnergyModel()
@@ -115,6 +117,7 @@ class GameModel:
             return False
 
         start_hour = self.current_level.start
+        self.speed = DEFAULT_SPEED
 
         if not (0 <= start_hour <= 8759):
             raise ValueError("Invalid start_hour. Must be between [0 and 8759].")

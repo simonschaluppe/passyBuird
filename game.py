@@ -1,6 +1,7 @@
 from typing import override
 
 import pygame as pg
+import random
 
 from camera import Camera2D
 from handler import Button, InputHandler
@@ -10,23 +11,25 @@ from renderer import Renderer
 
 GODMODE = False
 
+SCREEN_RESOLUTION = (1920, 1080)
+
 # Initialize pygame
 pg.init()
 print(pg.version)
 
 # Set up the main display surface
-screen: pg.Surface = pg.display.set_mode((1280, 800))
+screen: pg.Surface = pg.display.set_mode(SCREEN_RESOLUTION)
 pg.display.set_caption("passyBUIRLD")
 
 # Create another surface to perform off-screen drawing
-display = pg.Surface((1280, 800))
+display = pg.Surface(SCREEN_RESOLUTION)
 
 clock = pg.time.Clock()
 game = GameModel()
 particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
-camera = Camera2D(surface=display, game_world_position=game.position, zoom=(2, 5))
+camera = Camera2D(surface=display, game_world_position=game.position, zoom=(14, 14))
 camera.follow(game, maxdist=0)
 
 # Set up renderer
@@ -62,11 +65,23 @@ def level_entry():
 def level_success():
     game.money += game.current_level.reward
     level_success_popup.body = [f"{label}: {value}" for label, value in game.get_kpis().items()]
+    for _ in range(300): 
+        x = random.randint(0, SCREEN_RESOLUTION[0])
+        y = random.randint(0, SCREEN_RESOLUTION[1])
+        particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
+
     victory = not game.setup_next_level()
     if victory:
-        print("You've finished the game, Good Job!")
-        quit_game()
+        victory_loop()
     level_success_popup.loop()
+
+def victory_loop():
+    for _ in range(300): 
+        x = random.randint(0, SCREEN_RESOLUTION[0])
+        y = random.randint(0, SCREEN_RESOLUTION[1])
+        particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
+    print("You've finished the game, Good Job!")
+    Victory().loop()
 
 
 def level_fail(cause: str):
@@ -78,6 +93,7 @@ def level_fail(cause: str):
             title = "Everyone died of heat stroke!"
         case "freeze":
             title = "Everyone froze into icicles!"
+            text = "Your average comfort was ..."
 
     Popup(
         title=title,
@@ -163,14 +179,13 @@ class TitleScreen(Screen):
     @override
     def render(self) -> None:
         description = [
-            "PassyBuird is like FlappyBird. Except instead of a bird, you prevent the room",
-            "temperature of a building from crashing. And instead of avoiding pipes, you",
-            "try to stay within the comfortable temperature range. Instead of flapping, you",
-            "apply heating to increase your temperature (height).",
-            "",
-            "The game uses the same building energy simulation that we use in research and",
-            "teaching 'climate fit buildings and districts' and our bachelor and master",
-            "programs 'renewable energy systems'",
+            "Congratulations! You just bought your very own house and you can't wait to spend",
+            "the Winter warm and comfortable. The only issue is - heating has become very",
+            "expensive... and a major contributor to climate change!",
+            "But don't fret! You're smart! And dextrous! With these qualities, you can decide",
+            "exactly how much heating energy you need to be super comfortable all year",
+            "long and conserve the climate along the way.",
+            "Come on, let's get started!"
         ]
         renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
 
@@ -248,6 +263,8 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_w, lambda: game.increment_cop(0.5))
         self.handler.bind_keypress(pg.K_s, lambda: game.increment_cop(-0.5))
         self.handler.bind_keypress(pg.K_q, quit_game)
+        self.handler.bind_keypress(pg.K_w, level_success)
+        self.handler.bind_keypress(pg.K_v, victory_loop)
         self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
     @override
@@ -339,6 +356,41 @@ class Popup(Screen):
         renderer.render_popup(title=self.title, body=self.body)
         for button in self.handler.buttons:
             renderer.render_button(button)
+        renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,200), random.randint(200,255), random.randint(100,200)))
+        screen.blit(renderer.display, (0, 0))
+        pg.display.update()
+
+    @override
+    def config_handler(self) -> None:
+        if self.buttons:
+            [self.handler.register_button(button) for button in self.buttons]
+        if self.keys:
+            [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]
+
+
+class Victory(Screen):
+    """Basic popup screen for short messages to the player.
+
+    Generally has a title, text body (message) and simple buttons (e.g. 'Back', 'Continue')."""
+
+    def __init__(self):
+        self.title = "You beat the game!"
+        self.body = "Congratulations, etc"
+        self.buttons = Button((192, 691), enter_shop, "Start new Game!"),
+        self.keys = [(pg.K_RETURN, enter_shop),(pg.K_ESCAPE, enter_shop),]
+        super().__init__()
+
+    @override
+    def render(self) -> None:
+        if random.random() < 0.5: 
+            x = random.randint(0, SCREEN_RESOLUTION[0])
+            y = random.randint(0, SCREEN_RESOLUTION[1])
+            particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
+
+        renderer.render_popup(title=self.title, body=self.body)
+        for button in self.handler.buttons:
+            renderer.render_button(button)
+        renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,255), random.randint(100,255), random.randint(100,255)))
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
 

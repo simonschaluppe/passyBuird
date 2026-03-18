@@ -16,6 +16,7 @@ class ParticleManager:
         self.groups["heating"] = []
         self.groups["cooling"] = []
         self.groups["purchase"] = []
+        self.groups["success"] = []
 
     def add(self, list_name, position, velocity, lifetime):
         if list_name not in self.groups:
@@ -36,6 +37,10 @@ class ParticleManager:
     def purchase(self, position, velocity):
         self.add("purchase", position, velocity, lifetime=50)
 
+    def success(self, position, velocity):
+        self.add("success", position, velocity, lifetime=100)
+
+
     def update(self):
         for name, container in self.groups.items():
             for i, p in sorted(enumerate(container), reverse=True):
@@ -46,7 +51,7 @@ class ParticleManager:
                 # p.speed.scale_to_length(p.lifetime/50)
                 p.pos += p.speed
                 vx, vy = p.speed
-                p.speed = (vx, vy * 0.9)
+                p.speed = (vx, vy + 0.9)
 
 
 def test_draw_particles(container, screen):
