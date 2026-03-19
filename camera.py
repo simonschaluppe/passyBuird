@@ -42,7 +42,9 @@ class Camera2D(Camera):
             gap = screendist.length() - self.maxdist
             if gap > 0:
                 self.position.move_towards_ip(self.follows.position, gap)
-
+                
+        self.position = pg.Vector2(self.position[0],20)
+                                
     @property
     def view_rect(self):
         rect = pg.Rect(

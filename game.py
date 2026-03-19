@@ -29,7 +29,7 @@ game = GameModel()
 particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
-camera = Camera2D(surface=display, game_world_position=game.position, zoom=(14, 14))
+camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=(14, 160))
 camera.follow(game, maxdist=0)
 
 # Set up renderer
@@ -45,14 +45,49 @@ money_death = lambda: level_fail('money')
 heat_death = lambda: level_fail('heat')
 freeze_death = lambda: level_fail('freeze')
 
+def center_screen(size = 0.8):
+    # Position & Size
+    width = SCREEN_RESOLUTION[0] * size
+    height = SCREEN_RESOLUTION[1] * size
+    left = SCREEN_RESOLUTION[0] * 0.1
+    top = SCREEN_RESOLUTION[1] * 0.1
+    return (left, top, width, height)
+
+def get_btn_pos(orientation = None):
+    """
+    Parameter "orientation" can be "top left", "top right", "bottom left", "bottom right", "popup left" or "popup right".
+    
+    Function returns a touple with relative button coordinates (x,y).
+
+    "offset" reduces distance from center in percent for popups.
+    """
+    
+    if orientation == None:
+        raise ValueError("The parameter 'orientation' cannot be None.")
+    elif orientation == "top left":
+        return (SCREEN_RESOLUTION[0]*0.18, SCREEN_RESOLUTION[1]*0.07)
+    elif orientation == "top right":
+        return (SCREEN_RESOLUTION[0]*0.9, SCREEN_RESOLUTION[1]*0.07)
+    elif orientation == "bottom left":
+        return (SCREEN_RESOLUTION[0]*0.02, SCREEN_RESOLUTION[1]*0.93)
+    elif orientation == "bottom right":
+        return (SCREEN_RESOLUTION[0]*0.9, SCREEN_RESOLUTION[1]*0.93)
+    elif orientation == "popup left":
+        return (220, 900) # not dynamic yet
+    elif orientation == "popup right":
+        return (1550, 900) # not dynamic yet   
+    else:
+        return False
+    
 
 # Multi line functions
 def level_entry():
+    renderer.set_background(game.current_level.background)
     level_entry_popup = Popup(
         title=game.current_level.name,
         body=game.current_level.intro,
         buttons=[
-            Button((192, 640), start_level, "OK")
+            Button(get_btn_pos("popup right"), start_level, "OK")
         ],
         keys=[
             (pg.K_RETURN, start_level),
@@ -64,6 +99,7 @@ def level_entry():
 
 def level_success():
     game.money += game.current_level.reward
+    #level_success_popup.title= "You survived level " + str(game.current_level.number) + "!", # not working...
     level_success_popup.body = [f"{label}: {value}" for label, value in game.get_kpis().items()]
     for _ in range(300): 
         x = random.randint(0, SCREEN_RESOLUTION[0])
@@ -96,11 +132,12 @@ def level_fail(cause: str):
             title = "Everyone froze into icicles!"
             text = "Your average comfort was ..."
 
+
     Popup(
         title=title,
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
-            Button((192, 640), start_new_game, "OK")
+            Button(get_btn_pos("popup left"), enter_shop, "Return to Store")
         ],
         keys=[
             (pg.K_RETURN, start_new_game),
@@ -133,13 +170,7 @@ def start_new_game():
     game.setup_new_game()
     return_home()
 
-def center_screen(size = 0.8):
-    # Position & Size
-    width = SCREEN_RESOLUTION[0]*size
-    height = SCREEN_RESOLUTION[1]*size
-    left = (SCREEN_RESOLUTION[0] - width) / 2
-    top = (SCREEN_RESOLUTION[1] - height) / 2
-    return (left, top, width, height)
+
 
 #def place_buttons()
 
@@ -180,7 +211,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button((192, 691), enter_shop, "Start the Game!"),
+            Button(get_btn_pos("popup left"), enter_shop, "Start the Game!"),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -224,9 +255,10 @@ class ShopScreen(Screen):
 
             return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(220, 30))
 
+
         buttons = [
-            Button((960, 705), level_entry, "Next level"),
-            Button((40, 705), quit_game, "Quit Run"),
+            Button(get_btn_pos("bottom right"), level_entry, "Start Level"),
+            Button(get_btn_pos("bottom left"), quit_game, "Quit Game"),
             upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
             upgrade_button(game.upgrades['power'], (500, 425)),
             upgrade_button(game.upgrades['heatpump_efficiency'], (500, 475)),
@@ -365,6 +397,7 @@ class Popup(Screen):
 
     @override
     def render(self) -> None:
+        renderer.draw_background()
         renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))
         for button in self.handler.buttons:
             renderer.render_button(button)
@@ -388,7 +421,7 @@ class Victory(Screen):
     def __init__(self):
         self.title = "You beat the game!"
         self.body = "Congratulations, etc"
-        self.buttons = Button((192, 691), enter_shop, "Start new Game!"),
+        self.buttons = Button(get_btn_pos("popup right"), enter_shop, "Start new Game!"),
         self.keys = [(pg.K_RETURN, enter_shop),(pg.K_ESCAPE, enter_shop),]
         super().__init__()
 
@@ -423,10 +456,10 @@ level_screen = LevelScreen()
 """Popup screen instances"""
 
 level_success_popup = Popup(
-    title="You survived " + game.current_level.name + "!",
+    title="You survived level " + str(game.current_level.number) + "!", # not working...
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button((192, 640), enter_shop, "OK")
+        Button(get_btn_pos("popup right"), enter_shop, "OK")
     ],
     keys=[
         (pg.K_RETURN, enter_shop),

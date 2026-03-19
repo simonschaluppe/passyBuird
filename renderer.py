@@ -70,11 +70,27 @@ class Renderer:
         self.lineheight = 25
         self.font = Font(FONT_PATH / "small_font.png")
         self.titlefont = Font(FONT_PATH / "large_font.png")
+        self.fontsize = 30
 
         # components
         self.ui_renderer = UIRenderer(self)
         self.curves_renderer = CurvesRenderer(self)
         self.menu_renderer = MenuRenderer(self)
+
+        # Load the background image for the upgrade menu
+        self.level_backgrounds = {}
+        background_paths = ["Dunkelflaute.png", "Spring.png", "Summer.png", "Fall.png", "Winter.png"]
+
+        for background in background_paths:
+            bg_image = pg.image.load(IMAGE_PATH / "backgrounds" / background).convert()
+            scaled_image = pg.transform.scale(bg_image, self.display.get_size())
+            self.level_backgrounds[background] = scaled_image
+
+        self.level_background = self.level_backgrounds[background_paths[0]]
+    
+    def set_background(self, path):
+        self.level_background = self.level_backgrounds[path]
+
 
     # debug stuff, should be low level
     def debug(self, statements):
@@ -107,7 +123,7 @@ class Renderer:
             text: str,
             color=ALMOSTBLACK,
             pos=(0, 0),
-            size=20,
+            size=None,
             border_width=2,
             border_color=WHITE,
             font=None,
@@ -118,6 +134,8 @@ class Renderer:
             font = self.font
         if not onto:
             onto = self.display
+        if not size:
+            size = self.fontsize
         px, py = pos
         textsurf = font.surface(text, size, color)
         self.outline(textsurf, (px, py), border_width, border_color, onto=onto)
@@ -161,16 +179,18 @@ class Renderer:
             button.text,
             pos=(5, offset),
             onto=button_surf,
-            size=20,
+            size=30,
             border_width=1 + button.hovered,
         )
         # button
         self.display.blit(button_surf, button.position)
 
     # main game loop
-    def draw_background(self, hour_of_year):
+    def draw_background(self, hour_of_year=0):
         # self.display.fill((0,0,0))
-        self.display.fill(seasonalcolor(hour_of_year))
+        #self.display.fill(seasonalcolor(hour_of_year))
+        self.display.blit(self.level_background, (0, 0))
+        
 
     # draw stuff using camera (game)
     def render_curves(self, curve_data):
@@ -215,6 +235,9 @@ class Renderer:
         self.menu_renderer.render_background()
 
         panel_rect = pg.Rect(*screen_params)
+
+        self.left = screen_params[0] + 20
+        self.top = screen_params[1] + 20
         pg.draw.rect(
             self.display,
             (30, 30, 30),  # fill color
@@ -231,16 +254,16 @@ class Renderer:
 
         self.render_line(
             title,
-            pos=(192, 106),
+            pos=(self.left, self.top),
             size=50,
             font=self.titlefont,
         )
-        y = 200  # Larger space after title
+        y = self.top + 100  # Larger space after title
 
         for line in body:
             self.render_line(
                 line,
-                pos=(192, y),
+                pos=(self.left, y),
                 size=line_size,
             )
             y += line_spacing
@@ -252,6 +275,9 @@ class Renderer:
         self.menu_renderer.render_background()
 
         panel_rect = pg.Rect(*screen_params)
+
+        self.left = screen_params[0] + 20
+        self.top = screen_params[1] + 20
         pg.draw.rect(
             self.display,
             (30, 30, 30),  # fill color
@@ -268,16 +294,16 @@ class Renderer:
 
         self.render_line(
             title,
-            pos=(192, 106),
+            pos=(self.left, self.top),
             size=50,
             font=self.titlefont,
         )
-        y = 195  # Larger space after title
+        y = self.top + 100  # Larger space after title
 
         for line in body:
             self.render_line(
                 line,
-                pos=(192, y),
+                pos=(self.left, y),
                 size=line_size,
             )
             y += line_spacing
@@ -288,7 +314,7 @@ class Renderer:
 
         # self.draw_grid(100)
 
-        self.display.blit(qr_code, (450, 650))
+        self.display.blit(qr_code, (1300, 650))
 
 
 class MenuRenderer:
@@ -304,7 +330,7 @@ class MenuRenderer:
         self.stats_text_color = ALMOSTBLACK
 
         # Load the background image for the upgrade menu
-        bg_image = pg.image.load(IMAGE_PATH / "bg_house.png").convert()
+        bg_image = pg.image.load(IMAGE_PATH / "backgrounds/Closeup2.png").convert()
         self.menu_background = pg.transform.scale(bg_image, self.display.get_size())
 
     def render(self, data):
@@ -444,9 +470,9 @@ class CurvesRenderer:
     def render(self, data):
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"])
-        self.draw_curve("red", data["Indoor Temperature"])
-        self.draw_curve("blue", data["Outdoor Temperature"])
-        self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
+        #self.draw_curve("red", data["Indoor Temperature"])
+        #self.draw_curve("blue", data["Outdoor Temperature"])
+        #self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
         self.draw_house_indicator(data["TI Indicator"])
         self.draw_TA_indicator(data["TA Indicator"])
 
