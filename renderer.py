@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from turtle import left
 
 import pygame as pg
 
@@ -207,12 +208,13 @@ class Renderer:
     def render_menu(self, data):
         self.menu_renderer.render(data)
 
-    def render_popup(self, title: str, body: list):
+    def render_popup(self, title: str, body: list, screen_params):
         line_size = 24
         line_spacing = 30  # slightly more than size to avoid overlap
 
         self.menu_renderer.render_background()
-        panel_rect = pg.Rect(128, 40, 1024, 851)
+
+        panel_rect = pg.Rect(*screen_params)
         pg.draw.rect(
             self.display,
             (30, 30, 30),  # fill color
@@ -243,12 +245,13 @@ class Renderer:
             )
             y += line_spacing
 
-    def render_title_screen(self, title: str, body: list):
+    def render_title_screen(self, title: str, body: list, screen_params):
         line_size = 24
         line_spacing = 48  # slightly more than size to avoid overlap
 
         self.menu_renderer.render_background()
-        panel_rect = pg.Rect(128, 40, 1024, 851)
+
+        panel_rect = pg.Rect(*screen_params)
         pg.draw.rect(
             self.display,
             (30, 30, 30),  # fill color
@@ -281,11 +284,11 @@ class Renderer:
 
         # load QR code
         qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
-        qr_code = pg.transform.scale(qr_code, size=(160, 133))
+        qr_code = pg.transform.scale(qr_code, size=(256, 256))
 
         # self.draw_grid(100)
 
-        self.display.blit(qr_code, (560, 652))
+        self.display.blit(qr_code, (450, 650))
 
 
 class MenuRenderer:

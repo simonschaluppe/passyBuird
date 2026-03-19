@@ -76,6 +76,7 @@ def level_success():
     level_success_popup.loop()
 
 def victory_loop():
+    game.reset_levels()
     for _ in range(300): 
         x = random.randint(0, SCREEN_RESOLUTION[0])
         y = random.randint(0, SCREEN_RESOLUTION[1])
@@ -132,6 +133,15 @@ def start_new_game():
     game.setup_new_game()
     return_home()
 
+def center_screen(size = 0.8):
+    # Position & Size
+    width = SCREEN_RESOLUTION[0]*size
+    height = SCREEN_RESOLUTION[1]*size
+    left = (SCREEN_RESOLUTION[0] - width) / 2
+    top = (SCREEN_RESOLUTION[1] - height) / 2
+    return (left, top, width, height)
+
+#def place_buttons()
 
 """Classes"""
 
@@ -165,6 +175,7 @@ class Screen:
 class TitleScreen(Screen):
     """Title screen serves as Home/Welcome page."""
 
+
     @override
     def config_handler(self) -> None:
         # register buttons
@@ -187,7 +198,8 @@ class TitleScreen(Screen):
             "long and conserve the climate along the way.",
             "Come on, let's get started!"
         ]
-        renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description)
+        
+        renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description, screen_params = center_screen(size = 0.8))
 
         for button in self.handler.buttons:
             renderer.render_button(button)
@@ -353,7 +365,7 @@ class Popup(Screen):
 
     @override
     def render(self) -> None:
-        renderer.render_popup(title=self.title, body=self.body)
+        renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))
         for button in self.handler.buttons:
             renderer.render_button(button)
         renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,200), random.randint(200,255), random.randint(100,200)))
@@ -387,7 +399,7 @@ class Victory(Screen):
             y = random.randint(0, SCREEN_RESOLUTION[1])
             particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
 
-        renderer.render_popup(title=self.title, body=self.body)
+        renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))
         for button in self.handler.buttons:
             renderer.render_button(button)
         renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,255), random.randint(100,255), random.randint(100,255)))
@@ -411,7 +423,7 @@ level_screen = LevelScreen()
 """Popup screen instances"""
 
 level_success_popup = Popup(
-    title="You survived the year!",
+    title="You survived " + game.current_level.name + "!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
         Button((192, 640), enter_shop, "OK")

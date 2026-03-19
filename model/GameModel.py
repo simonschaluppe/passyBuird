@@ -254,7 +254,7 @@ class GameModel:
 
     def get_upgrade_text(self) -> dict:
         return {"lines": f"""
-Insulation: Lvl {self.upgrades['wall_insulation'].level} ({self.model.building.components["Aussenwand"].u_value} W/m²K)
+Insulation: Lvl {self.upgrades['wall_insulation'].level} ({round(self.model.building.components["Aussenwand"].u_value, 2)} W/m²K)
 
 Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²)
 
