@@ -23,7 +23,7 @@ colors = {
     "QS": (200, 200, 0),
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
-    "Title": (255, 255, 255), #(100, 30, 0),
+    "Title": (164, 196, 146), #(100, 30, 0),
     "DEBUG": (40, 64, 123),
     "Winter BG": (60, 84, 153),  # (61, 98, 116),
     "Summer BG": (255, 232, 197),
@@ -35,6 +35,8 @@ colors = {
     "Emission text": (255, 255, 255), #(66, 62, 56),
     "Emissions": (255, 255, 255), #(105, 95, 78),
     "Purchase": (255, 255, 255), #(255, 165, 0),
+    "TitleBG" : (80,80,80),
+    "PopupBG" : (80,80,80)
 }
 
 # Define color constants
@@ -46,6 +48,7 @@ BLACK = (0, 0, 0)
 ALMOSTBLACK = (10, 10, 10)
 GREEN = (0, 255, 0)
 GREY = (50, 50, 50)
+OUTLINE = (10, 10, 10)
 
 
 def color_indicator(dT):
@@ -108,7 +111,7 @@ class Renderer:
             )
 
     # basic rendering
-    def outline(self, surf, loc, pixel, color=(10, 10, 10), onto=False):
+    def outline(self, surf, loc, pixel, color=OUTLINE, onto=False):
         if not onto:
             onto = self.display
         mask = pg.mask.from_surface(surf)
@@ -131,7 +134,7 @@ class Renderer:
             pos=(0, 0),
             size=None,
             border_width=1,
-            border_color=GREY,
+            border_color=OUTLINE,
             font=None,
             onto=None,
     ):
@@ -252,7 +255,7 @@ class Renderer:
         self.top = screen_params[1] + 20
         pg.draw.rect(
             self.display,
-            (30, 30, 30),  # fill color
+            colors["PopupBG"],  # fill color
             panel_rect,
             border_radius=8
         )
@@ -292,13 +295,13 @@ class Renderer:
         self.top = screen_params[1] + 20
         pg.draw.rect(
             self.display,
-            (30, 30, 30),  # fill color
+            GREY,  # fill color
             panel_rect,
             border_radius=8
         )
         pg.draw.rect(
             self.display,
-            (220, 220, 220),  # border color
+            colors["TitleBG"],  # border color
             panel_rect,
             width=2,
             border_radius=8
@@ -339,7 +342,7 @@ class MenuRenderer:
         self.topleft = (64, 53)  # corner anchor
         self.tile_size = (160, 133)  # Size for each upgrade tile
 
-        self.stats_text_color = ALMOSTBLACK
+        self.stats_text_color = colors["UI Text"]
 
         # Load the background image for the upgrade menu
         bg_image = pg.image.load(IMAGE_PATH / "backgrounds/Closeup2.png").convert()
@@ -367,7 +370,7 @@ class MenuRenderer:
         self.render_title(self.topleft)
         self.render_text((self.topleft[0], 133))
         self.render_updrade_text(data["upgrade_text"], (48, 332), self.stats_text_color)
-        self.render_game_stats(data["game_stats"], (800, 66), self.stats_text_color)
+        self.render_game_stats(data["game_stats"], (1200, 66), self.stats_text_color)
 
     def render_background(self):
         self.display.blit(self.menu_background, (0, 0))
@@ -380,13 +383,13 @@ class MenuRenderer:
 
     def render_text(self, pos):
         text = [
-            "This is the shop. Here you can use your money to upgrade,",
-            "your building.",
+            "This is the shop. Here you can buy",
+            "upgrades for your building.",
         ]
         spacing = 0
         for line in text:
             self.render_line(
-                line, colors["Title"], (pos[0], pos[1] + spacing), font=self.renderer.titlefont, size=40
+                line, colors["UI Text"], (pos[0], pos[1] + spacing), font=self.renderer.titlefont, size=40
             )
             spacing += 40
 
@@ -460,7 +463,7 @@ class MenuRenderer:
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_updrade_text(self, data, pos, color):
-        self.render_line("Upgrades", colors["Title"], pos, font=self.renderer.titlefont, size=40)
+        self.render_line("Upgrades", colors["UI Text"], pos, font=self.renderer.titlefont, size=40)
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_game_stats(self, data, pos, color):

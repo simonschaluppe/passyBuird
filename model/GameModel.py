@@ -185,7 +185,7 @@ class GameModel:
             self.model.comfort.update(self._mh)
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
             self.level_comfort = self.model.comfort_score_tsd[self.current_level.start:self._mh].mean()
-            print(f"level avarege comfort: {self.level_comfort:.1f}%")
+            print(f"level average comfort: {self.level_comfort:.1f}%")
 
             self.curve_TI.update((self.hour, self.TI))
 
@@ -338,20 +338,22 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
-            "Waermebedarf (QH)": f"{self.model.QH.sum() / 1000:.1f} kWh",
-            "Kaeltebedarf (QC)": f"{self.model.QC.sum() / 1000:.1f} kWh",
-            "Stromeinsatz (ED)": f"{self.model.ED.sum() / 1000:.1f} kWh",
-            "CO2-Emissionen": f"{sum(self.model.CO2) / 1000:.0f} kg",
+            "Score": f"{self.total_comfort:.2f}%"
+            "",
+            "Waermebedarf (QH)": f"{self.model.QH.sum() / 1000 * self.model.building.bgf:.1f} kWh",
+            "Kaeltebedarf (QC)": f"{self.model.QC.sum() / 1000 * self.model.building.bgf:.1f} kWh",
+            "Stromeinsatz (ED)": f"{self.model.ED.sum() / 1000 * self.model.building.bgf:.1f} kWh",
+            "CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.1f} kg",
             "Mittlerer Strompreis": f"{self.model.price_grid:.3f} e/Wh",
-            "Geldstand": f"{self.money:.2f} e",
+            "Geldstand": f"{self.money:.2f} €",
             "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
         }
 
     def get_game_stats(self):
         return {"lines": f"""
             Current Level    {self.current_level.name}
-            Available Money  €{self.money:.2f}
-            Average Comfort  {self.total_comfort}%
+            Available Money  {self.money:.2f} €
+            Average Comfort  {self.total_comfort:.2f}%
         """
                 }
 
@@ -372,9 +374,9 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
 
         def wall_insulation():
             # todo: Hard coded key
-            self.model.building.components['Aussenwand'].u_value *= 0.8
-            self.model.building.components['Dach'].u_value *= 0.8
-            self.model.building.components['Fenster'].u_value *= 0.8
+            self.model.building.components['Aussenwand'].u_value *= 0.8 
+            self.model.building.components['Dach'].u_value *= 0.8       # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            self.model.building.components['Fenster'].u_value *= 0.8    # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         def heatpump_efficiency():
             self.set_cop(self.model.HVAC.HP_COP + 1)
@@ -391,6 +393,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
 
     def update_level_finished(self):
         """at the end of level, update comfort rating"""
+        self.model.comfort.comfort_score = 100
         start, stop = self.current_level.start, self.current_level.end
         average = self.level_comfort
         l = len(self.model.comfort_score_tsd[start:stop])
