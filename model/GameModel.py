@@ -337,8 +337,8 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def get_game_stats(self):
         return {"lines": f"""
             Current Level    {self.current_level.name}
-            Available Money  €{round(self.money,2)}
-            Average Comfort  {'dummy'}%
+            Available Money  €{self.money:.2f}
+            Average Comfort  {self.total_comfort}%
         """
                 }
 
@@ -359,13 +359,15 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
 
         def wall_insulation():
             # todo: Hard coded key
-            self.model.building.components['Aussenwand'].u_value -= 0.01
+            self.model.building.components['Aussenwand'].u_value *= 0.8
+            self.model.building.components['Dach'].u_value *= 0.8
+            self.model.building.components['Fenster'].u_value *= 0.8
 
         def heatpump_efficiency():
             self.set_cop(self.model.HVAC.HP_COP + 1)
 
         def electricity_price_discount():
-            self.energy_discount += 1
+            self.energy_discount += 15
 
         self.upgrades['wall_insulation'].callback = lambda: upgrade(self.upgrades['wall_insulation'], wall_insulation)
         self.upgrades['power'].callback = lambda: upgrade(self.upgrades['power'], power)

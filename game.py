@@ -33,7 +33,7 @@ camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoo
 camera.follow(game, maxdist=0)
 
 # Set up renderer
-renderer = Renderer(display, camera, clock)
+renderer = Renderer(display, camera, clock, font = "Comic Sans MS")
 
 """Callback functions"""
 
@@ -137,7 +137,7 @@ def level_fail(cause: str):
         title=title,
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
-            Button(get_btn_pos("popup left"), enter_shop, "Return to Shop", size = (200,30))
+            Button(get_btn_pos("popup left"), enter_shop, "Return to Shop", size = (250,60))
         ],
         keys=[
             (pg.K_RETURN, start_new_game),
@@ -211,7 +211,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button(get_btn_pos("popup left"), enter_shop, "Start the Game!", size = (190,30)),
+            Button(get_btn_pos("popup left"), enter_shop, "Start the Game!", size = (240,60)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -253,12 +253,12 @@ class ShopScreen(Screen):
                     particle_manager.purchase(position=pg.mouse.get_pos(), velocity=(0, -5)) 
                 upgrade.callback()
 
-            return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(350, 30))
+            return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(400, 60))
 
 
         buttons = [
-            Button(get_btn_pos("bottom right"), level_entry, "Start Level", size = (140,30)),
-            Button(get_btn_pos("bottom left"), quit_game, "Quit Game", size = (120,30)),
+            Button(get_btn_pos("bottom right"), level_entry, "Start Level", size = (190,60)),
+            Button(get_btn_pos("bottom left"), quit_game, "Quit Game", size = (170,60)),
             upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
             upgrade_button(game.upgrades['power'], (500, 425)),
             upgrade_button(game.upgrades['heatpump_efficiency'], (500, 475)),

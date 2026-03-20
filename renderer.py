@@ -23,18 +23,18 @@ colors = {
     "QS": (200, 200, 0),
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
-    "Title": (100, 30, 0),
+    "Title": (255, 255, 255), #(100, 30, 0),
     "DEBUG": (40, 64, 123),
     "Winter BG": (60, 84, 153),  # (61, 98, 116),
     "Summer BG": (255, 232, 197),
-    "Button hovered": (61, 98, 116),
-    "Button": (51, 58, 96),
-    "Price": (50, 80, 30),
-    "UI Text": (76, 37, 29),
-    "Upgrade text": (153, 64, 154),
-    "Emission text": (66, 62, 56),
-    "Emissions": (105, 95, 78),
-    "Purchase": (255, 165, 0),
+    "Button hovered": (156, 252, 186), #(61, 98, 116),
+    "Button": (56, 161, 90), #(51, 58, 96),
+    "Price": (255, 255, 255), #(50, 80, 30),
+    "UI Text": (255, 255, 255), #(76, 37, 29),
+    "Upgrade text": (255, 255, 255), #(153, 64, 154),
+    "Emission text": (255, 255, 255), #(66, 62, 56),
+    "Emissions": (255, 255, 255), #(105, 95, 78),
+    "Purchase": (255, 255, 255), #(255, 165, 0),
 }
 
 # Define color constants
@@ -45,6 +45,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 ALMOSTBLACK = (10, 10, 10)
 GREEN = (0, 255, 0)
+GREY = (50, 50, 50)
 
 
 def color_indicator(dT):
@@ -126,11 +127,11 @@ class Renderer:
     def render_line(
             self,
             text: str,
-            color=ALMOSTBLACK,
+            color=WHITE,
             pos=(0, 0),
             size=None,
-            border_width=2,
-            border_color=WHITE,
+            border_width=1,
+            border_color=GREY,
             font=None,
             onto=None,
     ):
@@ -155,7 +156,7 @@ class Renderer:
     def render_lines(
             self,
             text: str,
-            color=ALMOSTBLACK,
+            color=WHITE,
             pos=(0, 0),
             size=26,
             font=None,
@@ -481,9 +482,9 @@ class CurvesRenderer:
     def render(self, data):
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"])
-        #self.draw_curve("red", data["Indoor Temperature"])
-        #self.draw_curve("blue", data["Outdoor Temperature"])
-        #self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
+        self.draw_curve("red", data["Indoor Temperature"])
+        self.draw_curve("blue", data["Outdoor Temperature"])
+        self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
         self.draw_house_indicator(data["TI Indicator"])
         self.draw_TA_indicator(data["TA Indicator"])
 
@@ -508,7 +509,7 @@ class CurvesRenderer:
         size = self.size_TI_indicator * data["Scale"]
         pg.draw.circle(self.renderer.display, color, (x, y), size)
 
-        self.renderer.outline(self.house, (x - 15, y - 15), 2)
+        #self.renderer.outline(self.house, (x - 15, y - 15), 2)
         self.renderer.display.blit(self.house, (x - 15, y - 15))
 
     def draw_indicator(self, gamepos1, gamepos2, color):
