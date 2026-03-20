@@ -58,7 +58,7 @@ def color_indicator(dT):
 
 class Renderer:
     def __init__(
-            self, display: pg.Surface, camera: Camera2D, clock: pg.time.Clock, scale=1.0
+            self, display: pg.Surface, camera: Camera2D, clock: pg.time.Clock, scale=1.0, font = "couriernew"
     ):
         self.display = display
         self.cx, self.cy = display.get_width() // 2, display.get_height() // 2
@@ -68,9 +68,14 @@ class Renderer:
 
         # defaults
         self.lineheight = 25
-        self.font = Font(FONT_PATH / "small_font.png")
-        self.titlefont = Font(FONT_PATH / "large_font.png")
         self.fontsize = 30
+        if font == "custom":
+            self.font = Font(FONT_PATH / "small_font.png")
+            self.titlefont = Font(FONT_PATH / "large_font.png")
+        else:
+            self.font = pg.font.SysFont(font, self.fontsize, bold=True)
+            self.titlefont = pg.font.SysFont(font, self.fontsize, bold=True)
+        
 
         # components
         self.ui_renderer = UIRenderer(self)
@@ -137,9 +142,15 @@ class Renderer:
         if not size:
             size = self.fontsize
         px, py = pos
-        textsurf = font.surface(text, size, color)
-        self.outline(textsurf, (px, py), border_width, border_color, onto=onto)
-        font.render(onto, text, (px, py), size, color)
+        if type(font) is Font:
+            textsurf = font.surface(text, size, color)
+            self.outline(textsurf, (px, py), border_width, border_color, onto=onto)
+            font.render(onto, text, (px, py), size, color)
+        else:
+            textsurf = font.render(text, True, color)
+            self.outline(textsurf, (px, py), border_width, border_color, onto=onto)
+            onto.blit(textsurf, pos)
+
 
     def render_lines(
             self,
