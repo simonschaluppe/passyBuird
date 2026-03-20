@@ -99,13 +99,15 @@ LEVELS = [
         start=745,
         end=745 + 7 * 24 * 2,
         start_TI=22,
-        min_comfort=50,
+        min_comfort=20,
+        min_average_comfort = 90,
         reward=1000,
         background = "Dunkelflaute.png",
         comfort=Comfortmodel(
             p_change=1 / 12,
             alpha=0.5,
             sigma=0.8,
+            comfort_sensitivity= 5
         )
     ),
 
@@ -125,13 +127,15 @@ LEVELS = [
         start=2161,
         end=2161 + 7 * 24 * 2,
         start_TI=22,
-        min_comfort=50,
+        min_comfort=20,
+        min_average_comfort = 90,
         reward=1500,
         background = "Spring.png",
         comfort=Comfortmodel(
             p_change=1 / 12,
             alpha=0.25,
-            sigma=1.6,
+            sigma=0.5,
+            comfort_sensitivity=4
         )
     ),
 
@@ -151,13 +155,15 @@ LEVELS = [
         start=3625,
         end=3625 + 7 * 24 * 2,
         start_TI=25,
-        min_comfort=50,
+        min_comfort=20,
+        min_average_comfort = 90,
         reward=1500,
         background = "Summer.png",
         comfort=Comfortmodel(
             p_change=1 / 12,
             alpha=0.25,
-            sigma=1.6,
+            sigma=0.5,
+            comfort_sensitivity=2
         )
     ),
 
@@ -176,13 +182,15 @@ LEVELS = [
         start=0,
         end=8760,
         start_TI=22,
-        min_comfort=75,
+        min_comfort=30,
+        min_average_comfort = 90,
         reward=1000,
         background = "Winter.png",
         comfort=Comfortmodel(
-            p_change=1 / 12,
+            p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
+            comfort_sensitivity=3
         )
     )
 ]
