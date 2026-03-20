@@ -39,7 +39,7 @@ class Comfortmodel:
 
         print(sum(self.TI_minimum_setpoints) / 8760)
 
-    def update(self, t, TI):
+    def update(self, t):
         self.minimum_room_temperature = self.TI_minimum_setpoints[t]
         self.maximum_room_temperature = self.TI_maximum_setpoints[t]
 

@@ -99,6 +99,7 @@ def level_entry():
 
 def level_success():
     game.money += game.current_level.reward
+    game.update_level_finished()
     #level_success_popup.title= "You survived level " + str(game.current_level.number) + "!", # not working...
     level_success_popup.body = [f"{label}: {value}" for label, value in game.get_kpis().items()]
     for _ in range(300): 
@@ -122,7 +123,7 @@ def victory_loop():
 
 
 def level_fail(cause: str):
-
+    game.update_level_finished()
     match cause:
         case "money":
             title = "Du hast kein Geld mehr!"
@@ -131,8 +132,6 @@ def level_fail(cause: str):
         case "freeze":
             title = "Everyone froze into icicles!"
             text = "Your average comfort was ..."
-
-
     Popup(
         title=title,
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
@@ -321,7 +320,7 @@ class LevelScreen(Screen):
 
             dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
             accumulated_gamehours += dt_real * game.speed * (not game.paused)  # h/s
-            print(game.hour, accumulated_gamehours)
+            print(f"{game.hour=}, {accumulated_gamehours:1f}, {game.model.comfort_score_tsd[game._mh]}")
 
             if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
                 level_success()

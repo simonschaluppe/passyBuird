@@ -99,6 +99,10 @@ class GameModel:
                        starting_cop=3,
                        ):
         self.money = 1_000
+        self.total_comfort = 1 # average comfort score across all levels played
+        self.total_duration = 0 # hours simulated across all levels played
+        self.level_comfort = 1
+        self.level_duration = 0
         self.energy_discount = 0  # 0-100 [%]
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
@@ -111,6 +115,8 @@ class GameModel:
         self.setup_next_level() # setup level 1
 
     def setup_next_level(self):
+        self.level_comfort = 1
+        self.level_duration = 0
         try:
             self.current_level = next(self.levels)
         except StopIteration:
@@ -171,8 +177,10 @@ class GameModel:
             self.model.calc_ED(self._mh)
             self.money -= self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
 
-            self.model.comfort.update(self._mh, self.TI)
+            self.model.comfort.update(self._mh)
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
+            self.level_comfort = self.model.comfort_score_tsd[self.current_level.start:self._mh].mean()
+            print(f"level avarege comfort: {self.level_comfort:.1f}%")
 
             self.curve_TI.update((self.hour, self.TI))
 
@@ -373,6 +381,16 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             lambda: upgrade(self.upgrades['heatpump_efficiency'], heatpump_efficiency)
         self.upgrades['electricity_price_discount'].callback = \
             lambda: upgrade(self.upgrades['electricity_price_discount'], electricity_price_discount)
+
+    def update_level_finished(self):
+        """at the end of level, update comfort rating"""
+        start, stop = self.current_level.start, self.current_level.end
+        average = self.level_comfort
+        l = len(self.model.comfort_score_tsd[start:stop])
+        self.total_comfort = (self.total_duration * self.total_comfort + l * average) / (l + self.total_duration)
+        self.total_duration += l
+        print("Achieved comfort level (average):", average, "over", l, "hours")
+        print("Total comfort:", self.total_comfort, "over", self.total_duration, "hours total")
 
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
