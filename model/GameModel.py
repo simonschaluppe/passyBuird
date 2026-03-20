@@ -90,7 +90,7 @@ class GameModel:
         self.model = EnergyModel()
         self.model.init_sim()
         self.hour = 0
-        self._mh = 0
+        self._mh = 0 # energy model hour
         self.upgrades: dict[str, Upgrade] = UPGRADES
         self.setup_new_game()
 
@@ -170,7 +170,9 @@ class GameModel:
 
             self.model.calc_ED(self._mh)
             self.money -= self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
-            self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.model.TI[self._mh])
+
+            self.model.comfort.update(self._mh, self.TI)
+            self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
 
             self.curve_TI.update((self.hour, self.TI))
 

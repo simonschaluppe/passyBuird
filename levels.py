@@ -110,9 +110,9 @@ LEVELS = [
             "demands, energy prices and CO2 intensities and survive an entire year?",
         ],
         start=0,
-        end=7 * 24,
+        end=8760,
         start_TI=22,
-        min_comfort=50,
+        min_comfort=20,
         reward=1000,
         background = "Winter.png",
         comfort=Comfortmodel(
