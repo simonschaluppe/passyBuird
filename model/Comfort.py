@@ -12,7 +12,8 @@ class Comfortmodel:
                  random: bool = True,
                  p_change: float = 0,
                  alpha: float = 0,
-                 sigma: float = 0) -> None:
+                 sigma: float = 0,
+                 comfort_sensitivity = 2) -> None:
 
         self.minimum_room_temperature = minimum_room_temperature
         self.maximum_room_temperature = maximum_room_temperature
@@ -35,7 +36,7 @@ class Comfortmodel:
             self.TI_minimum_setpoints = [self.minimum_room_temperature] * 8760
             self.TI_maximum_setpoints = [self.maximum_room_temperature] * 8760
 
-        self.comfort_sensitivity = 1
+        self.comfort_sensitivity = comfort_sensitivity
 
         print(sum(self.TI_minimum_setpoints) / 8760)
 
@@ -95,6 +96,7 @@ class Comfortmodel:
             return 0
 
     def comfort_score(self, TI):  # TODO: move to comfort model
+        """maps temperature difference to [0-100]"""
         d = abs(self.comfort_diff(TI))
 
         gamma = 1.6  # steepness

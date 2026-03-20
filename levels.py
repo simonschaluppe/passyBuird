@@ -17,6 +17,7 @@ class Level:
 
     # level difficulty parameters
     min_comfort: int  # level fail when falling below minimum comfort value [%]
+    min_average_comfort: int
     comfort: Comfortmodel
 
     def get_hour_of_month(self, month):
@@ -71,13 +72,15 @@ LEVELS = [
         start = 8017,
         end= 8017 + 7 * 24 * 2,
         start_TI=22,
-        min_comfort=50,
+        min_comfort=10,
+        min_average_comfort = 90,
         reward=700,
         background = "Winter.png",
         comfort=Comfortmodel(
             p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
+            comfort_sensitivity= 10
         )
     ),
 

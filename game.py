@@ -107,9 +107,10 @@ def level_success():
         y = random.randint(0, SCREEN_RESOLUTION[1])
         particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
 
-    victory = not game.setup_next_level()
-    if victory:
+    if game.current_level_number == 6:
         victory_loop()
+    
+    game.setup_next_level()
     level_success_popup.loop()
 
 def victory_loop():
@@ -338,9 +339,12 @@ class LevelScreen(Screen):
 
             TI = game.model.TI[game._mh]
             if game.model.comfort.comfort_score(TI) < game.current_level.min_comfort and not GODMODE:
-                if game.model.comfort.comfort_diff(TI) > 0:
+                print(f"game.model.comfort.comfort_score(TI) < game.current_level.min_comfort {game.model.comfort.comfort_score(TI)} < {game.current_level.min_comfort}")
+                if game.model.comfort.comfort_diff(TI) > 5:
+                    print(f"HEAT DEATH: {game.model.comfort.comfort_diff(TI)} > 0")
                     heat_death()
-                if game.model.comfort.comfort_diff(TI) < 0:
+                if game.model.comfort.comfort_diff(TI) < 5:
+                    print(f"FREEZE DEATH: {game.model.comfort.comfort_diff(TI)} > 0")
                     freeze_death()
 
             particle_manager.update()

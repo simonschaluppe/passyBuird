@@ -92,6 +92,8 @@ class GameModel:
         self.hour = 0
         self._mh = 0 # energy model hour
         self.upgrades: dict[str, Upgrade] = UPGRADES
+        self.levels = LEVELS
+        self.current_level_number = 0
         self.setup_new_game()
 
     def setup_new_game(self,
@@ -99,10 +101,10 @@ class GameModel:
                        starting_cop=3,
                        ):
         self.money = 1_000
+        self.level_comfort = 1 # average comfort score in current level
+        self.level_duration = 0 
         self.total_comfort = 1 # average comfort score across all levels played
         self.total_duration = 0 # hours simulated across all levels played
-        self.level_comfort = 1
-        self.level_duration = 0
         self.energy_discount = 0  # 0-100 [%]
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
@@ -111,16 +113,15 @@ class GameModel:
         self.reset_levels()
 
     def reset_levels(self):
-        self.levels = iter(LEVELS)
-        self.setup_next_level() # setup level 1
+        #self.levels = iter(LEVELS)
+        #self.setup_next_level() # setup level 1
+        self.setup_level(0)
 
-    def setup_next_level(self):
+    def setup_level(self, number:int=0):
         self.level_comfort = 1
         self.level_duration = 0
-        try:
-            self.current_level = next(self.levels)
-        except StopIteration:
-            return False
+
+        self.current_level = self.levels[number]
 
         start_hour = self.current_level.start
         self.speed = DEFAULT_SPEED
@@ -157,6 +158,10 @@ class GameModel:
         self.cleanup()
 
         return True
+
+    def setup_next_level(self):
+        self.current_level_number += 1
+        self.setup_level(self.current_level_number)
 
     def update(self, hours: int):
         for _ in range(hours):
