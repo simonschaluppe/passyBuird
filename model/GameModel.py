@@ -110,8 +110,8 @@ class GameModel:
                        starting_power=15,
                        starting_cop=3,
                        ):
-        self.money = 1_000
-        
+
+        self.money = 1_000_000 if self.godmode else 1_000 
         self.current_level_number = 0
         self.energy_discount = 0  # 0-100 [%]
         self.set_heating_power(starting_power)
@@ -236,7 +236,7 @@ class GameModel:
             self.model.comfort.update(self._mh)
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
             self.level_comfort = self.model.comfort_score_tsd[self.current_level.start:self._mh].mean()
-            print(f"level average comfort: {self.level_comfort:.1f}%")
+            #print(f"level average comfort: {self.level_comfort:.1f}%")
 
             self.curve_TI.update((self.hour, self.TI))
 
@@ -323,6 +323,9 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def get_curves_data(self):
         fc_index = self.hour + self.forecast_hours
         bc_index = self.hour - self.backcast_hours
+        color = "comfort"
+        if self.heat_on: color = "QH"
+        if self.cool_on: color = "QC"
         return {
             "Indoor Temperature": self.curve_TI.points_in_game(bc_index, self.hour),
             "Outdoor Temperature": self.curve_TA.points_in_game(bc_index, fc_index),
@@ -336,7 +339,9 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "TI Indicator": {
                 "Position": self.position,
                 "Comfort dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
-                "Scale": 1 + 0.5 * (self.heat_on + self.cool_on),
+                "Scale": self.model.comfort.comfort_score(self.model.TI[self._mh])/100 + 0.5 * (self.heat_on + self.cool_on),
+                "Color": color,
+                "score": self.model.comfort.comfort_score(self.model.TI[self._mh])
             },
             "TA Indicator": {
                 "TA": (self.hour, self.model.TA[self._mh]),
