@@ -23,8 +23,8 @@ colors = {
     "QS": (200, 200, 0),
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
-    "Title": (164, 196, 146), #(100, 30, 0),
-    "DEBUG": (40, 64, 123),
+    "Title": (100, 30, 0), #(164, 196, 146), #
+    "DEBUG": (0,0,0),
     "Winter BG": (60, 84, 153),  # (61, 98, 116),
     "Summer BG": (255, 232, 197),
     "Button hovered": (156, 252, 186), #(61, 98, 116),
@@ -36,7 +36,7 @@ colors = {
     "Emissions": (255, 255, 255), #(105, 95, 78),
     "Purchase": (255, 255, 255), #(255, 165, 0),
     "TitleBG" : (80,80,80),
-    "PopupBG" : (80,80,80)
+    "PopupBG" : (80,80,80),
 }
 
 # Define color constants
@@ -49,7 +49,6 @@ ALMOSTBLACK = (10, 10, 10)
 GREEN = (0, 255, 0)
 GREY = (50, 50, 50)
 OUTLINE = (10, 10, 10)
-
 
 def color_indicator(dT):
     if dT > 0:
@@ -73,9 +72,11 @@ class Renderer:
         # defaults
         self.lineheight = int( 25 * self.scale)
         self.fontsize = int(30 * self.scale)
+        self.font_custom_small = Font(FONT_PATH / "small_font.png")
+        self.font_custom_large = Font(FONT_PATH / "large_font.png")
         if font == "custom":
-            self.font = Font(FONT_PATH / "small_font.png")
-            self.titlefont = Font(FONT_PATH / "large_font.png")
+            self.font = self.font_custom_small
+            self.titlefont = self.font_custom_large
         else:
             self.font = pg.font.SysFont(font, self.fontsize, bold=False)
             self.titlefont = pg.font.SysFont(font, self.fontsize, bold=True)
@@ -107,7 +108,7 @@ class Renderer:
         for i, (label, callback) in enumerate(statements.items()):
             debug_text = f"{label}: {callback()}"
             self.render_line(
-                debug_text, colors["DEBUG"], (16, 13 + i * self.lineheight)
+                debug_text, colors["DEBUG"], (20, 20 + i * self.lineheight), size = 10, border_width=0
             )
 
     # basic rendering
@@ -253,12 +254,10 @@ class Renderer:
 
         self.left = screen_params[0] + 20
         self.top = screen_params[1] + 20
-        pg.draw.rect(
-            self.display,
-            colors["PopupBG"],  # fill color
-            panel_rect,
-            border_radius=8
-        )
+        overlay = pg.Surface(panel_rect.size, pg.SRCALPHA) 
+        overlay.fill((*colors["PopupBG"], 150))  # 150 = alpha (0–255)
+
+        self.display.blit(overlay, panel_rect.topleft)
         pg.draw.rect(
             self.display,
             (220, 220, 220),  # border color
@@ -271,7 +270,7 @@ class Renderer:
             title,
             pos=(self.left, self.top),
             size=50,
-            font=self.titlefont,
+            font=self.font_custom_large,
         )
         y = self.top + 100  # Larger space after title
 
@@ -293,12 +292,19 @@ class Renderer:
 
         self.left = screen_params[0] + 20
         self.top = screen_params[1] + 20
+
+        overlay = pg.Surface(panel_rect.size, pg.SRCALPHA) 
+        overlay.fill((*colors["PopupBG"], 150))  # 150 = alpha (0–255)
+
+        self.display.blit(overlay, panel_rect.topleft)
         pg.draw.rect(
             self.display,
-            GREY,  # fill color
+            (220, 220, 220),  # border color
             panel_rect,
+            width=2,
             border_radius=8
         )
+
         pg.draw.rect(
             self.display,
             colors["TitleBG"],  # border color
@@ -307,13 +313,23 @@ class Renderer:
             border_radius=8
         )
 
+
         self.render_line(
             title,
             pos=(self.left, self.top),
-            size=50,
-            font=self.titlefont,
+            size=40,
+            font=self.font_custom_large,
         )
-        y = self.top + 100  # Larger space after title
+        y = self.top + self.lineheight*2  # Larger space after title
+        self.render_line(
+            "PassyBUIRD!",
+            color=WHITE,
+            pos=(self.left+10, y),
+            size=80,
+            font=self.font_custom_small,
+            border_width=10
+        )
+        y = y + 100  # Larger space after title
 
         for line in body:
             self.render_line(
@@ -378,7 +394,7 @@ class MenuRenderer:
     def render_title(self, pos):
         title = "PassyBUIRD"
         self.render_line(
-            title, colors["Title"], pos, font=self.renderer.titlefont, size=66
+            title, colors["Title"], pos, font=self.renderer.font_custom_small, size=80, border_width=10
         )
 
     def render_text(self, pos):
@@ -508,12 +524,25 @@ class CurvesRenderer:
     def draw_house_indicator(self, data):
         """Draw game objects like players or enemies."""
         x, y = self.screen_coords(data["Position"])
-        color = color_indicator(data["Comfort dT"])
+        color = colors.get(data["Color"], "comfort")
+        if color == "comfort":
+            color = color_interpolation(color_indicator(data["Comfort dT"]), GREEN, data["score"] / 100)
         size = self.size_TI_indicator * data["Scale"]
         pg.draw.circle(self.renderer.display, color, (x, y), size)
+        w, h = self.house.get_size()
+        scale = data["Scale"] # e.g. 50%
+        scaled = pg.transform.scale(self.house, (int(w * scale), int(h * scale)))
+        
+        draw_pos = (x - scaled.get_width() // 2, y - scaled.get_height() // 2)
 
-        #self.renderer.outline(self.house, (x - 15, y - 15), 2)
-        self.renderer.display.blit(self.house, (x - 15, y - 15))
+        self.renderer.outline(
+            scaled,
+            loc=draw_pos,
+            pixel=max(1, int(scale * 2)),
+            color=color,
+            onto=self.renderer.display,
+        )
+        self.renderer.display.blit(scaled, draw_pos)
 
     def draw_indicator(self, gamepos1, gamepos2, color):
         screenpos1 = self.screen_coords(gamepos1)
@@ -634,7 +663,13 @@ class UIRenderer:
 
     def render_comfort_score(self, score, dT, pos=(880, 66)):
         text = f"Comfort {score:.1f} %"
-        color = color_indicator(dT)
+
+        if dT > 0:
+            color = RED
+        elif dT < 0:
+            color =  BLUE
+        else:
+            color = GREEN
         color = color_interpolation(color, GREEN, score / 100)
         self.render_line(text, color, pos=pos, size=40)
 

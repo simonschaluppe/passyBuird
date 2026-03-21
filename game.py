@@ -1,3 +1,4 @@
+from re import DEBUG
 from typing import override
 
 import pygame as pg
@@ -9,9 +10,9 @@ from model.GameModel import GameModel
 from particles import ParticleManager
 from renderer import Renderer
 
-GODMODE = False
-
+DEBUG_MODE = True
 SCREEN_RESOLUTION = (1200, 700)
+GODMODE = False
 GAME_SPEED = 12
 
 # Initialize pygame
@@ -69,7 +70,7 @@ def get_background(hour_of_year):
         background_paths = ["Dunkelflaute.png", "Spring.png", "Summer.png", "Fall.png", "Winter.png"]
         try:
             index = round(hour_of_year / 8760 * len(background_paths))
-            print("In Game Hour ", game.hour, " the index is ", index, " and the background is ", background_paths[index])
+            #print("In Game Hour ", game.hour, " the index is ", index, " and the background is ", background_paths[index])
             return background_paths[index]
         except: return background_paths[1]
 
@@ -158,6 +159,10 @@ def level_fail(text: str):
         ],
     ).loop()
 
+def toggle_debug_mode():
+    global DEBUG_MODE
+    DEBUG_MODE = not DEBUG_MODE
+    print("DEBUG_MODE ", DEBUG_MODE)
 
 def quit_game():
     print("Quitting game...")
@@ -240,7 +245,7 @@ class TitleScreen(Screen):
             "Come on, let's get started!"
         ]
         
-        renderer.render_title_screen(title="Welcome to PassyBuirld!", body=description, screen_params = center_screen(size = 0.8))
+        renderer.render_title_screen(title="Welcome to ", body=description, screen_params = center_screen(size = 0.8))
 
         for button in self.handler.buttons:
             renderer.render_button(button)
@@ -319,6 +324,7 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_w, level_success)
         self.handler.bind_keypress(pg.K_v, victory_loop)
+        self.handler.bind_keypress(pg.K_d, toggle_debug_mode)
         self.handler.bind_keypress(pg.K_ESCAPE, start_shop_loop)
 
 
@@ -334,10 +340,14 @@ class LevelScreen(Screen):
 
             dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
             accumulated_gamehours += dt_real * game.speed * (not game.paused)  # h/s
-            print(f"{game.hour=}, {accumulated_gamehours:1f}, {game.model.comfort_score_tsd[game._mh]}")
+            #print(f"{game.hour=}, {accumulated_gamehours:1f}, {game.model.comfort_score_tsd[game._mh]}")
 
-            if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
-                level_success()
+            self.debug = {
+                "FPS": lambda: f"{clock.get_fps():2.1f}",
+                "Acc. hours": lambda: f"{accumulated_gamehours:.2f} h",
+                "State": game.__repr__,
+                "Speed": lambda: f"{game.speed:.0f} h/s",
+            }
 
             if game.paused:
                 continue
@@ -346,6 +356,9 @@ class LevelScreen(Screen):
                 hours = int(accumulated_gamehours)
                 accumulated_gamehours -= hours
                 game.update(hours=hours)
+                
+            if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
+                level_success()
 
             if game.is_bankrupt(): 
                 game_over(reason="You spent all your money!")
@@ -359,16 +372,6 @@ class LevelScreen(Screen):
             renderer.set_background(get_background(game.hour))
             particle_manager.update()
 
-            # debug
-            fps = clock.get_fps()
-            debug = {
-                "FPS": lambda: f"{fps:2.1f}",
-                "Acc. hours": lambda: f"{accumulated_gamehours:.2f} h",
-                "State": game.__repr__,
-                "Speed": lambda: f"{game.speed:.0f} h/s",
-            }
-            renderer.debug(debug)
-
             self.render()
 
             game.cleanup()
@@ -378,16 +381,14 @@ class LevelScreen(Screen):
 
     @override
     def render(self) -> None:
-
-        # render
         renderer.camera.update()
         renderer.draw_background(game.hour)
-
         renderer.draw_heat_particles(particle_manager.groups["heating"])
         renderer.draw_cool_particles(particle_manager.groups["cooling"])
         renderer.render_curves(game.get_curves_data())
         renderer.render_ui(game.get_ui_data())
-
+        if DEBUG_MODE: renderer.debug(self.debug)
+        
         for button in self.handler.buttons:
             renderer.render_button(button)
 
@@ -482,8 +483,7 @@ level_success_popup = Popup(
 
 
 """Start"""
-if GODMODE:
-    game.money = 1_000_000
+
 # start by entering title screen
 
 
