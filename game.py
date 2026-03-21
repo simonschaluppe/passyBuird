@@ -29,7 +29,7 @@ game = GameModel()
 particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
-camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=(14, 100))
+camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=(14, 70))
 camera.follow(game, maxdist=0)
 
 # Set up renderer
@@ -67,11 +67,11 @@ def get_btn_pos(orientation = None):
     elif orientation == "top left":
         return (SCREEN_RESOLUTION[0]*0.18, SCREEN_RESOLUTION[1]*0.07)
     elif orientation == "top right":
-        return (SCREEN_RESOLUTION[0]*0.9, SCREEN_RESOLUTION[1]*0.07)
+        return (SCREEN_RESOLUTION[0]*0.88, SCREEN_RESOLUTION[1]*0.07)
     elif orientation == "bottom left":
         return (SCREEN_RESOLUTION[0]*0.02, SCREEN_RESOLUTION[1]*0.93)
     elif orientation == "bottom right":
-        return (SCREEN_RESOLUTION[0]*0.9, SCREEN_RESOLUTION[1]*0.93)
+        return (SCREEN_RESOLUTION[0]*0.88, SCREEN_RESOLUTION[1]*0.93)
     elif orientation == "popup left":
         return (220, 900) # not dynamic yet
     elif orientation == "popup right":
@@ -82,12 +82,12 @@ def get_btn_pos(orientation = None):
 
 # Multi line functions
 def level_entry():
-    renderer.set_background(game.current_level.background)
+    #renderer.set_background(game.current_level.background)
     level_entry_popup = Popup(
         title=game.current_level.name,
         body=game.current_level.intro,
         buttons=[
-            Button(get_btn_pos("popup right"), start_level, "OK")
+            Button(get_btn_pos("popup right"), start_level, "OK", size = (150,60))
         ],
         keys=[
             (pg.K_RETURN, start_level),
@@ -100,7 +100,7 @@ def level_entry():
 def level_success():
     game.money += game.current_level.reward
     game.update_level_finished()
-    #level_success_popup.title= "You survived level " + str(game.current_level.number) + "!", # not working...
+    level_success_popup.title= str("You survived level " + str(game.current_level.number) + "!")
     level_success_popup.body = [f"{label}: {value}" for label, value in game.get_kpis().items()]
     for _ in range(300): 
         x = random.randint(0, SCREEN_RESOLUTION[0])
@@ -121,6 +121,7 @@ def victory_loop():
         particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
     print("You've finished the game, Good Job!")
     Victory().loop()
+
 
 
 def level_fail(cause: str):
@@ -171,6 +172,14 @@ def start_new_game():
     return_home()
 
 
+def get_background(hour_of_year):
+        # Use modular arithmetic to cycle through the backgrounds
+        background_paths = ["Dunkelflaute.png", "Spring.png", "Summer.png", "Fall.png", "Winter.png"]
+        try:
+            index = round(hour_of_year / 8760 * len(background_paths))
+            print("In Game Hour ", game.hour, " the index is ", index, " and the background is ", background_paths[index])
+            return background_paths[index]
+        except: return background_paths[1]
 
 #def place_buttons()
 
@@ -211,7 +220,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button(get_btn_pos("popup left"), enter_shop, "Start the Game!", size = (240,60)),
+            Button(get_btn_pos("popup left"), enter_shop, "Start the Game!", size = (260,60)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -221,12 +230,14 @@ class TitleScreen(Screen):
     @override
     def render(self) -> None:
         description = [
-            "Congratulations! You just bought your very own house and you can't wait to spend",
-            "the Winter warm and comfortable. The only issue is - heating has become very",
-            "expensive... and a major contributor to climate change!",
+            "Congratulations! You just bought your very own house and you can't wait to spend the",
+            "Winter warm and comfortable. The only issue is - heating has become very expensive",
+            "...and a major contributor to climate change!",
+            "",
             "But don't fret! You're smart! And dextrous! With these qualities, you can decide",
-            "exactly how much heating energy you need to be super comfortable all year",
-            "long and conserve the climate along the way.",
+            "exactly how much heating energy you need to be comfortable and conserve the climate",
+            "along the way.",
+            "",
             "Come on, let's get started!"
         ]
         
@@ -253,16 +264,16 @@ class ShopScreen(Screen):
                     particle_manager.purchase(position=pg.mouse.get_pos(), velocity=(0, -5)) 
                 upgrade.callback()
 
-            return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(400, 60))
+            return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(450, 60))
 
 
         buttons = [
             Button(get_btn_pos("bottom right"), level_entry, "Start Level", size = (190,60)),
             Button(get_btn_pos("bottom left"), quit_game, "Quit Game", size = (170,60)),
-            upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
-            upgrade_button(game.upgrades['power'], (500, 425)),
-            upgrade_button(game.upgrades['heatpump_efficiency'], (500, 475)),
-            upgrade_button(game.upgrades['electricity_price_discount'], (500, 525)),
+            upgrade_button(game.upgrades['wall_insulation'], (700, 375)),
+            upgrade_button(game.upgrades['power'], (700, 425)),
+            upgrade_button(game.upgrades['heatpump_efficiency'], (700, 475)),
+            upgrade_button(game.upgrades['electricity_price_discount'], (700, 525)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -311,6 +322,9 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_v, victory_loop)
         self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
 
+
+    
+
     @override
     def loop(self) -> None:
         """The level loop responsible for processing events, updating game state, and rendering."""
@@ -336,6 +350,8 @@ class LevelScreen(Screen):
 
             if game.money <= 0 and not GODMODE:
                 money_death()
+
+            renderer.set_background(get_background(game.hour))
 
             TI = game.model.TI[game._mh]
             if game.model.comfort.comfort_score(TI) < game.current_level.min_comfort and not GODMODE:
@@ -459,10 +475,10 @@ level_screen = LevelScreen()
 """Popup screen instances"""
 
 level_success_popup = Popup(
-    title="You survived level " + str(game.current_level.number) + "!", # not working...
+    title="You survived the level!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button(get_btn_pos("popup right"), enter_shop, "OK")
+        Button(get_btn_pos("popup right"), enter_shop, "OK", size = (150,60))
     ],
     keys=[
         (pg.K_RETURN, enter_shop),

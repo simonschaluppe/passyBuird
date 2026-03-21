@@ -42,17 +42,18 @@ LEVELS = [
     Level(
         number=1,
         name="Level 1: Tutorial",
-        month = "October",
+        month = "November",
         intro=[
             "It's the first week in your new home!",
             "Press left mouse button to engage the heating and try to stay over the light blue comfort line.",
             "",
             "Remember that heating is expensive! Keep an eye on your available money."
         ],
-        start=6553,
-        end=6553 + 7 * 24 * 2,
+        start=7297,
+        end=7297 + 7 * 24 * 2,
         start_TI=22,
         min_comfort=30,
+        min_average_comfort = 90,
         reward=300,
         background = "Fall.png",
         comfort=Comfortmodel(

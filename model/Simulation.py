@@ -127,6 +127,8 @@ class EnergyModel:
             conversion.DEFAULT_PROFILES.ElectricityMap2018
         )
 
+        self.emissions = np.zeros(8760)
+
         self.comfort_score_tsd = np.zeros(8760)
 
         ## initialize starting conditions
@@ -251,6 +253,8 @@ class EnergyModel:
 
     def calc_ED(self, t):
         self.ED[t] = self.ED_QH[t] + self.ED_QC[t]
+        self.emissions[t] = self.ED[t] * self.CO2[t]
+        #print("t is: ", t, " and ED is: ", self.ED[t], " and CO2 is: ", self.CO2[t], " and emissions are: ", self.emissions[t], " sum: ", self.emissions.sum())
         if self.include_user_plugloads:
             self.ED[t] += self.ED_user[t]
 
