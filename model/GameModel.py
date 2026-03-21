@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from typing import Iterable
+from unittest.mock import DEFAULT
 
 ROOT_PATH = Path(__file__).parent.parent
 sys.path.append(str(Path(__file__).parent.parent))
@@ -10,7 +11,6 @@ DATA_PATH = ROOT_PATH / "data"
 from upgrades import Upgrade, UPGRADES
 from levels import Level, LEVELS
 from model.Simulation import EnergyModel
-
 
 DEFAULT_SPEED = 24
 
@@ -83,8 +83,9 @@ class GameModel:
     levels: Iterable[LEVELS]
     current_level: Level
 
-    def __init__(self):
-        self.speed = DEFAULT_SPEED  # simulated hours / game second
+    def __init__(self, speed = 24 ):
+        global DEFAULT_SPEED 
+        DEFAULT_SPEED =  speed  # simulated hours / game second
         self.paused = False
         self.finished = False
         self.model = EnergyModel()
@@ -338,15 +339,15 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
-            "Score": f"{self.total_comfort:.2f}%"
-            "",
-            "Waermebedarf (QH)": f"{self.model.QH.sum() / 1000 * self.model.building.bgf:.1f} kWh",
-            "Kaeltebedarf (QC)": f"{self.model.QC.sum() / 1000 * self.model.building.bgf:.1f} kWh",
-            "Stromeinsatz (ED)": f"{self.model.ED.sum() / 1000 * self.model.building.bgf:.1f} kWh",
-            "CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.1f} kg",
-            "Mittlerer Strompreis": f"{self.model.price_grid:.3f} e/Wh",
-            "Geldstand": f"{self.money:.2f} €",
-            "Komfortabweichung": f"{self.model.comfort_score_tsd.mean():.1f} Kh",
+            "Erreichter Komfort": f"{self.level_comfort:.1f} %",
+            "im gesamten Spiel: ": f"{self.total_comfort:.2f}%",
+            "" : "",
+            "Verwendete Heizung": f"{self.model.QH.sum() / 1000 * self.model.building.bgf:.1f} kWh",
+            "verwendete Kühlung": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.1f} kWh",
+            "Verbrauchter Strom": f"{self.model.ED.sum() / 1000 * self.model.building.bgf:.1f} kWh",
+            "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
+            "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.1f} kg",
+            "Konto-Stand": f"{self.money:.2f} €",
         }
 
     def get_game_stats(self):

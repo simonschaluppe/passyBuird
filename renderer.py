@@ -71,13 +71,13 @@ class Renderer:
         self.scale = scale
 
         # defaults
-        self.lineheight = 25
-        self.fontsize = 30
+        self.lineheight = int( 25 * self.scale)
+        self.fontsize = int(30 * self.scale)
         if font == "custom":
             self.font = Font(FONT_PATH / "small_font.png")
             self.titlefont = Font(FONT_PATH / "large_font.png")
         else:
-            self.font = pg.font.SysFont(font, self.fontsize, bold=True)
+            self.font = pg.font.SysFont(font, self.fontsize, bold=False)
             self.titlefont = pg.font.SysFont(font, self.fontsize, bold=True)
         
 

@@ -81,7 +81,7 @@ LEVELS = [
             p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
-            comfort_sensitivity= 10
+            comfort_sensitivity= 2
         )
     ),
 
@@ -108,7 +108,7 @@ LEVELS = [
             p_change=1 / 12,
             alpha=0.5,
             sigma=0.8,
-            comfort_sensitivity= 5
+            comfort_sensitivity= 2
         )
     ),
 
@@ -136,7 +136,7 @@ LEVELS = [
             p_change=1 / 12,
             alpha=0.25,
             sigma=0.5,
-            comfort_sensitivity=4
+            comfort_sensitivity=2
         )
     ),
 
@@ -164,7 +164,7 @@ LEVELS = [
             p_change=1 / 12,
             alpha=0.25,
             sigma=0.5,
-            comfort_sensitivity=2
+            comfort_sensitivity=1
         )
     ),
 
@@ -183,7 +183,7 @@ LEVELS = [
         start=0,
         end=8760,
         start_TI=22,
-        min_comfort=30,
+        min_comfort=20,
         min_average_comfort = 90,
         reward=1000,
         background = "Winter.png",
@@ -191,7 +191,7 @@ LEVELS = [
             p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
-            comfort_sensitivity=3
+            comfort_sensitivity=31
         )
     )
 ]

@@ -11,7 +11,8 @@ from renderer import Renderer
 
 GODMODE = False
 
-SCREEN_RESOLUTION = (1920, 1080)
+SCREEN_RESOLUTION = (1200, 700)
+GAME_SPEED = 12
 
 # Initialize pygame
 pg.init()
@@ -25,15 +26,15 @@ pg.display.set_caption("passyBUIRLD")
 display = pg.Surface(SCREEN_RESOLUTION)
 
 clock = pg.time.Clock()
-game = GameModel()
+game = GameModel(speed=GAME_SPEED)
 particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
-camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=(14, 70))
+camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=(14, 40))
 camera.follow(game, maxdist=0)
 
 # Set up renderer
-renderer = Renderer(display, camera, clock, font = "Comic Sans MS")
+renderer = Renderer(display, camera, clock, scale=0.8, font = "Helvetica")
 
 """Callback functions"""
 
@@ -73,9 +74,9 @@ def get_btn_pos(orientation = None):
     elif orientation == "bottom right":
         return (SCREEN_RESOLUTION[0]*0.88, SCREEN_RESOLUTION[1]*0.93)
     elif orientation == "popup left":
-        return (220, 900) # not dynamic yet
+        return (SCREEN_RESOLUTION[0]*0.1, SCREEN_RESOLUTION[1]*0.8)
     elif orientation == "popup right":
-        return (1550, 900) # not dynamic yet   
+        return (SCREEN_RESOLUTION[0]*0.8, SCREEN_RESOLUTION[1]*0.93)
     else:
         return False
     

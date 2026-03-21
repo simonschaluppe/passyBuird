@@ -17,7 +17,7 @@ UPGRADES = {
     "wall_insulation": Upgrade(
         name="Wall Insulation",
         upgrade_text="Insulate Walls",
-        cost=1000,
+        cost=200,
         image="",
         available=True,
     ),
@@ -25,7 +25,7 @@ UPGRADES = {
     "power": Upgrade(
         name="Power",
         upgrade_text="Increase Power",
-        cost=1000,
+        cost=200,
         image="",
         available=True,
     ),
@@ -33,7 +33,7 @@ UPGRADES = {
     "heatpump_efficiency": Upgrade(
         name="Heat Pump Efficiency",
         upgrade_text="Increase Efficiency",
-        cost=1500,
+        cost=500,
         image="",
         available=True,
     ),
@@ -41,7 +41,7 @@ UPGRADES = {
     "electricity_price_discount": Upgrade(
         name="Elect. Price Discount",
         upgrade_text="Negotiate Discount",
-        cost=1500,
+        cost=100,
         image="",
         available=True,
     ),
