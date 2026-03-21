@@ -26,7 +26,7 @@ pg.display.set_caption("passyBUIRLD")
 display = pg.Surface(SCREEN_RESOLUTION)
 
 clock = pg.time.Clock()
-game = GameModel(speed=GAME_SPEED)
+game = GameModel(speed=GAME_SPEED, godmode=GODMODE)
 particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
@@ -36,16 +36,8 @@ camera.follow(game, maxdist=0)
 # Set up renderer
 renderer = Renderer(display, camera, clock, scale=0.8, font = "Helvetica")
 
-"""Callback functions"""
 
-# Single line functions
-return_home = lambda: title_screen.loop()
-start_level = lambda: level_screen.loop()
-enter_shop = lambda: shop_screen.loop()
-money_death = lambda: level_fail('money')
-heat_death = lambda: level_fail('heat')
-freeze_death = lambda: level_fail('freeze')
-
+#TODO: Move to utility or renderer
 def center_screen(size = 0.8):
     # Position & Size
     width = SCREEN_RESOLUTION[0] * size
@@ -54,45 +46,72 @@ def center_screen(size = 0.8):
     top = SCREEN_RESOLUTION[1] * 0.1
     return (left, top, width, height)
 
+
+SCREEN_ANCHORS = {  #width #height
+    "top left":     (0.18, 0.07),
+    "top right":    (0.88, 0.07),
+    "bottom left":  (0.02, 0.93),
+    "bottom right": (0.88, 0.93),
+    "popup left":   (0.10, 0.80),
+    "popup right":  (0.80, 0.93)
+}
 def get_btn_pos(orientation = None):
     """
     Parameter "orientation" can be "top left", "top right", "bottom left", "bottom right", "popup left" or "popup right".
     
-    Function returns a touple with relative button coordinates (x,y).
-
-    "offset" reduces distance from center in percent for popups.
+    Function returns a touple with screen coordinates (x,y).
     """
+    return tuple(pixel * factor for pixel, factor in zip(SCREEN_RESOLUTION, SCREEN_ANCHORS.get(orientation, (0,0))))
     
-    if orientation == None:
-        raise ValueError("The parameter 'orientation' cannot be None.")
-    elif orientation == "top left":
-        return (SCREEN_RESOLUTION[0]*0.18, SCREEN_RESOLUTION[1]*0.07)
-    elif orientation == "top right":
-        return (SCREEN_RESOLUTION[0]*0.88, SCREEN_RESOLUTION[1]*0.07)
-    elif orientation == "bottom left":
-        return (SCREEN_RESOLUTION[0]*0.02, SCREEN_RESOLUTION[1]*0.93)
-    elif orientation == "bottom right":
-        return (SCREEN_RESOLUTION[0]*0.88, SCREEN_RESOLUTION[1]*0.93)
-    elif orientation == "popup left":
-        return (SCREEN_RESOLUTION[0]*0.1, SCREEN_RESOLUTION[1]*0.8)
-    elif orientation == "popup right":
-        return (SCREEN_RESOLUTION[0]*0.8, SCREEN_RESOLUTION[1]*0.93)
-    else:
-        return False
-    
+#TODO: Move to utility or renderer
+def get_background(hour_of_year):
+        # Use modular arithmetic to cycle through the backgrounds
+        background_paths = ["Dunkelflaute.png", "Spring.png", "Summer.png", "Fall.png", "Winter.png"]
+        try:
+            index = round(hour_of_year / 8760 * len(background_paths))
+            print("In Game Hour ", game.hour, " the index is ", index, " and the background is ", background_paths[index])
+            return background_paths[index]
+        except: return background_paths[1]
+
+
+"""Callback functions"""
+
+# Events
+
+start_title_loop = lambda: title_screen.loop()
+start_level_loop = lambda: level_screen.loop()
+start_shop_loop = lambda: shop_screen.loop()
+
 
 # Multi line functions
+def start_new_game():
+    game.setup_new_game()
+    start_title_loop()
+
+def game_over(reason="You have lost the game."):
+    Popup(
+        title="Game over!",
+        body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+        buttons=[
+            Button(get_btn_pos("popup left"), start_new_game, "Start new game", size = (250,60))
+        ],
+        keys=[
+            (pg.K_RETURN, start_new_game),
+            (pg.K_ESCAPE, start_new_game),
+        ],
+    ).loop()
+
 def level_entry():
     #renderer.set_background(game.current_level.background)
     level_entry_popup = Popup(
         title=game.current_level.name,
         body=game.current_level.intro,
         buttons=[
-            Button(get_btn_pos("popup right"), start_level, "OK", size = (150,60))
+            Button(get_btn_pos("popup right"), start_level_loop, "OK", size = (150,60))
         ],
         keys=[
-            (pg.K_RETURN, start_level),
-            (pg.K_ESCAPE, return_home),
+            (pg.K_RETURN, start_level_loop),
+            (pg.K_ESCAPE, start_title_loop),
         ],
     )
     level_entry_popup.loop()
@@ -123,23 +142,15 @@ def victory_loop():
     print("You've finished the game, Good Job!")
     Victory().loop()
 
-
-
-def level_fail(cause: str):
+def level_fail(text: str):
     game.update_level_finished()
-    match cause:
-        case "money":
-            title = "Du hast kein Geld mehr!"
-        case "heat":
-            title = "Everyone died of heat stroke!"
-        case "freeze":
-            title = "Everyone froze into icicles!"
-            text = "Your average comfort was ..."
+    game.setup_level()
+    title = "Level failed!"
     Popup(
         title=title,
-        body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+        body=[text],
         buttons=[
-            Button(get_btn_pos("popup left"), enter_shop, "Return to Shop", size = (250,60))
+            Button(get_btn_pos("popup left"), start_shop_loop, "Return to Shop", size = (250,60))
         ],
         keys=[
             (pg.K_RETURN, start_new_game),
@@ -168,24 +179,11 @@ def cool():
     )
 
 
-def start_new_game():
-    game.setup_new_game()
-    return_home()
 
-
-def get_background(hour_of_year):
-        # Use modular arithmetic to cycle through the backgrounds
-        background_paths = ["Dunkelflaute.png", "Spring.png", "Summer.png", "Fall.png", "Winter.png"]
-        try:
-            index = round(hour_of_year / 8760 * len(background_paths))
-            print("In Game Hour ", game.hour, " the index is ", index, " and the background is ", background_paths[index])
-            return background_paths[index]
-        except: return background_paths[1]
 
 #def place_buttons()
 
 """Classes"""
-
 
 class Screen:
     """Basic Screen class."""
@@ -221,7 +219,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button(get_btn_pos("popup left"), enter_shop, "Start the Game!", size = (260,60)),
+            Button(get_btn_pos("popup left"), level_entry, "Start the Game!", size = (260,60)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -270,7 +268,7 @@ class ShopScreen(Screen):
 
         buttons = [
             Button(get_btn_pos("bottom right"), level_entry, "Start Level", size = (190,60)),
-            Button(get_btn_pos("bottom left"), quit_game, "Quit Game", size = (170,60)),
+            Button(get_btn_pos("bottom left"), start_new_game, "Start new game", size = (170,60)),
             upgrade_button(game.upgrades['wall_insulation'], (700, 375)),
             upgrade_button(game.upgrades['power'], (700, 425)),
             upgrade_button(game.upgrades['heatpump_efficiency'], (700, 475)),
@@ -321,7 +319,7 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_w, level_success)
         self.handler.bind_keypress(pg.K_v, victory_loop)
-        self.handler.bind_keypress(pg.K_ESCAPE, enter_shop)
+        self.handler.bind_keypress(pg.K_ESCAPE, start_shop_loop)
 
 
     
@@ -349,21 +347,16 @@ class LevelScreen(Screen):
                 accumulated_gamehours -= hours
                 game.update(hours=hours)
 
-            if game.money <= 0 and not GODMODE:
-                money_death()
+            if game.is_bankrupt(): 
+                game_over(reason="You spent all your money!")
+
+            if game.is_too_hot():
+                level_fail(text="Everyone died of heat stroke!")
+
+            if game.is_too_cold():
+                level_fail(text="Everyone froze into icicles!")
 
             renderer.set_background(get_background(game.hour))
-
-            TI = game.model.TI[game._mh]
-            if game.model.comfort.comfort_score(TI) < game.current_level.min_comfort and not GODMODE:
-                print(f"game.model.comfort.comfort_score(TI) < game.current_level.min_comfort {game.model.comfort.comfort_score(TI)} < {game.current_level.min_comfort}")
-                if game.model.comfort.comfort_diff(TI) > 5:
-                    print(f"HEAT DEATH: {game.model.comfort.comfort_diff(TI)} > 0")
-                    heat_death()
-                if game.model.comfort.comfort_diff(TI) < 5:
-                    print(f"FREEZE DEATH: {game.model.comfort.comfort_diff(TI)} > 0")
-                    freeze_death()
-
             particle_manager.update()
 
             # debug
@@ -441,8 +434,8 @@ class Victory(Screen):
     def __init__(self):
         self.title = "You beat the game!"
         self.body = "Congratulations, etc"
-        self.buttons = Button(get_btn_pos("popup right"), enter_shop, "Start new Game!"),
-        self.keys = [(pg.K_RETURN, enter_shop),(pg.K_ESCAPE, enter_shop),]
+        self.buttons = Button(get_btn_pos("popup right"), start_shop_loop, "Start new Game!"),
+        self.keys = [(pg.K_RETURN, start_shop_loop),(pg.K_ESCAPE, start_shop_loop),]
         super().__init__()
 
     @override
@@ -479,16 +472,21 @@ level_success_popup = Popup(
     title="You survived the level!",
     body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
     buttons=[
-        Button(get_btn_pos("popup right"), enter_shop, "OK", size = (150,60))
+        Button(get_btn_pos("popup right"), start_shop_loop, "OK", size = (150,60))
     ],
     keys=[
-        (pg.K_RETURN, enter_shop),
-        (pg.K_ESCAPE, enter_shop),
+        (pg.K_RETURN, start_shop_loop),
+        (pg.K_ESCAPE, start_shop_loop),
     ],
 )
+
 
 """Start"""
 if GODMODE:
     game.money = 1_000_000
 # start by entering title screen
-return_home()
+
+
+start_new_game()
+
+

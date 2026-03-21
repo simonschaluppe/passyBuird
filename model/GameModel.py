@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Iterable
 from unittest.mock import DEFAULT
 
+from numpy import true_divide
+
 ROOT_PATH = Path(__file__).parent.parent
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -82,10 +84,12 @@ class GameModel:
 
     levels: Iterable[LEVELS]
     current_level: Level
+    current_level_number: int
 
-    def __init__(self, speed = 24 ):
+    def __init__(self, speed = 24, godmode = False):
         global DEFAULT_SPEED 
         DEFAULT_SPEED =  speed  # simulated hours / game second
+        self.godmode = godmode
         self.paused = False
         self.finished = False
         self.model = EnergyModel()
@@ -94,18 +98,21 @@ class GameModel:
         self._mh = 0 # energy model hour
         self.upgrades: dict[str, Upgrade] = UPGRADES
         self.levels = LEVELS
-        self.current_level_number = 0
         self.setup_new_game()
+
+
+    def toggle_godmode(self):
+        self.godmode = not self.godmode
+        status = "enabled" if self.godmod else "disabled"
+        print(f"Godmode {status}!")
 
     def setup_new_game(self,
                        starting_power=15,
                        starting_cop=3,
                        ):
         self.money = 1_000
-        self.level_comfort = 1 # average comfort score in current level
-        self.level_duration = 0 
-        self.total_comfort = 1 # average comfort score across all levels played
-        self.total_duration = 0 # hours simulated across all levels played
+        
+        self.current_level_number = 0
         self.energy_discount = 0  # 0-100 [%]
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
@@ -116,13 +123,17 @@ class GameModel:
     def reset_levels(self):
         #self.levels = iter(LEVELS)
         #self.setup_next_level() # setup level 1
+        self.total_comfort = 1 # average comfort score across all levels played
+        self.total_duration = 0 # hours simulated across all levels played
         self.setup_level(0)
 
-    def setup_level(self, number:int=0):
+    def setup_level(self, number=None):
+        """Level number of optional, if missing, current level will be reset"""
         self.level_comfort = 1
         self.level_duration = 0
-
-        self.current_level = self.levels[number]
+        if number is not None:
+            self.current_level_number = number
+        self.current_level = self.levels[self.current_level_number]
 
         start_hour = self.current_level.start
         self.speed = DEFAULT_SPEED
@@ -163,6 +174,45 @@ class GameModel:
     def setup_next_level(self):
         self.current_level_number += 1
         self.setup_level(self.current_level_number)
+
+    def update_level_finished(self):
+        """at the end of level, update comfort rating"""
+        start, stop = self.current_level.start, self.current_level.end
+        average = self.level_comfort
+        l = len(self.model.comfort_score_tsd[start:stop])
+        self.total_comfort = (self.total_duration * self.total_comfort + l * average) / (l + self.total_duration)
+        self.total_duration += l
+        print("Achieved comfort level (average):", average, "over", l, "hours")
+        print("Total comfort:", self.total_comfort, "over", self.total_duration, "hours total")
+
+    def is_bankrupt(self) -> bool:
+        if self.godmode:    return False
+        if self.money <= 0: return True
+        return False
+    
+    def is_max_comfort_reached(self) -> bool:
+        if self.godmode:    return False
+
+    def is_too_cold(self) -> bool:
+        if self.godmode: return False
+        if self.model.comfort.comfort_diff(self.TI) > 0: return False # as long as TI - min setpoint is positive, no freeze
+        cs = self.model.comfort.comfort_score(self.TI)
+        mc = self.current_level.min_comfort
+        if cs < mc:
+            print(f"FREEZE DEATH: comfort_score={cs} < min_comfort={mc}")
+            return True
+        return False
+    
+    def is_too_hot(self) -> bool:
+        if self.godmode: return False
+        if self.model.comfort.comfort_diff(self.TI) < 0: return False # as long as TI - min setpoint is positive, no freeze
+        cs = self.model.comfort.comfort_score(self.TI)
+        mc = self.current_level.min_comfort
+        if cs < mc:
+            print(f"HEAT DEATH: comfort_score={cs} < min_comfort={mc}")
+            return True
+        return False
+
 
     def update(self, hours: int):
         for _ in range(hours):
@@ -214,26 +264,7 @@ class GameModel:
     def set_cooling_power(self, power):
         self.model.HVAC.HP_cooling_power = power
 
-    @property
-    def TI(self):
-        return self.model.TI[self._mh]
 
-    @property
-    def position(self):
-        """Game position is (x = hour, y = Indoor Temperature)"""
-        return (self.hour, self.TI)
-
-    @property
-    def dT(self):
-        return self.model.Q_loss[self._mh] / self.model.building.heat_capacity
-
-    @property
-    def qh(self):
-        return self.model.QH[self._mh] / self.model.building.heat_capacity * 10
-
-    @property
-    def qc(self):
-        return self.model.QC[self._mh] / self.model.building.heat_capacity * 10
 
     def toggle_pause(self):
         """Toggle the paused state of the game."""
@@ -392,16 +423,28 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         self.upgrades['electricity_price_discount'].callback = \
             lambda: upgrade(self.upgrades['electricity_price_discount'], electricity_price_discount)
 
-    def update_level_finished(self):
-        """at the end of level, update comfort rating"""
-        self.model.comfort.comfort_score = 100
-        start, stop = self.current_level.start, self.current_level.end
-        average = self.level_comfort
-        l = len(self.model.comfort_score_tsd[start:stop])
-        self.total_comfort = (self.total_duration * self.total_comfort + l * average) / (l + self.total_duration)
-        self.total_duration += l
-        print("Achieved comfort level (average):", average, "over", l, "hours")
-        print("Total comfort:", self.total_comfort, "over", self.total_duration, "hours total")
+
+    @property
+    def TI(self):
+        return self.model.TI[self._mh]
+
+    @property
+    def position(self):
+        """Game position is (x = hour, y = Indoor Temperature)"""
+        return (self.hour, self.TI)
+
+    @property
+    def dT(self):
+        return self.model.Q_loss[self._mh] / self.model.building.heat_capacity
+
+    @property
+    def qh(self):
+        return self.model.QH[self._mh] / self.model.building.heat_capacity * 10
+
+    @property
+    def qc(self):
+        return self.model.QC[self._mh] / self.model.building.heat_capacity * 10
+
 
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
