@@ -86,7 +86,7 @@ class GameModel:
 
     levels: Iterable[LEVELS]
     current_level: Level
-    current_level_number: int
+    current_level_index: int
 
     def __init__(self, speed = 24, godmode = False):
         global DEFAULT_SPEED 
@@ -114,7 +114,9 @@ class GameModel:
                        ):
 
         self.money = 1_000_000 if self.godmode else 1_000 
-        self.current_level_number = 0
+        self.total_GHG_emitted = 0
+        self.total_GHG_avoided = 0
+        self.current_level_index = 0
         self.energy_discount = 0  # 0-100 [%]
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
@@ -129,13 +131,18 @@ class GameModel:
         self.total_duration = 0 # hours simulated across all levels played
         self.setup_level(0)
 
-    def setup_level(self, number=None):
+    def setup_next_level(self):
+        self.current_level_index += 1
+        self.setup_level(self.current_level_index)
+
+    def setup_level(self, index=None):
         """Level number of optional, if missing, current level will be reset"""
         self.level_comfort = 1
         self.level_duration = 0
-        if number is not None:
-            self.current_level_number = number
-        self.current_level = self.levels[self.current_level_number]
+        if index is not None:
+            self.current_level_index = index
+        print(self.current_level_index)
+        self.current_level = self.levels[self.current_level_index]
         self.set_speed(getattr(self.current_level, "speed", DEFAULT_SPEED))
 
         start_hour = self.current_level.start
@@ -175,9 +182,6 @@ class GameModel:
 
         return True
 
-    def setup_next_level(self):
-        self.current_level_number += 1
-        self.setup_level(self.current_level_number)
 
     def update_level_finished(self):
         """at the end of level, update comfort rating"""
@@ -186,8 +190,10 @@ class GameModel:
         l = len(self.model.comfort_score_tsd[start:stop])
         self.total_comfort = (self.total_duration * self.total_comfort + l * average) / (l + self.total_duration)
         self.total_duration += l
-        print("Achieved comfort level (average):", average, "over", l, "hours")
-        print("Total comfort:", self.total_comfort, "over", self.total_duration, "hours total")
+        self.total_GHG_emitted += self.get_GHG_emitted()
+        self.total_GHG_avoided += self.get_GHG_avoided()
+        #print("Achieved comfort level (average):", average, "over", l, "hours")
+        #print("Total comfort:", self.total_comfort, "over", self.total_duration, "hours total")
 
     def is_bankrupt(self) -> bool:
         if self.godmode:    return False
@@ -240,7 +246,7 @@ class GameModel:
             self.model.comfort.update(self._mh)
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
             self.level_comfort = self.model.comfort_score_tsd[self.current_level.start:self._mh].mean()
-            print(f"level average comfort: {self.level_comfort:.1f}%")
+            #print(f"level average comfort: {self.level_comfort:.1f}%")
 
             self.curve_TI.update((self.hour, self.TI))
 
@@ -267,8 +273,6 @@ class GameModel:
 
     def set_cooling_power(self, power):
         self.model.HVAC.HP_cooling_power = power
-
-
 
     def toggle_pause(self):
         """Toggle the paused state of the game."""
@@ -302,6 +306,18 @@ class GameModel:
 
     def get_hvac_data(self) -> dict:
         return {"lines": self.model.HVAC.__repr__()}
+
+    def get_ED(self):
+        """total electricity used (kWh)"""
+        return self.model.ED.sum() / 1000 * self.model.building.bgf
+    
+    def get_GHG_emitted(self):
+        return self.model.emissions.sum()
+    
+    def get_GHG_avoided(self):
+        q = self.model.QH.sum() / 1000 * self.model.building.bgf
+        gas_ghg = q * 0.201 # kg/kWh oib rl6'18
+        return gas_ghg - self.get_GHG_emitted()
 
     def get_upgrade_text(self) -> dict:
         return {"lines": f"""
@@ -361,6 +377,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
 
     def get_ui_data(self):
         return {
+            "player_activity": self.heat_on or self.cool_on,
             "Energy balance": {
                 "anchorpoint": (600, 250),
                 "first": {
@@ -374,10 +391,11 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "Scores": {
                 "Money": int(self.money),
                 "Comfort": {"dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
-                            "score": self.model.comfort.comfort_score(self.model.TI[self._mh])},
+                            "score": self.get_comfort_score(),
+                            "change": self.get_comfort_score()-self.model.comfort.comfort_score(self.model.TI[self._mh-1])},
             },
             "Price": f"Price: {self.model.price_grid} €/Wh",
-            "CO2": f"CO2: {self.model.CO2[self._mh] * 1000:.0f} g/kWh",
+            "CO2": f"{self.get_GHG_emitted():.1f} kg",
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
         }
@@ -390,7 +408,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "" : "",
             "Verwendete Heizung": f"{self.model.QH.sum() / 1000 * self.model.building.bgf:.0f} kWh",
             "verwendete Kühlung": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
-            "Verbrauchter Strom": f"{self.model.ED.sum() / 1000 * self.model.building.bgf:.0f} kWh",
+            "Verbrauchter Strom": f"{self.get_ED()} kWh",
             "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
             "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.0f} kg",
             "Konto-Stand": f"{self.money:.2f} €",
@@ -401,6 +419,8 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             Current Level    {self.current_level.name}
             Available Money  {self.money:.2f} €
             Average Comfort  {self.total_comfort:.2f}%
+            Total CO2 caused  {self.total_GHG_emitted:.0f} kg
+            Total GHG avoided {self.total_GHG_avoided:.0f} kg
         """
                 }
 
@@ -408,7 +428,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         def upgrade(upgrade: Upgrade, fn: callable):
             if upgrade.cost > self.money:
                 print("Not enough money!")
-                return
+                return False
 
             upgrade.level += 1
             self.money -= upgrade.cost

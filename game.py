@@ -137,11 +137,15 @@ def level_fail(text: str):
         ],
     ).loop()
 
-def level_success():
+def level_success(): 
     game.money += game.current_level.reward
     game.update_level_finished()
+    if game.current_level_index == len(game.levels):
+        victory_loop()
+    title=f"You survived level {game.current_level.number}!"
+    game.setup_next_level()
     level_success_popup = Popup(
-        title=str("You survived level " + str(game.current_level.number) + "!"),
+        title=title,
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
             Button(get_btn_pos("popup right"), start_level_intro, "Continue", size = (150,60))
@@ -155,11 +159,6 @@ def level_success():
         x = random.randint(0, SCREEN_RESOLUTION[0])
         y = random.randint(0, SCREEN_RESOLUTION[1])
         particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
-
-    if game.current_level_number == 6:
-        victory_loop()
-    
-    game.setup_next_level()
     level_success_popup.loop()
 
 def victory_loop():
@@ -195,9 +194,6 @@ def cool():
     particle_manager.cool(
         game.position, (0, -game.qc)
     )
-
-
-
 
 #def place_buttons()
 
@@ -243,6 +239,7 @@ class TitleScreen(Screen):
 
         # bind key presses
         self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
+        self.handler.bind_keypress(pg.K_q, quit_game)
 
     @override
     def render(self) -> None:
@@ -279,7 +276,9 @@ class ShopScreen(Screen):
                 for _ in range(particale_amount):
                     particle_manager.purchase(position=pg.mouse.get_pos(), velocity=(0, 5)) 
                     particle_manager.purchase(position=pg.mouse.get_pos(), velocity=(0, -5)) 
-                upgrade.callback()
+                res = upgrade.callback()
+                if not res:
+                    renderer.draw_no_money_warning()
 
             return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(450, 60))
 
@@ -315,14 +314,11 @@ class ShopScreen(Screen):
 
 class LevelScreen(Screen):
     """Level screen, where the actual gameplay happens."""
-
     @override
     def config_handler(self) -> None:
-
         # bind camera
         self.handler.bind_camera(camera)
-
-        # bind key presses
+        # bind key pressed
         self.handler.bind_continuous_keypress(pg.K_UP, heat)
         self.handler.bind_continuous_keypress(pg.K_DOWN, cool)
         self.handler.bind_continuous_mousebutton(0, heat)
@@ -340,9 +336,6 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_v, victory_loop)
         self.handler.bind_keypress(pg.K_d, toggle_debug_mode)
         self.handler.bind_keypress(pg.K_ESCAPE, start_shop_loop)
-
-
-    
 
     @override
     def loop(self) -> None:

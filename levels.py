@@ -78,7 +78,7 @@ LEVELS = [
         min_average_comfort = 90,
         reward=700,
         background = "Winter.png",
-        speed=36,
+        speed=12,
         comfort=Comfortmodel(
             minimum_comfort_band=100,
             p_change=1 / 6,
@@ -145,7 +145,7 @@ LEVELS = [
 
     Level(
         number=5,
-        name="Level 4: Cooling",
+        name="Level 5: Cooling",
         month = "June",
         intro=[
             "The weatherman just called - there's some seriously hot days ahead.",
@@ -158,7 +158,7 @@ LEVELS = [
         ],
         start=3625,
         end=3625 + 7 * 24 * 2,
-        start_TI=25,
+        start_TI=20,
         min_comfort=20,
         min_average_comfort = 90,
         reward=1500,
@@ -173,7 +173,7 @@ LEVELS = [
 
     Level(
         number=6,
-        name="Level 5: A whole year",
+        name="Level 6: A whole year",
         month = "December",
         intro=[
             "Now its time to test your mettle! can you juggle fluctuating temperature",
@@ -183,7 +183,28 @@ LEVELS = [
             "",
             "If you run into trouble, take a look at the upgrades in the shop!"
         ],
-        start=0,
+        start=5, # some indexing issues with 0 too close to 8760
+        end=8759, # avoid modulo 8760 = 0 weirdness
+        start_TI=22,
+        min_comfort=20,
+        min_average_comfort = 90,
+        reward=1000,
+        background = "Winter.png",
+        comfort=Comfortmodel(
+            p_change=1 / 6,
+            alpha=0.25,
+            sigma=0.8,
+            comfort_sensitivity=31
+        )
+    ),
+       Level(
+        number=7,
+        name="Great!",
+        month = "December",
+        intro=[
+            "This is what we do in teaching and researching climate fit buildings and districts"
+        ],
+        start=5, # some indexing issues with 0 too close to 8760
         end=8760,
         start_TI=22,
         min_comfort=20,

@@ -69,6 +69,12 @@ COOL_WARNING_PARAMS = dict(
     **WARNING_PARAMS
     )
 
+MONEY_WARNING_PARAMS = dict(
+    color=GREEN,
+    border_color=(100,255,100),
+    **WARNING_PARAMS
+    )
+
 def color_indicator(dT):
     if dT > 0:
         return RED
@@ -301,6 +307,12 @@ class Renderer:
                          pos=(self.cx,self.cy+150),
                          font=self.font_custom_small, 
                          **COOL_WARNING_PARAMS)
+        
+    def draw_no_money_warning(self):
+        self.render_line("Not enough money!", 
+                         pos=(self.cx,self.cy+100),
+                         font=self.font_custom_large, 
+                         **COOL_WARNING_PARAMS)
 
     # main game UI
     def render_ui(self, ui_data):
@@ -452,7 +464,7 @@ class MenuRenderer:
         self.render_title(self.topleft)
         self.render_text((self.topleft[0], 133))
         self.render_updrade_text(data["upgrade_text"], (48, 332), self.stats_text_color)
-        self.render_game_stats(data["game_stats"], (1200, 66), self.stats_text_color)
+        self.render_game_stats(data["game_stats"], (900, 66), self.stats_text_color)
 
     def render_background(self):
         self.display.blit(self.menu_background, (0, 0))
@@ -564,7 +576,14 @@ class CurvesRenderer:
         house.set_colorkey((255, 255, 0))
         self.house = pg.transform.scale(house, (64, 53))
 
+
     def render(self, data):
+        self.draw_area_between_curves(
+            (100, 255, 150),
+            data["Minimum Comfort Temperature"],
+            data["Maximum Comfort Temperature"],
+            alpha=100,
+        )
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"])
         self.draw_curve("red", data["Indoor Temperature"])
@@ -586,6 +605,23 @@ class CurvesRenderer:
             points=screencoords,
             width=self.curve_width,
         )
+
+    def draw_area_between_curves(self, color, curve1, curve2, alpha=80):
+        n = min(len(curve1), len(curve2))
+        if n < 2:
+            return
+
+        if not hasattr(self, "_area_overlay") or self._area_overlay.get_size() != self.renderer.display.get_size():
+            self._area_overlay = pg.Surface(self.renderer.display.get_size(), pg.SRCALPHA)
+
+        self._area_overlay.fill((0, 0, 0, 0))
+
+        s1 = [self.screen_coords(point) for point in curve1[:n]]
+        s2 = [self.screen_coords(point) for point in curve2[:n]]
+        poly = s1 + list(reversed(s2))
+
+        pg.draw.polygon(self._area_overlay, (*color, alpha), poly)
+        self.renderer.display.blit(self._area_overlay, (0, 0))
 
     def draw_house_indicator(self, data):
         """Draw game objects like players or enemies."""
@@ -640,14 +676,25 @@ class UIRenderer:
         self.render_line = renderer.render_line
 
     def render(self, ui_data):
+        pulse = 1.1 if ui_data["player_activity"] else False
+        print(pulse)
         self.energybalance(ui_data["Energy balance"])
-        self.money(ui_data["Scores"]["Money"])
+        self.render_line(
+            f"€ {ui_data["Scores"]["Money"]:.0f}",
+            color=RED if pulse else (100, 255, 120),
+            size=52,
+            pos=(650, 10),
+            font=self.renderer.font_custom_small,
+            pulse= 0.9 / pulse if pulse else False
+        )
 
         comfort_data = ui_data["Scores"]["Comfort"]
-        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"])
+        comfort_pulse = 1.2 if bool(comfort_data["change"]) else False
+        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"], pulse=comfort_pulse)
 
         self.render_line(ui_data["Price"], pos=(880, 106), color=colors["Price"])
-        self.render_line(ui_data["CO2"], pos=(880, 133), color=colors["Emission text"])
+        self.render_line("CO2 emitted: ", pos=(880, 133), color=WHITE)
+        self.render_line(ui_data["CO2"], pos=(1000, 133), color=GREY, pulse=pulse, font=self.renderer.font_custom_small)
         self.render_line(ui_data["COP"], pos=(880, 160), color=colors["UI Text"])
         self.render_line(ui_data["Power"], pos=(880, 186), color=colors["UI Text"])
 
@@ -720,26 +767,16 @@ class UIRenderer:
                 (anchor_x + 8 * width, anchor_y + 2 * self.renderer.lineheight),
             )  # Label
 
-    def money(self, money, pos=(650, 10)):
-        self.render_line(
-            str(money),
-            color=(100, 255, 120),
-            size=52,
-            pos=pos,
-            font=self.renderer.titlefont,
-        )
 
-    def render_comfort_score(self, score, dT, pos=(880, 66)):
-        text = f"Comfort {score:.1f} %"
+    def render_comfort_score(self, score, dT, pos=(880, 66), pulse=False):
+        px, py = pos
+        text = "Comfort"
+        self.render_line(text, WHITE, pos=pos, size=50)
+        color = color_indicator(dT)
 
-        if dT > 0:
-            color = RED
-        elif dT < 0:
-            color =  BLUE
-        else:
-            color = GREEN
         color = color_interpolation(color, GREEN, score / 100)
-        self.render_line(text, color, pos=pos, size=40)
+        self.render_line(f"{score:.1f}", color, pos=(px+80, py-10), size=45, pulse=pulse, font=self.renderer.font_custom_small)
+        self.render_line("%", color, pos=(px+150, py), size=50)
 
 
 # test code
