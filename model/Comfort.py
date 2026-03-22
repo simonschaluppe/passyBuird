@@ -13,10 +13,13 @@ class Comfortmodel:
                  p_change: float = 0,
                  alpha: float = 0,
                  sigma: float = 0,
-                 comfort_sensitivity = 2) -> None:
+                 comfort_sensitivity = 2,
+                 minimum_comfort_band = 2) -> None:
 
         self.minimum_room_temperature = minimum_room_temperature
         self.maximum_room_temperature = maximum_room_temperature
+        self._max_comfort_band = self.maximum_room_temperature - self.minimum_room_temperature
+        self._min_comfort_band = minimum_comfort_band
 
         self.heating_months = [1, 2, 3, 4, 9, 10, 11, 12]  # specify which months should the heating be useed
         self.cooling_months = [4, 5, 6, 7, 8, 9]
@@ -64,8 +67,8 @@ class Comfortmodel:
 
     def create_maximum_setpoints(self):
 
-        dT_min = 1.0
-        dT_max = 5.0
+        dT_min = self._min_comfort_band
+        dT_max = self._max_comfort_band
         dT_center = 3.0  # midpoint
 
         dT = dT_center

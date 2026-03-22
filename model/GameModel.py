@@ -236,7 +236,7 @@ class GameModel:
             self.model.comfort.update(self._mh)
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
             self.level_comfort = self.model.comfort_score_tsd[self.current_level.start:self._mh].mean()
-            #print(f"level average comfort: {self.level_comfort:.1f}%")
+            print(f"level average comfort: {self.level_comfort:.1f}%")
 
             self.curve_TI.update((self.hour, self.TI))
 
@@ -309,6 +309,12 @@ Heat Pump Efficiency: Lvl {self.upgrades['heatpump_efficiency'].level} ({self.mo
 
 Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({self.energy_discount} %)
 """}  # todo: DUMMIES
+    
+    def get_comfort_score(self):
+        return self.model.comfort.comfort_score(self.TI)
+    
+    def get_temp_diff(self):
+        return self.model.comfort.comfort_diff(self.TI)
 
     def get_menu_data(self) -> dict:
         return {
@@ -338,10 +344,10 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             ),
             "TI Indicator": {
                 "Position": self.position,
-                "Comfort dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
-                "Scale": self.model.comfort.comfort_score(self.model.TI[self._mh])/100 + 0.5 * (self.heat_on + self.cool_on),
+                "Comfort dT": self.get_temp_diff(),
+                "Scale": self.get_comfort_score()/100 + 0.5 * (self.heat_on + self.cool_on),
                 "Color": color,
-                "score": self.model.comfort.comfort_score(self.model.TI[self._mh])
+                "score": self.get_comfort_score()
             },
             "TA Indicator": {
                 "TA": (self.hour, self.model.TA[self._mh]),
@@ -378,11 +384,11 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "Erreichter Komfort": f"{self.level_comfort:.1f} %",
             "im gesamten Spiel: ": f"{self.total_comfort:.2f}%",
             "" : "",
-            "Verwendete Heizung": f"{self.model.QH.sum() / 1000 * self.model.building.bgf:.1f} kWh",
-            "verwendete Kühlung": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.1f} kWh",
-            "Verbrauchter Strom": f"{self.model.ED.sum() / 1000 * self.model.building.bgf:.1f} kWh",
+            "Verwendete Heizung": f"{self.model.QH.sum() / 1000 * self.model.building.bgf:.0f} kWh",
+            "verwendete Kühlung": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
+            "Verbrauchter Strom": f"{self.model.ED.sum() / 1000 * self.model.building.bgf:.0f} kWh",
             "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
-            "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.1f} kg",
+            "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.0f} kg",
             "Konto-Stand": f"{self.money:.2f} €",
         }
 

@@ -12,17 +12,17 @@ from renderer import Renderer
 
 DEBUG_MODE = True
 SCREEN_RESOLUTION = (1200, 700)
+FONT = "Helvetica Bold"
+TEMP_WARNING_THRESHOLD = 0.2 # Kelvin lower than setpoint until warning shown
 GODMODE = False
-GAME_SPEED = 12
+GAME_SPEED = 12 # sim hours / second
 
 # Initialize pygame
 pg.init()
 print(pg.version)
-
 # Set up the main display surface
 screen: pg.Surface = pg.display.set_mode(SCREEN_RESOLUTION)
 pg.display.set_caption("passyBUIRLD")
-
 # Create another surface to perform off-screen drawing
 display = pg.Surface(SCREEN_RESOLUTION)
 
@@ -35,7 +35,7 @@ camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoo
 camera.follow(game, maxdist=0)
 
 # Set up renderer
-renderer = Renderer(display, camera, clock, scale=0.8, font = "Helvetica")
+renderer = Renderer(display, camera, clock, scale=0.8, font = FONT)
 
 
 #TODO: Move to utility or renderer
@@ -54,7 +54,7 @@ SCREEN_ANCHORS = {  #width #height
     "bottom left":  (0.02, 0.93),
     "bottom right": (0.88, 0.93),
     "popup left":   (0.10, 0.80),
-    "popup right":  (0.80, 0.93)
+    "popup right":  (0.88, 0.80)
 }
 def get_btn_pos(orientation = None):
     """
@@ -102,27 +102,52 @@ def game_over(reason="You have lost the game."):
         ],
     ).loop()
 
-def level_entry():
+def start_level_intro():
     #renderer.set_background(game.current_level.background)
-    level_entry_popup = Popup(
+    level_intro_popup = Popup(
         title=game.current_level.name,
         body=game.current_level.intro,
         buttons=[
-            Button(get_btn_pos("popup right"), start_level_loop, "OK", size = (150,60))
+            Button(get_btn_pos("popup left"), start_shop_loop, "Go to Shop", size = (150,60)),
+            Button(get_btn_pos("popup right"), start_level_loop, "Start Level", size = (150,60))
         ],
         keys=[
             (pg.K_RETURN, start_level_loop),
             (pg.K_ESCAPE, start_title_loop),
         ],
     )
-    level_entry_popup.loop()
+    level_intro_popup.loop()
 
+def level_fail(text: str):
+    game.update_level_finished()
+    game.setup_level()
+    title = "Level failed!"
+    Popup(
+        title=title,
+        body=[text],
+        buttons=[
+            Button(get_btn_pos("popup left"), start_level_intro, "Retry", size = (250,60))
+        ],
+        keys=[
+            (pg.K_RETURN, start_level_loop),
+            (pg.K_ESCAPE, start_new_game),
+        ],
+    ).loop()
 
 def level_success():
     game.money += game.current_level.reward
     game.update_level_finished()
-    level_success_popup.title= str("You survived level " + str(game.current_level.number) + "!")
-    level_success_popup.body = [f"{label}: {value}" for label, value in game.get_kpis().items()]
+    level_success_popup = Popup(
+        title=str("You survived level " + str(game.current_level.number) + "!"),
+        body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+        buttons=[
+            Button(get_btn_pos("popup right"), start_level_intro, "Continue", size = (150,60))
+        ],
+        keys=[
+            (pg.K_RETURN, start_shop_loop),
+            (pg.K_ESCAPE, start_shop_loop),
+        ],
+    )
     for _ in range(300): 
         x = random.randint(0, SCREEN_RESOLUTION[0])
         y = random.randint(0, SCREEN_RESOLUTION[1])
@@ -143,21 +168,6 @@ def victory_loop():
     print("You've finished the game, Good Job!")
     Victory().loop()
 
-def level_fail(text: str):
-    game.update_level_finished()
-    game.setup_level()
-    title = "Level failed!"
-    Popup(
-        title=title,
-        body=[text],
-        buttons=[
-            Button(get_btn_pos("popup left"), start_shop_loop, "Return to Shop", size = (250,60))
-        ],
-        keys=[
-            (pg.K_RETURN, start_new_game),
-            (pg.K_ESCAPE, start_new_game),
-        ],
-    ).loop()
 
 def toggle_debug_mode():
     global DEBUG_MODE
@@ -224,12 +234,12 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button(get_btn_pos("popup left"), level_entry, "Start the Game!", size = (260,60)),
+            Button(get_btn_pos("popup left"), start_level_intro, "Start the Game!", size = (260,60)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, level_entry)
+        self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
 
     @override
     def render(self) -> None:
@@ -272,7 +282,7 @@ class ShopScreen(Screen):
 
 
         buttons = [
-            Button(get_btn_pos("bottom right"), level_entry, "Start Level", size = (190,60)),
+            Button(get_btn_pos("bottom right"), start_level_intro, "Start Level", size = (190,60)),
             Button(get_btn_pos("bottom left"), start_new_game, "Start new game", size = (170,60)),
             upgrade_button(game.upgrades['wall_insulation'], (700, 375)),
             upgrade_button(game.upgrades['power'], (700, 425)),
@@ -282,7 +292,7 @@ class ShopScreen(Screen):
         [self.handler.register_button(button) for button in buttons]
 
         # bind key presses
-        self.handler.bind_keypress(pg.K_RETURN, level_entry)
+        self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
         self.handler.bind_keypress(pg.K_q, quit)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
@@ -383,12 +393,15 @@ class LevelScreen(Screen):
     def render(self) -> None:
         renderer.camera.update()
         renderer.draw_background(game.hour)
-        renderer.draw_heat_particles(particle_manager.groups["heating"])
-        renderer.draw_cool_particles(particle_manager.groups["cooling"])
         renderer.render_curves(game.get_curves_data())
+
+        particle_manager.render(renderer)
+        if game.get_temp_diff() > TEMP_WARNING_THRESHOLD: renderer.draw_too_hot_warning()
+        if game.get_temp_diff() <-TEMP_WARNING_THRESHOLD: renderer.draw_too_cold_warning()
+
         renderer.render_ui(game.get_ui_data())
         if DEBUG_MODE: renderer.debug(self.debug)
-        
+
         for button in self.handler.buttons:
             renderer.render_button(button)
 
@@ -415,7 +428,7 @@ class Popup(Screen):
         renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))
         for button in self.handler.buttons:
             renderer.render_button(button)
-        renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,200), random.randint(200,255), random.randint(100,200)))
+        particle_manager.render(renderer)
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
@@ -466,20 +479,6 @@ class Victory(Screen):
 title_screen = TitleScreen()
 shop_screen = ShopScreen()
 level_screen = LevelScreen()
-
-"""Popup screen instances"""
-
-level_success_popup = Popup(
-    title="You survived the level!",
-    body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
-    buttons=[
-        Button(get_btn_pos("popup right"), start_shop_loop, "OK", size = (150,60))
-    ],
-    keys=[
-        (pg.K_RETURN, start_shop_loop),
-        (pg.K_ESCAPE, start_shop_loop),
-    ],
-)
 
 
 """Start"""

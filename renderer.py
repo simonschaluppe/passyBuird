@@ -1,4 +1,5 @@
 import sys
+import math
 from pathlib import Path
 from turtle import left
 
@@ -50,6 +51,25 @@ GREEN = (0, 255, 0)
 GREY = (50, 50, 50)
 OUTLINE = (10, 10, 10)
 
+WARNING_PARAMS = dict(
+    size=50,
+    border_width=4,
+    pulse=1.2,
+    centered=True
+    )
+
+HOT_WARNING_PARAMS = dict(
+    color=RED,
+    border_color=(255,100,100),
+    **WARNING_PARAMS
+    )
+
+COOL_WARNING_PARAMS = dict(
+    color=BLUE,
+    border_color=(100,100,255),
+    **WARNING_PARAMS
+    )
+
 def color_indicator(dT):
     if dT > 0:
         return RED
@@ -65,6 +85,7 @@ class Renderer:
     ):
         self.display = display
         self.cx, self.cy = display.get_width() // 2, display.get_height() // 2
+        self.center = (self.cx, self.cy)
         self.camera = camera
         self.clock = clock
         self.scale = scale
@@ -111,6 +132,11 @@ class Renderer:
                 debug_text, colors["DEBUG"], (20, 20 + i * self.lineheight), size = 10, border_width=0
             )
 
+    def pulse(self):
+        """Global pulse in [0, 1]."""
+        t = pg.time.get_ticks() / 1000.0
+        return 0.5 + 0.5 * math.sin(t * 2 * math.pi * 2.0)  # 2 Hz
+
     # basic rendering
     def outline(self, surf, loc, pixel, color=OUTLINE, onto=False):
         if not onto:
@@ -132,30 +158,55 @@ class Renderer:
             self,
             text: str,
             color=WHITE,
-            pos=(0, 0),
+            pos=(0, 0), # by default topleft corner of text
             size=None,
-            border_width=1,
+            border_width=1, #pixel
             border_color=OUTLINE,
             font=None,
             onto=None,
+            pulse=False,
+            centered=False # interprets pos as center of text, not topleft
+            
     ):
-        """Render a single text line onto a surface."""
-        if not font:
-            font = self.font
-        if not onto:
-            onto = self.display
-        if not size:
-            size = self.fontsize
+        """Render a single text line onto a surface"""
+        if not font: font = self.font
+        if not onto: onto = self.display
+        if not size: size = self.fontsize
         px, py = pos
-        if type(font) is Font:
-            textsurf = font.surface(text, size, color)
-            self.outline(textsurf, (px, py), border_width, border_color, onto=onto)
-            font.render(onto, text, (px, py), size, color)
-        else:
-            textsurf = font.render(text, True, color)
-            self.outline(textsurf, (px, py), border_width, border_color, onto=onto)
-            onto.blit(textsurf, pos)
+        alpha = None
+        scale_factor = 1.0
 
+        if pulse:
+            p = self.pulse()  # expected 0..1
+            #alpha = int(120 + 135 * p)  # 120..255
+            if isinstance(pulse, (int, float)):
+                # animate between 100% and the given pulse factor
+                scale_factor = 1.0 + (pulse - 1.0) * p
+
+        if type(font) is Font:
+            base_surf = font.surface(text, size, color).convert_alpha()
+        else:
+            base_surf = font.render(text, True, color).convert_alpha()
+
+        if centered:
+            base_rect = base_surf.get_rect(center=(px, py))
+        else:
+            base_rect = base_surf.get_rect(topleft=(px, py))
+        center = base_rect.center
+
+        textsurf = base_surf
+        if scale_factor != 1.0:
+            w, h = base_surf.get_size()
+            new_size = (max(1, int(w * scale_factor)), max(1, int(h * scale_factor)))
+            textsurf = pg.transform.smoothscale(base_surf, new_size)
+
+        if alpha is not None:
+            textsurf.set_alpha(alpha)
+
+        rect = textsurf.get_rect(center=center)
+
+        self.outline(textsurf, rect.topleft, border_width, border_color, onto=onto)
+        onto.blit(textsurf, rect.topleft)
 
     def render_lines(
             self,
@@ -166,12 +217,13 @@ class Renderer:
             font=None,
             onto=None,
             lineheight=None,
+            **kwargs,
     ):
         px, py = pos
         dy = 0
         for line in text.splitlines():
             dy += lineheight if lineheight else self.lineheight
-            self.render_line(line, color, (px, py + dy), size, font=font, onto=onto)
+            self.render_line(line, color, (px, py + dy), size, font=font, onto=onto,  **kwargs)
 
     def draw_grid(self, spacing, color=BLACK):
         for x in range(0, self.display.get_width(), spacing):
@@ -179,17 +231,12 @@ class Renderer:
         for y in range(0, self.display.get_height(), spacing):
             pg.draw.line(self.display, color, (0, y), (self.display.get_width(), y))
 
-    # button
     def render_button(self, button: Button):
         button_surf = pg.Surface(button.size)
         button_surf.fill(
             colors["Button hovered"] if button.hovered else colors["Button"]
         )
-        # outline
-        self.outline(
-            button_surf, button.position, pixel=1 + button.hovered - button.pressed
-        )
-        # text
+        self.outline(button_surf, button.position, pixel=1 + button.hovered - button.pressed)
         offset = 5 + 2 * button.pressed
         self.render_line(
             button.text,
@@ -198,7 +245,6 @@ class Renderer:
             size=30,
             border_width=1 + button.hovered,
         )
-        # button
         self.display.blit(button_surf, button.position)
 
     # main game loop
@@ -235,6 +281,27 @@ class Renderer:
 
     def draw_purchase_particles(self, particleList):
         self.draw_particles(particleList, colors["Purchase"], game_coords=False)
+
+    def draw_too_hot_warning(self):
+        self.render_lines("Warning: Too Hot!", 
+                         pos=(self.cx,self.cy-100),     
+                         font=self.font_custom_small, 
+                         **HOT_WARNING_PARAMS)
+        self.render_line("Press <RMB> to Cool!", 
+                         pos=(self.cx,self.cy-150),
+                         font=self.font_custom_small, 
+                         **HOT_WARNING_PARAMS)
+
+
+    def draw_too_cold_warning(self):
+        self.render_line("Warning: Too COLD!", 
+                         pos=(self.cx,self.cy+100),
+                         font=self.font_custom_large, 
+                         **COOL_WARNING_PARAMS)
+        self.render_line("Press <LMB> to Heat!", 
+                         pos=(self.cx,self.cy+150),
+                         font=self.font_custom_small, 
+                         **COOL_WARNING_PARAMS)
 
     # main game UI
     def render_ui(self, ui_data):
@@ -284,7 +351,7 @@ class Renderer:
 
     def render_title_screen(self, title: str, body: list, screen_params):
         line_size = 24
-        line_spacing = 48  # slightly more than size to avoid overlap
+        line_spacing = 30  # slightly more than size to avoid overlap
 
         self.menu_renderer.render_background()
 
@@ -531,14 +598,15 @@ class CurvesRenderer:
         pg.draw.circle(self.renderer.display, color, (x, y), size)
         w, h = self.house.get_size()
         scale = data["Scale"] # e.g. 50%
-        scaled = pg.transform.scale(self.house, (int(w * scale), int(h * scale)))
+        #scaled = pg.transform.scale(self.house, (int(w * scale), int(h * scale)))
+        scaled = pg.transform.scale(self.house, (int(w * 1), int(h * 1)))
         
         draw_pos = (x - scaled.get_width() // 2, y - scaled.get_height() // 2)
 
         self.renderer.outline(
             scaled,
             loc=draw_pos,
-            pixel=max(1, int(scale * 2)),
+            pixel=max(1, int(scale * 3)),
             color=color,
             onto=self.renderer.display,
         )

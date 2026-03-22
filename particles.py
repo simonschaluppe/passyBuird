@@ -2,13 +2,27 @@ import random
 
 import pygame as pg
 
+from renderer import Renderer
+from utils import color_interpolation, seasonalcolor, circle_surf
 
 class Particle:
-    def __init__(self, pos, speed, lifetime):
+    def __init__(self, pos, speed, lifetime, game_coords = True):
         self.pos = pos
         self.speed = speed
         self.lifetime = lifetime
-
+        self.game_coords = game_coords
+        
+    def render(self, renderer:Renderer):
+        pos = renderer.camera.screen_coords(self.pos) if self.game_coords else self.pos
+        x, y = pos
+        pg.draw.circle(renderer.display, self.color, pos, self.lifetime / 8)
+        glow_color = renderer.color_interpolation((0, 0, 0), self.color, 0.2)
+        radius = self.lifetime / 3
+        renderer.display.blit(
+            circle_surf(radius, glow_color),
+            (x - radius, y - radius),
+            special_flags=pg.BLEND_RGB_ADD,
+        )
 
 class ParticleManager:
     def __init__(self):
@@ -17,6 +31,7 @@ class ParticleManager:
         self.groups["cooling"] = []
         self.groups["purchase"] = []
         self.groups["success"] = []
+        self.groups["other"] = []
 
     def add(self, list_name, position, velocity, lifetime):
         if list_name not in self.groups:
@@ -42,7 +57,7 @@ class ParticleManager:
 
 
     def update(self):
-        for name, container in self.groups.items():
+        for _, container in self.groups.items():
             for i, p in sorted(enumerate(container), reverse=True):
                 p.lifetime -= 1
                 if p.lifetime <= 0:
@@ -51,7 +66,14 @@ class ParticleManager:
                 # p.speed.scale_to_length(p.lifetime/50)
                 p.pos += p.speed
                 vx, vy = p.speed
-                p.speed = (vx, vy + 0.9)
+                p.speed = (vx, vy*0.9 + 0.1)
+
+    def render(self, renderer:Renderer):
+        renderer.draw_heat_particles(self.groups["heating"])
+        renderer.draw_cool_particles(self.groups["cooling"])
+        renderer.draw_purchase_particles(self.groups["purchase"])
+        renderer.draw_particles(self.groups["success"], color=(random.randint(100,200), random.randint(200,255), random.randint(100,200)))
+        renderer.draw_particles(self.groups["other"], color = (255,255,255))
 
 
 def test_draw_particles(container, screen):

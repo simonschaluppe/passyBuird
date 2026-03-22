@@ -70,14 +70,15 @@ LEVELS = [
             "It's gotten really cold outside and the house cools off fast!",
             "Fight the cold as before but this time also keep an eye on the orange emissions line.",
         ],
-        start = 8017,
-        end= 8017 + 7 * 24 * 2,
+        start = 0,
+        end= 0 + 7 * 24 * 2,
         start_TI=22,
         min_comfort=10,
         min_average_comfort = 90,
         reward=700,
         background = "Winter.png",
         comfort=Comfortmodel(
+            minimum_comfort_band=100,
             p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
@@ -114,7 +115,7 @@ LEVELS = [
 
     Level(
         number=4,
-        name="Level 4: Heating & Cooling",
+        name="Level 4: Heating and Cooling",
         month = "April",
         intro=[
             "The cold days are almost over and the sun is getting intense.",
@@ -127,7 +128,7 @@ LEVELS = [
         ],
         start=2161,
         end=2161 + 7 * 24 * 2,
-        start_TI=22,
+        start_TI=24,
         min_comfort=20,
         min_average_comfort = 90,
         reward=1500,
