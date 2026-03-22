@@ -19,7 +19,7 @@ DEFAULT_SPEED = 24
 class Curve:
     """Manages game time of timeseries in model time"""
 
-    def __init__(self, label, points=None, x_list=None, y_list=None):
+    def __init__(self, label, points=None, x_list=None, y_list=None, display_y_offset=0, display_y_scale=1):
         self.wrap_length = 8760
         self.label = label
         if points is not None:
@@ -28,6 +28,8 @@ class Curve:
             self._mx_list, self.y_list = x_list, y_list
         else:
             raise ValueError("Either points or x_list and y_list must be provided.")
+        self.dyo = display_y_offset
+        self.dys = display_y_scale
 
     def y_slice(self, start, stop):
         if not ((0 <= start < self.wrap_length) and (0 <= stop < self.wrap_length)):
@@ -41,7 +43,7 @@ class Curve:
     def points_in_game(self, gamex_start, gamex_end):
         """returns the list of points in game time from the appropriate model time"""
         ys = self.y_slice(gamex_start % self.wrap_length, gamex_end % self.wrap_length)
-        return [(x, y) for x, y in zip(range(gamex_start, gamex_end), ys)]
+        return [(x, (y+self.dyo)*self.dys) for x, y in zip(range(gamex_start, gamex_end), ys)]
 
     def update_point(self, gamex, y):
         self.y_list[gamex % self.wrap_length] = y
@@ -134,9 +136,9 @@ class GameModel:
         if number is not None:
             self.current_level_number = number
         self.current_level = self.levels[self.current_level_number]
+        self.set_speed(getattr(self.current_level, "speed", DEFAULT_SPEED))
 
         start_hour = self.current_level.start
-        self.speed = DEFAULT_SPEED
 
         if not (0 <= start_hour <= 8759):
             raise ValueError("Invalid start_hour. Must be between [0 and 8759].")
@@ -153,7 +155,8 @@ class GameModel:
             "TI", points=[(h, ti) for h, ti in zip(range(8760), self.model.TI)]
         )
         self.curve_TA = Curve(
-            "TA", points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)]
+            "TA", points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)],
+            display_y_offset=+10,
         )
         self.curve_comfort_min = Curve(
             "Minimum comfort temperature",
@@ -165,7 +168,8 @@ class GameModel:
         )
         self.curve_co2 = Curve(
             "CO2 Intensity",
-            points=[(h, co2 * 200) for h, co2 in zip(range(8760), self.model.CO2)],
+            points=[(h, co2 * 100) for h, co2 in zip(range(8760), self.model.CO2)],
+            display_y_offset = 0
         )
         self.cleanup()
 

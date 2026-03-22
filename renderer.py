@@ -1,7 +1,6 @@
 import sys
 import math
 from pathlib import Path
-from turtle import left
 
 import pygame as pg
 
@@ -557,7 +556,7 @@ class CurvesRenderer:
     def __init__(self, renderer: Renderer) -> None:
         self.renderer = renderer
         self.screen_coords = renderer.camera.screen_coords
-        self.curve_width = 2
+        self.curve_width = 3
         self.size_TI_indicator = 10
 
         # Load the house image for the indicator
@@ -628,8 +627,9 @@ class CurvesRenderer:
         self.renderer.render_line(
             text,
             textcolor,
-            pos=self.screen_coords((hour - 100, TA)),
+            pos=self.screen_coords((hour, TA+10)),
             border_color=bordercolor,
+            centered=True
         )
 
 

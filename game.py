@@ -13,6 +13,7 @@ from renderer import Renderer
 DEBUG_MODE = True
 SCREEN_RESOLUTION = (1200, 700)
 FONT = "Helvetica Bold"
+GAME_ZOOM = (20, 20) # x, y
 TEMP_WARNING_THRESHOLD = 0.2 # Kelvin lower than setpoint until warning shown
 GODMODE = False
 GAME_SPEED = 12 # sim hours / second
@@ -31,7 +32,7 @@ game = GameModel(speed=GAME_SPEED, godmode=GODMODE)
 particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
-camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=(14, 40))
+camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=GAME_ZOOM)
 camera.follow(game, maxdist=0)
 
 # Set up renderer
