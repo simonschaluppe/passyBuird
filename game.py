@@ -53,6 +53,7 @@ SCREEN_ANCHORS = {  #width #height
     "top left":     (0.18, 0.07),
     "top right":    (0.88, 0.07),
     "bottom left":  (0.02, 0.93),
+    "bottom center":(0.5, 0.93),
     "bottom right": (0.88, 0.93),
     "popup left":   (0.10, 0.80),
     "popup right":  (0.88, 0.80)
@@ -103,7 +104,8 @@ def game_over(reason="You have lost the game."):
         ],
     ).loop()
 
-def start_level_intro():
+def start_level_intro(level=None):
+    if level: game.setup_level(level)
     #renderer.set_background(game.current_level.background)
     level_intro_popup = Popup(
         title=game.current_level.name,
@@ -271,7 +273,7 @@ class ShopScreen(Screen):
     @override
     def config_handler(self) -> None:
         # register buttons
-        def upgrade_button(upgrade, pos):
+        def upgrade_button(upgrade, pos) -> Button:
             def callback():
                 particale_amount = 10
                 for _ in range(particale_amount):
@@ -285,10 +287,11 @@ class ShopScreen(Screen):
         buttons = [
             Button(get_btn_pos("bottom right"), start_level_intro, "Start Level", size = (190,60)),
             Button(get_btn_pos("bottom left"), start_new_game, "Start new game", size = (170,60)),
-            upgrade_button(game.upgrades['wall_insulation'], (700, 375)),
-            upgrade_button(game.upgrades['power'], (700, 425)),
-            upgrade_button(game.upgrades['heatpump_efficiency'], (700, 475)),
-            upgrade_button(game.upgrades['electricity_price_discount'], (700, 525)),
+            upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
+            upgrade_button(game.upgrades['power'], (500, 425)),
+            upgrade_button(game.upgrades['heatpump_efficiency'], (500, 475)),
+            upgrade_button(game.upgrades['electricity_price_discount'], (500, 525)),
+            Button((get_btn_pos("bottom center")), lambda: start_level_intro(5), "Start level 5", size = (170,60)),
         ]
         [self.handler.register_button(button) for button in buttons]
 
