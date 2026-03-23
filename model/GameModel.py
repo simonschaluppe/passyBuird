@@ -138,7 +138,7 @@ class GameModel:
 
     def setup_level(self, index=None):
         """Level number of optional, if missing, current level will be reset"""
-        self.level_comfort = 1.0
+        self.level_comfort = 1
         self.level_duration = 0
         if index is not None:
             self.current_level_index = index
@@ -242,8 +242,9 @@ class GameModel:
                 self.model.apply_cool(self._mh)
 
             self.model.calc_ED(self._mh)
-            self.moneyspent += self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
-            self.money -= self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
+            moneydelta = self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
+            self.moneyspent += moneydelta
+            self.money -= moneydelta
 
             self.model.comfort.update(self._mh)
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)

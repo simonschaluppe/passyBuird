@@ -41,15 +41,6 @@ camera.follow(game, maxdist=0)
 renderer = Renderer(display, camera, clock, scale=0.8, font = FONT)
 
 
-#TODO: Move to utility or renderer
-def center_screen(size = 0.8):
-    # Position & Size
-    width = SCREEN_RESOLUTION[0] * size
-    height = SCREEN_RESOLUTION[1] * size
-    left = SCREEN_RESOLUTION[0] * 0.1
-    top = SCREEN_RESOLUTION[1] * 0.1
-    return (left, top, width, height)
-
 
 SCREEN_ANCHORS = {  #width #height
     "top left":     (0.18, 0.07),
@@ -261,7 +252,7 @@ class TitleScreen(Screen):
             "Come on, let's get started!"
         ]
         
-        renderer.render_title_screen(title="Welcome to ", body=description, screen_params = center_screen(size = 0.8))
+        renderer.render_title_screen(title="Welcome to ", body=description)
 
         for button in self.handler.buttons:
             renderer.render_button(button)
