@@ -16,6 +16,7 @@ from model.Simulation import EnergyModel
 
 DEFAULT_SPEED = 24
 
+
 class Curve:
     """Manages game time of timeseries in model time"""
 
@@ -83,6 +84,7 @@ class GameModel:
     curve_comfort_min: Curve
     curve_comfort_max: Curve
     curve_co2: Curve
+    curve_date: Curve
 
     levels: Iterable[LEVELS]
     current_level: Level
@@ -178,6 +180,10 @@ class GameModel:
             "CO2 Intensity",
             points=[(h, co2 * 100) for h, co2 in zip(range(8760), self.model.CO2)],
             display_y_offset = 0
+        )
+        self.curve_date = Curve(
+            "Date",
+            points=[(h, ts) for h, ts in zip(range(8760), self.model.timestamp)],
         )
         self.cleanup()
 
@@ -376,6 +382,14 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                 "TA": (self.hour, self.model.TA[self._mh]),
                 "TI": self.position,
             },
+            "Date Indicator": [
+                (x, ta + 18, ts)
+                for (x, ta), ts in zip(
+                    self.curve_TA.points_in_game(bc_index, fc_index),
+                    self._timestamp_slice(bc_index, fc_index),
+                )
+                if ts.hour == 0
+            ],
         }
 
     def get_ui_data(self):
@@ -488,6 +502,16 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def qc(self):
         return self.model.QC[self._mh] / self.model.building.heat_capacity * 10
 
+
+    def _timestamp_slice(self, start, stop):
+        start = start % 8760
+        stop = stop % 8760
+
+        if start <= stop:
+            return list(self.model.timestamp.iloc[start:stop])
+        else:
+            return list(self.model.timestamp.iloc[start:]) + list(self.model.timestamp.iloc[:stop])
+        
 
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"

@@ -59,7 +59,7 @@ LEVELS = [
         background = "Fall.png",
         comfort=Comfortmodel(
             random=False,
-            maximum_room_temperature=1000,
+            maximum_room_temperature=100,
         )
     ),
 

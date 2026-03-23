@@ -211,7 +211,8 @@ class Renderer:
 
         rect = textsurf.get_rect(center=center)
 
-        self.outline(textsurf, rect.topleft, border_width, border_color, onto=onto)
+        if border_width:
+            self.outline(textsurf, rect.topleft, border_width, border_color, onto=onto)
         onto.blit(textsurf, rect.topleft)
 
     def render_lines(
@@ -604,9 +605,24 @@ class CurvesRenderer:
         self.draw_curve("red", data["Indoor Temperature"])
         self.draw_curve("blue", data["Outdoor Temperature"])
         self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
+        self.draw_date_indicator(data["Date Indicator"])
         self.draw_house_indicator(data["TI Indicator"])
         self.draw_TA_indicator(data["TA Indicator"])
         self.draw_TI_indicator(data["TA Indicator"])
+
+
+    def draw_date_indicator(self, data):
+        print(f"{len(data)=}")
+        for hour, y, dt in data:
+            self.renderer.render_line(
+                dt.strftime("%d. %b"),
+                WHITE,
+                pos=self.screen_coords((hour, 20)),
+                centered=False,
+                size=30,
+                border_width=1,
+                font=self.renderer.font_custom_small
+            )
 
     # curve renderer
     def draw_curve(self, color, curve):
