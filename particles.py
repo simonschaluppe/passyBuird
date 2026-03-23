@@ -66,7 +66,7 @@ class ParticleManager:
                 # p.speed.scale_to_length(p.lifetime/50)
                 p.pos += p.speed
                 vx, vy = p.speed
-                p.speed = (vx, vy*0.9 + 0.1)
+                p.speed = (vx, vy*0.9 - 0.1)
 
     def render(self, renderer:Renderer):
         renderer.draw_heat_particles(self.groups["heating"])

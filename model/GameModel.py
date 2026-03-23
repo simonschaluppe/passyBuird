@@ -114,6 +114,7 @@ class GameModel:
                        ):
 
         self.money = 1_000_000 if self.godmode else 1_000 
+        self.moneyspent = 0
         self.total_GHG_emitted = 0
         self.total_GHG_avoided = 0
         self.current_level_index = 0
@@ -137,7 +138,7 @@ class GameModel:
 
     def setup_level(self, index=None):
         """Level number of optional, if missing, current level will be reset"""
-        self.level_comfort = 1
+        self.level_comfort = 1.0
         self.level_duration = 0
         if index is not None:
             self.current_level_index = index
@@ -241,6 +242,7 @@ class GameModel:
                 self.model.apply_cool(self._mh)
 
             self.model.calc_ED(self._mh)
+            self.moneyspent += self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
             self.money -= self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
 
             self.model.comfort.update(self._mh)
@@ -403,22 +405,27 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
-            "Erreichter Komfort": f"{self.level_comfort:.1f} %",
-            "im gesamten Spiel: ": f"{self.total_comfort:.2f}%",
-            "" : "",
-            "Verwendete Heizung": f"{self.model.QH.sum() / 1000 * self.model.building.bgf:.0f} kWh",
-            "verwendete Kühlung": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
-            "Verbrauchter Strom": f"{self.get_ED()} kWh",
-            "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
+            "Erreichter Komfort": f"{self.level_comfort:.0f}%",
+            "Rundenschnitt:": f"{self.total_comfort:.0f}%",
+            "Detailergebnisse" : "",
+            "Benötigte Heizenergie": f"{(self.model.QH.sum() / 1000 * self.model.building.bgf):.0f} kWh",
+            "Benötigte Kühlenergie": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
             "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.0f} kg",
-            "Konto-Stand": f"{self.money:.2f} €",
+            "Verbrauchter Strom": f"{self.get_ED().sum():.0f} kWh",
+            "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
+            "Wirtschaftlichkeit" : "",
+            "Kontostand zu Beginn": f"{self.money+self.moneyspent:.0f} €",
+            "Kontostand am Ende": f"{self.money:.0f} €",
+            "Energiekosten": f"{self.moneyspent:.0f} €",
+            "Level-Bonus": f"{self.current_level.reward} €",
+            "Kontostand neu": f"{self.money+self.current_level.reward:.0f} €",
         }
 
     def get_game_stats(self):
         return {"lines": f"""
             Current Level    {self.current_level.name}
-            Available Money  {self.money:.2f} €
-            Average Comfort  {self.total_comfort:.2f}%
+            Available Money  {self.money:.0f} €
+            Average Comfort  {self.total_comfort:.0f}%
             Total CO2 caused  {self.total_GHG_emitted:.0f} kg
             Total GHG avoided {self.total_GHG_avoided:.0f} kg
         """
