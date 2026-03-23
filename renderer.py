@@ -308,7 +308,13 @@ class Renderer:
                          pos=(self.cx,self.cy+150),
                          font=self.font_custom_small, 
                          **COOL_WARNING_PARAMS)
-        
+
+    def draw_low_money_warning(self):
+        self.render_line("Low money!", 
+                         pos=(self.cx,self.cy-200),
+                         font=self.font_custom_large, 
+                         **HOT_WARNING_PARAMS)
+
     def draw_no_money_warning(self):
         self.render_line("Not enough money!", 
                          pos=(self.cx,self.cy+100),
@@ -593,6 +599,7 @@ class CurvesRenderer:
         self.draw_date_indicator(data["Date Indicator"])
         self.draw_house_indicator(data["TI Indicator"])
         self.draw_TA_indicator(data["TA Indicator"])
+        self.draw_TI_indicator(data["TA Indicator"])
 
 
     def draw_date_indicator(self, data):
@@ -674,12 +681,28 @@ class CurvesRenderer:
         textcolor = seasonalcolor(hour)
         bordercolor = color_interpolation(textcolor, (255, 255, 255), 0.8)
         textcolor = color_interpolation(textcolor, (0, 0, 0), 0.5)
-        self.draw_indicator((hour, TA), data["TI"], "blue")
+        self.draw_indicator((hour, TA), data["TA"], "blue")
         text = f"Outdoor Temp {TA:+2.1f}°C"
         self.renderer.render_line(
             text,
             textcolor,
             pos=self.screen_coords((hour, TA+10)),
+            border_color=bordercolor,
+            centered=True
+        )
+
+    def draw_TI_indicator(self, data):
+        hour, TI = data["TI"]
+        TI_pos = self.screen_coords((hour, TI))
+        textcolor = seasonalcolor(hour)
+        bordercolor = color_interpolation(textcolor, (255, 255, 255), 0.8)
+        textcolor = color_interpolation(textcolor, (0, 0, 0), 0.5)
+        self.draw_indicator((hour, TI), data["TI"], "blue")
+        text = f"Indoor Temp {TI:+2.1f}°C"
+        self.renderer.render_line(
+            text,
+            textcolor,
+            pos=self.screen_coords((hour, TI-2)),
             border_color=bordercolor,
             centered=True
         )

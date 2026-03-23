@@ -10,11 +10,13 @@ from model.GameModel import GameModel
 from particles import ParticleManager
 from renderer import Renderer
 
+
 DEBUG_MODE = True
 SCREEN_RESOLUTION = (1200, 700)
 FONT = "Helvetica Bold"
 GAME_ZOOM = (20, 20) # x, y
 TEMP_WARNING_THRESHOLD = 0.2 # Kelvin lower than setpoint until warning shown
+MONEY_WARNING_THRESHOLD = 200 # €
 GODMODE = False
 GAME_SPEED = 12 # sim hours / second
 
@@ -124,6 +126,9 @@ def start_level_intro(level=None):
 def level_fail(text: str):
     game.update_level_finished()
     game.setup_level()
+    game.money += game.moneyspent
+    game.moneyspent = 0
+
     title = "Level failed!"
     Popup(
         title=title,
@@ -138,12 +143,10 @@ def level_fail(text: str):
     ).loop()
 
 def level_success(): 
-    game.money += game.current_level.reward
     game.update_level_finished()
     if game.current_level_index == len(game.levels):
         victory_loop()
     title=f"You survived level {game.current_level.number}!"
-    game.setup_next_level()
     level_success_popup = Popup(
         title=title,
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
@@ -155,6 +158,9 @@ def level_success():
             (pg.K_ESCAPE, start_shop_loop),
         ],
     )
+    game.money += game.current_level.reward
+    game.moneyspent = 0
+    game.setup_next_level()
     for _ in range(300): 
         x = random.randint(0, SCREEN_RESOLUTION[0])
         y = random.randint(0, SCREEN_RESOLUTION[1])
@@ -395,6 +401,7 @@ class LevelScreen(Screen):
         particle_manager.render(renderer)
         if game.get_temp_diff() > TEMP_WARNING_THRESHOLD: renderer.draw_too_hot_warning()
         if game.get_temp_diff() <-TEMP_WARNING_THRESHOLD: renderer.draw_too_cold_warning()
+        if game.money < MONEY_WARNING_THRESHOLD: renderer.draw_low_money_warning()
 
         renderer.render_ui(game.get_ui_data())
         if DEBUG_MODE: renderer.debug(self.debug)
@@ -431,6 +438,7 @@ class Popup(Screen):
 
     @override
     def config_handler(self) -> None:
+        self.handler.bind_keypress(pg.K_q, quit_game)
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
         if self.keys:
