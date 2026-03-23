@@ -6,7 +6,6 @@ import pygame as pg
 
 from camera import Camera2D
 from font import Font
-from game import SCREEN_RESOLUTION
 from handler import Button  # necessary?
 from upgrades import Upgrade
 from utils import color_interpolation, seasonalcolor, circle_surf
@@ -368,19 +367,13 @@ class Renderer:
             )
             y += line_spacing
 
-    def get_screen_params():
-        return (SCREEN_RESOLUTION[0] * 0.1,
-                SCREEN_RESOLUTION[1] * 0.1,
-                SCREEN_RESOLUTION[0] * 0.8,
-                SCREEN_RESOLUTION[1] * 0.8)
+   
 
-    def render_title_screen(self, title: str, body: list):
+    def render_title_screen(self, title: str, body: list, screen_params):
         line_size = 24
         line_spacing = 30  # slightly more than size to avoid overlap
 
         self.menu_renderer.render_background()
-
-        screen_params = self.get_screen_params()
 
         panel_rect = pg.Rect(*screen_params)
 
