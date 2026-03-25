@@ -34,8 +34,8 @@ colors = {
     "UI Text": (255, 255, 255), #(76, 37, 29),
     "Upgrade text": (255, 255, 255), #(153, 64, 154),
     "Emission text": (255, 255, 255), #(66, 62, 56),
-    "Emissions": (255, 255, 255), #(105, 95, 78),
-    "Purchase": (255, 255, 255), #(255, 165, 0),
+    "Emissions": (50,50,50), #(105, 95, 78),
+    "Purchase": (255, 100, 100),
     "TitleBG" : (80,80,80),
     "PopupBG" : (80,80,80),
 }
@@ -87,13 +87,12 @@ def color_indicator(dT):
 
 class Renderer:
     def __init__(
-            self, display: pg.Surface, camera: Camera2D, clock: pg.time.Clock, scale=1.0, font = "couriernew"
+            self, display: pg.Surface, camera: Camera2D, scale=1.0, font = "couriernew"
     ):
         self.display = display
         self.cx, self.cy = display.get_width() // 2, display.get_height() // 2
         self.center = (self.cx, self.cy)
         self.camera = camera
-        self.clock = clock
         self.scale = scale
 
         # defaults
@@ -271,9 +270,11 @@ class Renderer:
     def render_curves(self, curve_data):
         self.curves_renderer.render(curve_data)
 
-    def ring_effect(self):
-        pass
-      
+    def ring_effect(self, pos, radius, color, width=1, game_coords=False):
+        pos = self.camera.screen_coords(pos) if game_coords else pos
+        x, y = pos
+        pg.draw.circle(self.display, color, pos, radius / 8, width=width)
+  
     def glow_effect(self, pos, radius, color, game_coords=False):
         pos = self.camera.screen_coords(pos) if game_coords else pos
         x, y = pos
@@ -285,19 +286,7 @@ class Renderer:
             special_flags=pg.BLEND_RGB_ADD,
         )
   
-    # particle renderer
-    def draw_particles(self, particleList, color, game_coords=False):
-        for p in particleList:
-            self.glow_effect(pos=p.pos, radius=p.lifetime, color=color, game_coords=game_coords)
 
-    def draw_heat_particles(self, particleList):
-        self.draw_particles(particleList, colors["QH"], game_coords=True)
-
-    def draw_cool_particles(self, particleList):
-        self.draw_particles(particleList, colors["QC"], game_coords=True)
-
-    def draw_purchase_particles(self, particleList):
-        self.draw_particles(particleList, colors["Purchase"], game_coords=False)
 
     def draw_too_hot_warning(self):
         self.render_lines("Warning: Too Hot!", 
@@ -614,9 +603,9 @@ class CurvesRenderer:
         )
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"])
-        self.draw_curve("red", data["Indoor Temperature"])
-        self.draw_curve("blue", data["Outdoor Temperature"])
-        self.draw_curve(colors["Emissions"], data["Carbon Intensity"])
+        self.draw_curve("red", data["Indoor Temperature"], width=4)
+        self.draw_curve("blue", data["Outdoor Temperature"], width=2)
+        self.draw_curve(colors["Emissions"], data["Carbon Intensity"], width=2)
         self.draw_date_indicator(data["Date Indicator"])
         self.draw_house_indicator(data["TI Indicator"])
         self.draw_TA_indicator(data["TA Indicator"])
@@ -637,7 +626,8 @@ class CurvesRenderer:
             )
 
     # curve renderer
-    def draw_curve(self, color, curve):
+    def draw_curve(self, color, curve, width=None):
+        width = width or self.curve_width
         """Draw curves representing game data."""
         if len(curve) < 2:
             return
@@ -647,7 +637,7 @@ class CurvesRenderer:
             color,
             closed=False,
             points=screencoords,
-            width=self.curve_width,
+            width=width,
         )
 
     def draw_area_between_curves(self, color, curve1, curve2, alpha=80):
@@ -695,6 +685,7 @@ class CurvesRenderer:
         screenpos1 = self.screen_coords(gamepos1)
         screenpos2 = self.screen_coords(gamepos2)
         pg.draw.line(self.renderer.display, color, screenpos1, screenpos2)
+
 
     def draw_TA_indicator(self, data):
         hour, TA = data["TA"]

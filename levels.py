@@ -20,6 +20,7 @@ class Level:
     min_comfort: int = 0 # level fail when falling below minimum comfort value [%]
     min_average_comfort: int = 0
     speed: int = 12
+    start_paused: bool = False
 
     def get_hour_of_month(self, month):
         # First hour of every month
@@ -59,7 +60,8 @@ LEVELS = [
         comfort=Comfortmodel(
             random=False,
             maximum_room_temperature=100,
-        )
+        ),
+        start_paused= False
     ),
 
     Level(

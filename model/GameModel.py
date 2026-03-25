@@ -140,7 +140,7 @@ class GameModel:
 
     def setup_level(self, index=None):
         """Level number of optional, if missing, current level will be reset"""
-        self.paused = True
+        
         self.level_comfort = 100
         self.level_duration = 0
         if index is not None:
@@ -148,7 +148,7 @@ class GameModel:
         print(self.current_level_index)
         self.current_level = self.levels[self.current_level_index]
         self.set_speed(getattr(self.current_level, "speed", DEFAULT_SPEED))
-
+        self.paused = self.current_level.start_paused
         start_hour = self.current_level.start
 
         if not (0 <= start_hour <= 8759):

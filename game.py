@@ -26,14 +26,14 @@ display = pg.Surface(settings.SCREEN_RESOLUTION)
 
 clock = pg.time.Clock()
 game = GameModel(speed=settings.GAME_SPEED, godmode=settings.GODMODE)
-particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
 camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=settings.GAME_ZOOM)
 camera.follow(game, maxdist=0)
 
 # Set up renderer
-renderer = Renderer(display, camera, clock, scale=0.8, font = settings.FONT)
+renderer = Renderer(display, camera, scale=0.8, font = settings.FONT)
+particle_manager = ParticleManager(renderer=renderer)
 
 def center_screen(size = 0.8):
     # Position & Size
@@ -144,7 +144,7 @@ def level_success():
     game.money += game.current_level.reward
     game.moneyspent = 0
     game.setup_next_level()
-    for _ in range(300): 
+    for _ in range(50): 
         x = random.randint(0, settings.SCREEN_RESOLUTION[0])
         y = random.randint(0, settings.SCREEN_RESOLUTION[1])
         particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
@@ -152,7 +152,7 @@ def level_success():
 
 def victory_loop():
     game.reset_levels()
-    for _ in range(300): 
+    for _ in range(50): 
         x = random.randint(0, settings.SCREEN_RESOLUTION[0])
         y = random.randint(0, settings.SCREEN_RESOLUTION[1])
         particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
@@ -174,14 +174,14 @@ def quit_game():
 def heat():
     game.heat()
     particle_manager.heat(
-        game.position, (0, -game.qh)
+        game.position, (-game.qh*0.5, -game.qh)
     )
 
 
 def cool():
     game.cool()
     particle_manager.cool(
-        game.position, (0, -game.qc)
+        game.position, (0.5*game.qc, -game.qc)
     )
 
 #def place_buttons()
@@ -261,10 +261,7 @@ class ShopScreen(Screen):
         # register buttons
         def upgrade_button(upgrade, pos) -> Button:
             def callback():
-                particale_amount = 10
-                for _ in range(particale_amount):
-                    particle_manager.purchase(position=pg.mouse.get_pos(), velocity=(0, 5)) 
-                    particle_manager.purchase(position=pg.mouse.get_pos(), velocity=(0, -5)) 
+                particle_manager.purchase(position=pg.mouse.get_pos()) 
                 res = upgrade.callback()
                 if not res:
                     renderer.draw_no_money_warning()
@@ -295,7 +292,7 @@ class ShopScreen(Screen):
         for button in self.handler.buttons:
             renderer.render_button(button)
 
-        renderer.draw_purchase_particles(particle_manager.groups["purchase"])
+        particle_manager.render()
 
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
@@ -343,6 +340,8 @@ class LevelScreen(Screen):
                 "Acc. hours": lambda: f"{accumulated_gamehours:.2f} h",
                 "State": game.__repr__,
                 "Speed": lambda: f"{game.speed:.0f} h/s",
+                "Camera Zoom": lambda: f"{camera.zoom_level} h/s",
+                "LEVEL": lambda: f"{game.current_level_index:.0f}",
             }
 
             if not game.paused and accumulated_gamehours >= 1:
@@ -378,7 +377,7 @@ class LevelScreen(Screen):
         renderer.draw_background(game.hour)
         renderer.render_curves(game.get_curves_data())
 
-        particle_manager.render(renderer)
+        particle_manager.render()
         if game.get_temp_diff() > settings.TEMP_WARNING_THRESHOLD: renderer.draw_too_hot_warning()
         if game.get_temp_diff() <-settings.TEMP_WARNING_THRESHOLD: renderer.draw_too_cold_warning()
         if game.money < settings.MONEY_WARNING_THRESHOLD: renderer.draw_low_money_warning()
@@ -416,7 +415,7 @@ class Popup(Screen):
         renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))
         for button in self.handler.buttons:
             renderer.render_button(button)
-        particle_manager.render(renderer)
+        particle_manager.render()
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
