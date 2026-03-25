@@ -51,8 +51,9 @@ LEVELS = [
             "Remember that heating is expensive! Keep an eye on your available money."
         ],
         start=7297,
-        end=7297 + 7 * 24 * 2,
-        start_TI=22,
+        end=7297 + 2 * 24 * 2,
+        speed=12,
+        start_TI=19,
         min_comfort=30,
         min_average_comfort = 90,
         reward=300,
@@ -73,18 +74,18 @@ LEVELS = [
         ],
         start = 0,
         end= 0 + 7 * 24 * 2,
-        start_TI=22,
-        min_comfort=10,
+        speed=14,
+        start_TI=19,
+        min_comfort=0,
         min_average_comfort = 90,
         reward=700,
         background = "Winter.png",
-        speed=12,
         comfort=Comfortmodel(
             minimum_comfort_band=100,
             p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
-            comfort_sensitivity= 2
+            comfort_sensitivity= 1
         )
     ),
 
@@ -102,7 +103,8 @@ LEVELS = [
         ],
         start=745,
         end=745 + 7 * 24 * 2,
-        start_TI=22,
+        speed=16,
+        start_TI=19,
         min_comfort=20,
         min_average_comfort = 90,
         reward=1000,
@@ -111,7 +113,8 @@ LEVELS = [
             p_change=1 / 12,
             alpha=0.5,
             sigma=0.8,
-            comfort_sensitivity= 2
+            comfort_sensitivity= 2,
+            minimum_comfort_band=4
         )
     ),
 
@@ -130,7 +133,8 @@ LEVELS = [
         ],
         start=2161,
         end=2161 + 7 * 24 * 2,
-        start_TI=24,
+        speed=20,
+        start_TI=25,
         min_comfort=20,
         min_average_comfort = 90,
         reward=1500,
@@ -158,13 +162,14 @@ LEVELS = [
         ],
         start=3625,
         end=3625 + 7 * 24 * 2,
-        start_TI=20,
+        speed=24,
+        start_TI=26,
         min_comfort=20,
         min_average_comfort = 90,
         reward=1500,
         background = "Summer.png",
         comfort=Comfortmodel(
-            p_change=1 / 12,
+            p_change=1 / 6,
             alpha=0.25,
             sigma=0.5,
             comfort_sensitivity=1
@@ -185,6 +190,8 @@ LEVELS = [
         ],
         start=5, # some indexing issues with 0 too close to 8760
         end=8759, # avoid modulo 8760 = 0 weirdness
+        
+        speed=24,
         start_TI=22,
         min_comfort=20,
         min_average_comfort = 90,

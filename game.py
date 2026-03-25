@@ -4,6 +4,7 @@ from typing import override
 import pygame as pg
 import random
 
+import settings
 from camera import Camera2D
 from handler import Button, InputHandler
 from model.GameModel import GameModel
@@ -11,59 +12,44 @@ from particles import ParticleManager
 from renderer import Renderer
 
 
+
 DEBUG_MODE = True
-SCREEN_RESOLUTION = (1200, 700)
-FONT = "Helvetica Bold"
-GAME_ZOOM = (20, 20) # x, y
-TEMP_WARNING_THRESHOLD = 0.2 # Kelvin lower than setpoint until warning shown
-MONEY_WARNING_THRESHOLD = 200 # €
-GODMODE = False
-GAME_SPEED = 12 # sim hours / second
 
 # Initialize pygame
 pg.init()
 print(pg.version)
 # Set up the main display surface
-screen: pg.Surface = pg.display.set_mode(SCREEN_RESOLUTION)
+screen: pg.Surface = pg.display.set_mode(settings.SCREEN_RESOLUTION)
 pg.display.set_caption("passyBUIRLD")
 # Create another surface to perform off-screen drawing
-display = pg.Surface(SCREEN_RESOLUTION)
+display = pg.Surface(settings.SCREEN_RESOLUTION)
 
 clock = pg.time.Clock()
-game = GameModel(speed=GAME_SPEED, godmode=GODMODE)
+game = GameModel(speed=settings.GAME_SPEED, godmode=settings.GODMODE)
 particle_manager = ParticleManager()
 
 # Set up the camera with a zoom feature
-camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=GAME_ZOOM)
+camera = Camera2D(surface=display, game_world_position=(game.position[0],0), zoom=settings.GAME_ZOOM)
 camera.follow(game, maxdist=0)
 
 # Set up renderer
-renderer = Renderer(display, camera, clock, scale=0.8, font = FONT)
+renderer = Renderer(display, camera, clock, scale=0.8, font = settings.FONT)
 
 def center_screen(size = 0.8):
     # Position & Size
-    width = SCREEN_RESOLUTION[0] * size
-    height = SCREEN_RESOLUTION[1] * size
-    left = SCREEN_RESOLUTION[0] * 0.1
-    top = SCREEN_RESOLUTION[1] * 0.1
+    width = settings.SCREEN_RESOLUTION[0] * size
+    height = settings.SCREEN_RESOLUTION[1] * size
+    left = settings.SCREEN_RESOLUTION[0] * 0.1
+    top = settings.SCREEN_RESOLUTION[1] * 0.1
     return (left, top, width, height)
 
-SCREEN_ANCHORS = {  #width #height
-    "top left":     (0.18, 0.07),
-    "top right":    (0.88, 0.07),
-    "bottom left":  (0.02, 0.93),
-    "bottom center":(0.5, 0.93),
-    "bottom right": (0.88, 0.93),
-    "popup left":   (0.10, 0.80),
-    "popup right":  (0.88, 0.80)
-}
 def get_btn_pos(orientation = None):
     """
     Parameter "orientation" can be "top left", "top right", "bottom left", "bottom right", "popup left" or "popup right".
     
     Function returns a touple with screen coordinates (x,y).
     """
-    return tuple(pixel * factor for pixel, factor in zip(SCREEN_RESOLUTION, SCREEN_ANCHORS.get(orientation, (0,0))))
+    return tuple(pixel * factor for pixel, factor in zip(settings.SCREEN_RESOLUTION, settings.SCREEN_ANCHORS.get(orientation, (0,0))))
     
 #TODO: Move to utility or renderer
 def get_background(hour_of_year):
@@ -95,7 +81,7 @@ def game_over(reason="You have lost the game."):
         title="Game over!",
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
-            Button(get_btn_pos("popup left"), start_new_game, "Start new game", size = (250,60))
+            Button(get_btn_pos("popup left"), start_new_game, "Start new game", size =settings.BUTTON_SIZE["Start New Game"])
         ],
         keys=[
             (pg.K_RETURN, start_new_game),
@@ -110,8 +96,8 @@ def start_level_intro(level=None):
         title=game.current_level.name,
         body=game.current_level.intro,
         buttons=[
-            Button(get_btn_pos("popup left"), start_shop_loop, "Go to Shop", size = (150,60)),
-            Button(get_btn_pos("popup right"), start_level_loop, "Start Level", size = (150,60))
+            Button(get_btn_pos("popup left"), start_shop_loop, "Go to Shop", size=settings.BUTTON_SIZE["Go to Shop"]),
+            Button(get_btn_pos("popup right"), start_level_loop, "Start Level", size=settings.BUTTON_SIZE["Start Level"])
         ],
         keys=[
             (pg.K_RETURN, start_level_loop),
@@ -131,7 +117,7 @@ def level_fail(text: str):
         title=title,
         body=[text],
         buttons=[
-            Button(get_btn_pos("popup left"), start_level_intro, "Retry", size = (250,60))
+            Button(get_btn_pos("popup left"), start_level_intro, "Retry", size=settings.BUTTON_SIZE["Retry"])
         ],
         keys=[
             (pg.K_RETURN, start_level_loop),
@@ -148,7 +134,7 @@ def level_success():
         title=title,
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
-            Button(get_btn_pos("popup right"), start_level_intro, "Continue", size = (150,60))
+            Button(get_btn_pos("popup right"), start_level_intro, "Continue", size = settings.BUTTON_SIZE["Continue"])
         ],
         keys=[
             (pg.K_RETURN, start_shop_loop),
@@ -159,16 +145,16 @@ def level_success():
     game.moneyspent = 0
     game.setup_next_level()
     for _ in range(300): 
-        x = random.randint(0, SCREEN_RESOLUTION[0])
-        y = random.randint(0, SCREEN_RESOLUTION[1])
+        x = random.randint(0, settings.SCREEN_RESOLUTION[0])
+        y = random.randint(0, settings.SCREEN_RESOLUTION[1])
         particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
     level_success_popup.loop()
 
 def victory_loop():
     game.reset_levels()
     for _ in range(300): 
-        x = random.randint(0, SCREEN_RESOLUTION[0])
-        y = random.randint(0, SCREEN_RESOLUTION[1])
+        x = random.randint(0, settings.SCREEN_RESOLUTION[0])
+        y = random.randint(0, settings.SCREEN_RESOLUTION[1])
         particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
     print("You've finished the game, Good Job!")
     Victory().loop()
@@ -236,7 +222,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button(get_btn_pos("popup left"), start_level_intro, "Start the Game!", size = (200,40)),
+            Button(get_btn_pos("popup left"), start_level_intro, "Start the Game!", size = settings.BUTTON_SIZE["Start New Game"]),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -287,13 +273,13 @@ class ShopScreen(Screen):
 
 
         buttons = [
-            Button(get_btn_pos("bottom right"), start_level_intro, "Start Level", size = (190,60)),
-            Button(get_btn_pos("bottom left"), start_new_game, "Start new game", size = (170,60)),
+            Button(get_btn_pos("bottom right"), start_level_intro, "Start Level", size = settings.BUTTON_SIZE["150x60"]),
+            Button(get_btn_pos("bottom left"), start_new_game, "Start new game", size = settings.BUTTON_SIZE["150x60"]),
             upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
             upgrade_button(game.upgrades['power'], (500, 425)),
             upgrade_button(game.upgrades['heatpump_efficiency'], (500, 475)),
             upgrade_button(game.upgrades['electricity_price_discount'], (500, 525)),
-            Button((get_btn_pos("bottom center")), lambda: start_level_intro(5), "Start level 5", size = (170,60)),
+            Button((get_btn_pos("bottom center")), lambda: start_level_intro(5), "Start level 5", size = settings.BUTTON_SIZE["150x60"]),
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -359,25 +345,22 @@ class LevelScreen(Screen):
                 "Speed": lambda: f"{game.speed:.0f} h/s",
             }
 
-            if game.paused:
-                continue
-
-            if accumulated_gamehours >= 1:
+            if not game.paused and accumulated_gamehours >= 1:
                 hours = int(accumulated_gamehours)
                 accumulated_gamehours -= hours
                 game.update(hours=hours)
                 
-            if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
-                level_success()
+                if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
+                    level_success()
 
-            if game.is_bankrupt(): 
-                game_over(reason="You spent all your money!")
+                if game.is_bankrupt(): 
+                    game_over(reason="You spent all your money!")
 
-            if game.is_too_hot():
-                level_fail(text="Everyone died of heat stroke!")
+                if game.is_too_hot():
+                    level_fail(text="Everyone died of heat stroke!")
 
-            if game.is_too_cold():
-                level_fail(text="Everyone froze into icicles!")
+                if game.is_too_cold():
+                    level_fail(text="Everyone froze into icicles!")
 
             renderer.set_background(get_background(game.hour))
             particle_manager.update()
@@ -396,11 +379,15 @@ class LevelScreen(Screen):
         renderer.render_curves(game.get_curves_data())
 
         particle_manager.render(renderer)
-        if game.get_temp_diff() > TEMP_WARNING_THRESHOLD: renderer.draw_too_hot_warning()
-        if game.get_temp_diff() <-TEMP_WARNING_THRESHOLD: renderer.draw_too_cold_warning()
-        if game.money < MONEY_WARNING_THRESHOLD: renderer.draw_low_money_warning()
+        if game.get_temp_diff() > settings.TEMP_WARNING_THRESHOLD: renderer.draw_too_hot_warning()
+        if game.get_temp_diff() <-settings.TEMP_WARNING_THRESHOLD: renderer.draw_too_cold_warning()
+        if game.money < settings.MONEY_WARNING_THRESHOLD: renderer.draw_low_money_warning()
 
         renderer.render_ui(game.get_ui_data())
+
+        if game.paused:
+            renderer.draw_paused_overlay()
+
         if DEBUG_MODE: renderer.debug(self.debug)
 
         for button in self.handler.buttons:
@@ -457,8 +444,8 @@ class Victory(Screen):
     @override
     def render(self) -> None:
         if random.random() < 0.5: 
-            x = random.randint(0, SCREEN_RESOLUTION[0])
-            y = random.randint(0, SCREEN_RESOLUTION[1])
+            x = random.randint(0, settings.SCREEN_RESOLUTION[0])
+            y = random.randint(0, settings.SCREEN_RESOLUTION[1])
             particle_manager.success(position=(x,y), velocity=(random.randint(-10,10), random.randint(-10,10)))
 
         renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))

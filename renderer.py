@@ -28,6 +28,7 @@ colors = {
     "Winter BG": (60, 84, 153),  # (61, 98, 116),
     "Summer BG": (255, 232, 197),
     "Button hovered": (156, 252, 186), #(61, 98, 116),
+    "Button pressed": (12, 70, 25), #(61, 98, 116),
     "Button": (56, 161, 90), #(51, 58, 96),
     "Price": (255, 255, 255), #(50, 80, 30),
     "UI Text": (255, 255, 255), #(76, 37, 29),
@@ -53,7 +54,7 @@ OUTLINE = (10, 10, 10)
 WARNING_PARAMS = dict(
     size=50,
     border_width=4,
-    pulse=1.2,
+    pulse=1.15,
     centered=True
     )
 
@@ -239,17 +240,23 @@ class Renderer:
 
     def render_button(self, button: Button):
         button_surf = pg.Surface(button.size)
-        button_surf.fill(
-            colors["Button hovered"] if button.hovered else colors["Button"]
-        )
-        self.outline(button_surf, button.position, pixel=1 + button.hovered - button.pressed)
-        offset = 5 + 2 * button.pressed
+        bw, bh = button_surf.get_size()
+        offset = 2 + 4 * button.pressed
+        center_pos = (bw // 2 + offset, bh // 2 + int(offset/2))
+        color = colors["Button"]
+        if button.hovered: color =  colors["Button hovered"]
+        if button.pressed: color =  colors["Button pressed"]
+        button_surf.fill(color)
+        self.outline(button_surf, button.position, pixel=2 + 2*button.hovered - button.pressed)
         self.render_line(
             button.text,
-            pos=(5, offset),
+            pos=center_pos,
             onto=button_surf,
-            size=30,
-            border_width=1 + button.hovered,
+            size=25,
+            border_width=2 + 1*button.hovered,
+            pulse=1.03,
+            font = self.font_custom_small,
+            centered=True
         )
         self.display.blit(button_surf, button.position)
 
@@ -321,6 +328,15 @@ class Renderer:
                          font=self.font_custom_large, 
                          **COOL_WARNING_PARAMS)
 
+    def draw_paused_overlay(self):
+        params = WARNING_PARAMS
+        self.render_line("Game Paused. Press <P> to Unpause!", 
+                         color=WHITE,
+                         border_color=GREY,
+                         pos=(self.cx,self.cy-250),
+                         font=self.font_custom_small, 
+                         **params)
+
     # main game UI
     def render_ui(self, ui_data):
         self.ui_renderer.render(ui_data)
@@ -367,8 +383,6 @@ class Renderer:
             )
             y += line_spacing
 
-   
-
     def render_title_screen(self, title: str, body: list, screen_params):
         line_size = 24
         line_spacing = 30  # slightly more than size to avoid overlap
@@ -414,7 +428,8 @@ class Renderer:
             pos=(self.left+10, y),
             size=80,
             font=self.font_custom_small,
-            border_width=10
+            border_width=10,
+            pulse=1.05
         )
         y = y + 100  # Larger space after title
 
@@ -481,7 +496,7 @@ class MenuRenderer:
     def render_title(self, pos):
         title = "PassyBUIRD"
         self.render_line(
-            title, colors["Title"], pos, font=self.renderer.font_custom_small, size=80, border_width=10
+            title, WHITE, pos, font=self.renderer.font_custom_small, size=80, border_width=8, pulse=1.05
         )
 
     def render_text(self, pos):
@@ -605,7 +620,7 @@ class CurvesRenderer:
 
 
     def draw_date_indicator(self, data):
-        print(f"{len(data)=}")
+        #print(f"{len(data)=}")
         for hour, y, dt in data:
             self.renderer.render_line(
                 dt.strftime("%d. %b"),
