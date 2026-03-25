@@ -5,24 +5,22 @@ import pygame as pg
 from renderer import Renderer
 from utils import color_interpolation, seasonalcolor, circle_surf
 
+
+
 class Particle:
     def __init__(self, pos, speed, lifetime, game_coords = True):
         self.pos = pos
         self.speed = speed
         self.lifetime = lifetime
+        self.age = lifetime
         self.game_coords = game_coords
-        
-    def render(self, renderer:Renderer):
-        pos = renderer.camera.screen_coords(self.pos) if self.game_coords else self.pos
-        x, y = pos
-        pg.draw.circle(renderer.display, self.color, pos, self.lifetime / 8)
-        glow_color = renderer.color_interpolation((0, 0, 0), self.color, 0.2)
-        radius = self.lifetime / 3
-        renderer.display.blit(
-            circle_surf(radius, glow_color),
-            (x - radius, y - radius),
-            special_flags=pg.BLEND_RGB_ADD,
-        )
+
+    def update(self):
+        self.lifetime -= 1
+        self.pos += self.speed
+        vx, vy = self.speed
+        self.speed = (vx, vy*0.9 - 0.1)
+
 
 class ParticleManager:
     def __init__(self):
@@ -59,16 +57,15 @@ class ParticleManager:
     def update(self):
         for _, container in self.groups.items():
             for i, p in sorted(enumerate(container), reverse=True):
-                p.lifetime -= 1
+                p.update()
                 if p.lifetime <= 0:
                     container.pop(i)
                     continue
-                # p.speed.scale_to_length(p.lifetime/50)
-                p.pos += p.speed
-                vx, vy = p.speed
-                p.speed = (vx, vy*0.9 - 0.1)
-
+                
     def render(self, renderer:Renderer):
+        # for _, group in self.groups.items():
+        #     for p in group:
+        #         p.render(renderer)
         renderer.draw_heat_particles(self.groups["heating"])
         renderer.draw_cool_particles(self.groups["cooling"])
         renderer.draw_purchase_particles(self.groups["purchase"])

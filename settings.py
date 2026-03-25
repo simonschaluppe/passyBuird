@@ -1,7 +1,7 @@
 
 SCREEN_RESOLUTION = (1200, 700)
 
-FONT = "Helvetica Bold"
+FONT = "Helvetica"
 GAME_ZOOM = (20, 20) # x, y
 TEMP_WARNING_THRESHOLD = 0.2 # Kelvin lower than setpoint until warning shown
 MONEY_WARNING_THRESHOLD = 200 # €

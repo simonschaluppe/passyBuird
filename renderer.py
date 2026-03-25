@@ -271,20 +271,24 @@ class Renderer:
     def render_curves(self, curve_data):
         self.curves_renderer.render(curve_data)
 
-
+    def ring_effect(self):
+        pass
+      
+    def glow_effect(self, pos, radius, color, game_coords=False):
+        pos = self.camera.screen_coords(pos) if game_coords else pos
+        x, y = pos
+        pg.draw.circle(self.display, color, pos, radius / 8)
+        glow_color = color_interpolation((0, 0, 0), color, 0.2)
+        self.display.blit(
+            circle_surf(radius, glow_color),
+            (x - radius, y - radius),
+            special_flags=pg.BLEND_RGB_ADD,
+        )
+  
     # particle renderer
     def draw_particles(self, particleList, color, game_coords=False):
         for p in particleList:
-            pos = self.camera.screen_coords(p.pos) if game_coords else p.pos
-            x, y = pos
-            pg.draw.circle(self.display, color, pos, p.lifetime / 8)
-            glow_color = color_interpolation((0, 0, 0), color, 0.2)
-            radius = p.lifetime / 3
-            self.display.blit(
-                circle_surf(radius, glow_color),
-                (x - radius, y - radius),
-                special_flags=pg.BLEND_RGB_ADD,
-            )
+            self.glow_effect(pos=p.pos, radius=p.lifetime, color=color, game_coords=game_coords)
 
     def draw_heat_particles(self, particleList):
         self.draw_particles(particleList, colors["QH"], game_coords=True)
@@ -733,7 +737,6 @@ class UIRenderer:
 
     def render(self, ui_data):
         pulse = 1.1 if ui_data["player_activity"] else False
-        print(pulse)
         self.energybalance(ui_data["Energy balance"])
         self.render_line(
             f"€ {ui_data["Scores"]["Money"]:.0f}",

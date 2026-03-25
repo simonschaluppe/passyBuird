@@ -20,7 +20,7 @@ pg.init()
 print(pg.version)
 # Set up the main display surface
 screen: pg.Surface = pg.display.set_mode(settings.SCREEN_RESOLUTION)
-pg.display.set_caption("passyBUIRLD")
+pg.display.set_caption("passyBUIRD")
 # Create another surface to perform off-screen drawing
 display = pg.Surface(settings.SCREEN_RESOLUTION)
 
@@ -451,7 +451,9 @@ class Victory(Screen):
         renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))
         for button in self.handler.buttons:
             renderer.render_button(button)
-        renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,255), random.randint(100,255), random.randint(100,255)))
+        
+        #particle_manager.render(renderer)
+        #renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,255), random.randint(100,255), random.randint(100,255)))
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
