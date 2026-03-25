@@ -16,8 +16,8 @@ class Level:
     background: str
 
     # level difficulty parameters
-    min_comfort: int  # level fail when falling below minimum comfort value [%]
-    min_average_comfort: int
+    min_comfort: int = 0 # level fail when falling below minimum comfort value [%]
+    min_average_comfort: int = 0
     comfort: Comfortmodel
     speed: int = 12
 
@@ -54,8 +54,6 @@ LEVELS = [
         end=7297 + 2 * 24 * 2,
         speed=12,
         start_TI=19,
-        min_comfort=30,
-        min_average_comfort = 90,
         reward=300,
         background = "Fall.png",
         comfort=Comfortmodel(
@@ -76,8 +74,6 @@ LEVELS = [
         end= 0 + 7 * 24 * 2,
         speed=14,
         start_TI=19,
-        min_comfort=0,
-        min_average_comfort = 90,
         reward=700,
         background = "Winter.png",
         comfort=Comfortmodel(
@@ -105,8 +101,6 @@ LEVELS = [
         end=745 + 7 * 24 * 2,
         speed=16,
         start_TI=19,
-        min_comfort=20,
-        min_average_comfort = 90,
         reward=1000,
         background = "Dunkelflaute.png",
         comfort=Comfortmodel(
@@ -135,8 +129,6 @@ LEVELS = [
         end=2161 + 7 * 24 * 2,
         speed=20,
         start_TI=25,
-        min_comfort=20,
-        min_average_comfort = 90,
         reward=1500,
         background = "Spring.png",
         comfort=Comfortmodel(
@@ -164,8 +156,6 @@ LEVELS = [
         end=3625 + 7 * 24 * 2,
         speed=24,
         start_TI=26,
-        min_comfort=20,
-        min_average_comfort = 90,
         reward=1500,
         background = "Summer.png",
         comfort=Comfortmodel(
@@ -193,8 +183,6 @@ LEVELS = [
         
         speed=24,
         start_TI=22,
-        min_comfort=20,
-        min_average_comfort = 90,
         reward=1000,
         background = "Winter.png",
         comfort=Comfortmodel(
@@ -214,8 +202,6 @@ LEVELS = [
         start=5, # some indexing issues with 0 too close to 8760
         end=8760,
         start_TI=22,
-        min_comfort=20,
-        min_average_comfort = 90,
         reward=1000,
         background = "Winter.png",
         comfort=Comfortmodel(
