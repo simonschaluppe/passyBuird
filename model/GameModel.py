@@ -140,7 +140,8 @@ class GameModel:
 
     def setup_level(self, index=None):
         """Level number of optional, if missing, current level will be reset"""
-        self.level_comfort = 1
+        self.paused = True
+        self.level_comfort = 100
         self.level_duration = 0
         if index is not None:
             self.current_level_index = index
@@ -254,7 +255,7 @@ class GameModel:
 
             self.model.comfort.update(self._mh)
             self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
-            self.level_comfort = self.model.comfort_score_tsd[self.current_level.start:self._mh].mean()
+            self.level_comfort = max(0, self.level_comfort - 0.1*(100-self.get_comfort_score()))
             #print(f"level average comfort: {self.level_comfort:.1f}%")
 
             self.curve_TI.update((self.hour, self.TI))
@@ -408,7 +409,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "Scores": {
                 "Money": int(self.money),
                 "Comfort": {"dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
-                            "score": self.get_comfort_score(),
+                            "score": self.level_comfort,
                             "change": self.get_comfort_score()-self.model.comfort.comfort_score(self.model.TI[self._mh-1])},
             },
             "Price": f"Price: {self.model.price_grid} €/Wh",
