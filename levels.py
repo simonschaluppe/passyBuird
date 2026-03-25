@@ -16,9 +16,9 @@ class Level:
     background: str
 
     # level difficulty parameters
+    comfort: Comfortmodel
     min_comfort: int = 0 # level fail when falling below minimum comfort value [%]
     min_average_comfort: int = 0
-    comfort: Comfortmodel
     speed: int = 12
 
     def get_hour_of_month(self, month):
