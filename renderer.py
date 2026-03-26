@@ -574,8 +574,9 @@ class MenuRenderer:
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_updrade_text(self, data, pos, color):
+        spacing = 30    # spacing between Upgrade section title and upgradeable component list
         self.render_line("Upgrades", colors["UI Text"], pos, font=self.renderer.titlefont, size=40)
-        self.render_lines(data["lines"], color=color, pos=pos)
+        self.render_lines(data["lines"], color=color, pos=(pos[0], pos[1]+spacing))
 
     def render_game_stats(self, data, pos, color):
         self.render_lines(data["lines"], color=color, pos=pos, lineheight=30)
