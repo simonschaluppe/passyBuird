@@ -9,6 +9,7 @@ class Button:
         self.callback = callback
         self.hovered = False
         self.pressed = False
+        self.disabled = False
 
     def release(self):
         self.pressed = False

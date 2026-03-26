@@ -544,10 +544,12 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                 self.insulation_level = 2
 
         def heatpump_efficiency():
-            self.set_cop(self.model.HVAC.HP_COP + 1)
+            self.set_cop(self.model.HVAC.HP_COP + 0.5)
 
         def electricity_price_discount():
-            self.energy_discount += 15
+            self.energy_discount = min(
+                90, self.energy_discount + 15 * (1 - self.energy_discount / 100)
+            )
 
         self.upgrades["wall_insulation"].callback = lambda: upgrade(
             self.upgrades["wall_insulation"], wall_insulation

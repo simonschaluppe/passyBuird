@@ -130,7 +130,7 @@ class Renderer:
                 colors["DEBUG"],
                 (20, 20 + i * self.lineheight),
                 size=10,
-                border_width=0,
+                border_width=1,
             )
 
     def pulse(self):
@@ -238,26 +238,49 @@ class Renderer:
             pg.draw.line(self.display, color, (0, y), (self.display.get_width(), y))
 
     def render_button(self, button: Button):
-        button_surf = pg.Surface(button.size)
+        button_surf = pg.Surface(button.size, pg.SRCALPHA)
+        button_surf.fill((0, 0, 0, 0))  # clear
         bw, bh = button_surf.get_size()
-        offset = 2 + 4 * button.pressed
-        center_pos = (bw // 2 + offset, bh // 2 + int(offset / 2))
+        text_color = WHITE
         color = colors["Button"]
+        pulse = 1.03
         if button.hovered:
             color = colors["Button hovered"]
         if button.pressed:
             color = colors["Button pressed"]
-        button_surf.fill(color)
-        self.outline(
-            button_surf, button.position, pixel=2 + 2 * button.hovered - button.pressed
+        if button.disabled:
+            print("disabled gray")
+            color = GREY
+            text_color = GREY
+            pulse = None
+        radius = 12
+        border = 4 + 2 * button.hovered - button.pressed
+        offset = 2 + 4 * button.pressed
+        center_pos = (bw // 2 + offset, bh // 2 + int(offset / 2))
+        rect = button_surf.get_rect().move(offset, int(offset / 2))
+        # --- BORDER ---
+        pg.draw.rect(
+            button_surf,
+            BLACK,  # or your outline color
+            rect,
+            border_radius=radius,
+        )
+        # --- INNER BUTTON ---
+        inner_rect = rect.inflate(-border * 2, -border * 2)
+        pg.draw.rect(
+            button_surf,
+            color,
+            inner_rect,
+            border_radius=radius - border,
         )
         self.render_line(
             button.text,
+            color=text_color,
             pos=center_pos,
             onto=button_surf,
             size=25,
             border_width=2 + 1 * button.hovered,
-            pulse=1.03,
+            pulse=pulse,
             font=self.font_custom_small,
             centered=True,
         )
