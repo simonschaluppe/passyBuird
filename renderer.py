@@ -598,12 +598,14 @@ class CurvesRenderer:
     def render(self, data):
         self.draw_area_between_curves(
             (100, 255, 150),
-            data["Minimum Comfort Temperature"],
+            data["Minimum Comfort Temperature"]["curve"],
             data["Maximum Comfort Temperature"],
             alpha=100,
         )
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
-        self.draw_curve("lightblue", data["Minimum Comfort Temperature"])
+        self.draw_curve("lightblue", data["Minimum Comfort Temperature"]["curve"])
+        self.draw_indicator(data["Minimum Comfort Temperature"]["indicator"]["pos"], BLACK,
+                            data["Minimum Comfort Temperature"]["indicator"]["text"])
         self.draw_curve("red", data["Indoor Temperature"], width=4)
         self.draw_TA_indicator(data["TA Indicator"])
         self.draw_curve("blue", data["Outdoor Temperature"], width=2)

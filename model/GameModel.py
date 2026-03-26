@@ -377,9 +377,13 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                     "text": f"{self.model.CO2[self.hour]*100:.0f} g/kWh"
                     }
                 },
-                        "Minimum Comfort Temperature": self.curve_comfort_min.points_in_game(
-                bc_index, fc_index
-            ),
+            "Minimum Comfort Temperature": {
+                "curve": self.curve_comfort_min.points_in_game(bc_index, fc_index),
+                "indicator": {
+                    "pos": (self.hour, self.model.comfort.minimum_room_temperature),
+                    "text": f"{self.model.comfort.minimum_room_temperature:.1f} °C"
+                }
+            },
             "Maximum Comfort Temperature": self.curve_comfort_max.points_in_game(
                 bc_index, fc_index
             ),
