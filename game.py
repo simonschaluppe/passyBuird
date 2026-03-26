@@ -81,7 +81,7 @@ def game_over(reason="You have lost the game."):
         title="Game over!",
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
-            Button(get_btn_pos("popup left"), start_new_game, "Start new game", size =settings.BUTTON_SIZE["Start New Game"])
+            Button(get_btn_pos("popup right"), start_new_game, "Start new game", size =settings.BUTTON_SIZE["Start New Game"])
         ],
         keys=[
             (pg.K_RETURN, start_new_game),
@@ -222,7 +222,7 @@ class TitleScreen(Screen):
     def config_handler(self) -> None:
         # register buttons
         buttons = [
-            Button(get_btn_pos("popup left"), start_level_intro, "Start the Game!", size = settings.BUTTON_SIZE["Start New Game"]),
+            Button(get_btn_pos("popup right"), start_level_intro, "Start the Game!", size = settings.BUTTON_SIZE["Start New Game"]),
         ]
         [self.handler.register_button(button) for button in buttons]
 

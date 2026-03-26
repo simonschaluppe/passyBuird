@@ -25,6 +25,6 @@ SCREEN_ANCHORS = {  #width #height
     "bottom left":  (0.2, 0.9),
     "bottom center":(0.5, 0.9),
     "bottom right": (0.8, 0.9),
-    "popup left":   (0.15, 0.8),
-    "popup right":  (0.7, 0.8)
+    "popup left":   (0.2, 0.78),
+    "popup right":  (0.67, 0.78)
 }
