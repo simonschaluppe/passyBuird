@@ -25,21 +25,21 @@ colors = {
     "QS": (200, 200, 0),
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
-    "Title": (100, 30, 0), #(164, 196, 146), #
-    "DEBUG": (0,0,0),
+    "Title": (100, 30, 0),  # (164, 196, 146), #
+    "DEBUG": (0, 0, 0),
     "Winter BG": (60, 84, 153),  # (61, 98, 116),
     "Summer BG": (255, 232, 197),
-    "Button hovered": (156, 252, 186), #(61, 98, 116),
-    "Button pressed": (12, 70, 25), #(61, 98, 116),
-    "Button": (56, 161, 90), #(51, 58, 96),
-    "Price": (255, 255, 255), #(50, 80, 30),
-    "UI Text": (255, 255, 255), #(76, 37, 29),
-    "Upgrade text": (255, 255, 255), #(153, 64, 154),
-    "Emission text": (255, 255, 255), #(66, 62, 56),
-    "Emissions": (50,50,50), #(105, 95, 78),
+    "Button hovered": (156, 252, 186),  # (61, 98, 116),
+    "Button pressed": (12, 70, 25),  # (61, 98, 116),
+    "Button": (56, 161, 90),  # (51, 58, 96),
+    "Price": (255, 255, 255),  # (50, 80, 30),
+    "UI Text": (255, 255, 255),  # (76, 37, 29),
+    "Upgrade text": (255, 255, 255),  # (153, 64, 154),
+    "Emission text": (255, 255, 255),  # (66, 62, 56),
+    "Emissions": (50, 50, 50),  # (105, 95, 78),
     "Purchase": (255, 100, 100),
-    "TitleBG" : (80,80,80),
-    "PopupBG" : (80,80,80),
+    "TitleBG": (80, 80, 80),
+    "PopupBG": (80, 80, 80),
 }
 
 # Define color constants
@@ -53,30 +53,14 @@ GREEN = (0, 255, 0)
 GREY = (50, 50, 50)
 OUTLINE = (10, 10, 10)
 
-WARNING_PARAMS = dict(
-    size=50,
-    border_width=4,
-    pulse=1.15,
-    centered=True
-    )
+WARNING_PARAMS = dict(size=50, border_width=4, pulse=1.15, centered=True)
 
-HOT_WARNING_PARAMS = dict(
-    color=RED,
-    border_color=(255,100,100),
-    **WARNING_PARAMS
-    )
+HOT_WARNING_PARAMS = dict(color=RED, border_color=(255, 100, 100), **WARNING_PARAMS)
 
-COOL_WARNING_PARAMS = dict(
-    color=BLUE,
-    border_color=(100,100,255),
-    **WARNING_PARAMS
-    )
+COOL_WARNING_PARAMS = dict(color=BLUE, border_color=(100, 100, 255), **WARNING_PARAMS)
 
-MONEY_WARNING_PARAMS = dict(
-    color=GREEN,
-    border_color=(100,255,100),
-    **WARNING_PARAMS
-    )
+MONEY_WARNING_PARAMS = dict(color=GREEN, border_color=(100, 255, 100), **WARNING_PARAMS)
+
 
 def color_indicator(dT):
     if dT > 0:
@@ -89,7 +73,7 @@ def color_indicator(dT):
 
 class Renderer:
     def __init__(
-            self, display: pg.Surface, camera: Camera2D, scale=1.0, font = "couriernew"
+        self, display: pg.Surface, camera: Camera2D, scale=1.0, font="couriernew"
     ):
         self.display = display
         self.cx, self.cy = display.get_width() // 2, display.get_height() // 2
@@ -98,7 +82,7 @@ class Renderer:
         self.scale = scale
 
         # defaults
-        self.lineheight = int( 25 * self.scale)
+        self.lineheight = int(25 * self.scale)
         self.fontsize = int(30 * self.scale)
         self.font_custom_small = Font(FONT_PATH / "small_font.png")
         self.font_custom_large = Font(FONT_PATH / "large_font.png")
@@ -108,7 +92,6 @@ class Renderer:
         else:
             self.font = pg.font.SysFont(font, self.fontsize, bold=False)
             self.titlefont = pg.font.SysFont(font, self.fontsize, bold=True)
-        
 
         # components
         self.ui_renderer = UIRenderer(self)
@@ -117,18 +100,25 @@ class Renderer:
 
         # Load the background image for the upgrade menu
         self.level_backgrounds = {}
-        background_paths = ["Dunkelflaute.png", "Spring.png", "Summer.png", "Fall.png", "Winter.png"]
+        background_paths = [
+            "Dunkelflaute.png",
+            "Spring.png",
+            "Summer.png",
+            "Fall.png",
+            "Winter.png",
+        ]
 
         for background in background_paths:
-            bg_image = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / background).convert()
+            bg_image = pg.image.load(
+                IMAGE_PATH / settings.BACKGROUND_FOLDER / background
+            ).convert()
             scaled_image = pg.transform.scale(bg_image, self.display.get_size())
             self.level_backgrounds[background] = scaled_image
 
         self.level_background = self.level_backgrounds[background_paths[0]]
-    
+
     def set_background(self, path):
         self.level_background = self.level_backgrounds[path]
-
 
     # debug stuff, should be low level
     def debug(self, statements):
@@ -136,7 +126,11 @@ class Renderer:
         for i, (label, callback) in enumerate(statements.items()):
             debug_text = f"{label}: {callback()}"
             self.render_line(
-                debug_text, colors["DEBUG"], (20, 20 + i * self.lineheight), size = 10, border_width=0
+                debug_text,
+                colors["DEBUG"],
+                (20, 20 + i * self.lineheight),
+                size=10,
+                border_width=0,
             )
 
     def pulse(self):
@@ -162,30 +156,32 @@ class Renderer:
         onto.blit(mask_surf, (x - pixel, y + pixel))
 
     def render_line(
-            self,
-            text: str,
-            color=WHITE,
-            pos=(0, 0), # by default topleft corner of text
-            size=None,
-            border_width=1, #pixel
-            border_color=OUTLINE,
-            font=None,
-            onto=None,
-            pulse=False,
-            centered=False # interprets pos as center of text, not topleft
-            
+        self,
+        text: str,
+        color=WHITE,
+        pos=(0, 0),  # by default topleft corner of text
+        size=None,
+        border_width=1,  # pixel
+        border_color=OUTLINE,
+        font=None,
+        onto=None,
+        pulse=False,
+        centered=False,  # interprets pos as center of text, not topleft
     ):
         """Render a single text line onto a surface"""
-        if not font: font = self.font
-        if not onto: onto = self.display
-        if not size: size = self.fontsize
+        if not font:
+            font = self.font
+        if not onto:
+            onto = self.display
+        if not size:
+            size = self.fontsize
         px, py = pos
         alpha = None
         scale_factor = 1.0
 
         if pulse:
             p = self.pulse()  # expected 0..1
-            #alpha = int(120 + 135 * p)  # 120..255
+            # alpha = int(120 + 135 * p)  # 120..255
             if isinstance(pulse, (int, float)):
                 # animate between 100% and the given pulse factor
                 scale_factor = 1.0 + (pulse - 1.0) * p
@@ -217,20 +213,22 @@ class Renderer:
         onto.blit(textsurf, rect.topleft)
 
     def render_lines(
-            self,
-            text: str,
-            color=WHITE,
-            pos=(0, 0),
-            size=26,
-            font=None,
-            onto=None,
-            lineheight=None,
-            **kwargs,
+        self,
+        text: str,
+        color=WHITE,
+        pos=(0, 0),
+        size=26,
+        font=None,
+        onto=None,
+        lineheight=None,
+        **kwargs,
     ):
         px, py = pos
         dy = 0
         for line in text.splitlines():
-            self.render_line(line, color, (px, py + dy), size, font=font, onto=onto,  **kwargs)
+            self.render_line(
+                line, color, (px, py + dy), size, font=font, onto=onto, **kwargs
+            )
             dy += lineheight if lineheight else self.lineheight
 
     def draw_grid(self, spacing, color=BLACK):
@@ -243,40 +241,43 @@ class Renderer:
         button_surf = pg.Surface(button.size)
         bw, bh = button_surf.get_size()
         offset = 2 + 4 * button.pressed
-        center_pos = (bw // 2 + offset, bh // 2 + int(offset/2))
+        center_pos = (bw // 2 + offset, bh // 2 + int(offset / 2))
         color = colors["Button"]
-        if button.hovered: color =  colors["Button hovered"]
-        if button.pressed: color =  colors["Button pressed"]
+        if button.hovered:
+            color = colors["Button hovered"]
+        if button.pressed:
+            color = colors["Button pressed"]
         button_surf.fill(color)
-        self.outline(button_surf, button.position, pixel=2 + 2*button.hovered - button.pressed)
+        self.outline(
+            button_surf, button.position, pixel=2 + 2 * button.hovered - button.pressed
+        )
         self.render_line(
             button.text,
             pos=center_pos,
             onto=button_surf,
             size=25,
-            border_width=2 + 1*button.hovered,
+            border_width=2 + 1 * button.hovered,
             pulse=1.03,
-            font = self.font_custom_small,
-            centered=True
+            font=self.font_custom_small,
+            centered=True,
         )
         self.display.blit(button_surf, button.position)
 
     # main game loop
     def draw_background(self, hour_of_year=0):
         # self.display.fill((0,0,0))
-        #self.display.fill(seasonalcolor(hour_of_year))
+        # self.display.fill(seasonalcolor(hour_of_year))
         self.display.blit(self.level_background, (0, 0))
-        
 
     # draw stuff using camera (game)
-    def render_curves(self, curve_data, paused:bool):
+    def render_curves(self, curve_data, paused: bool):
         self.curves_renderer.render(curve_data, paused)
 
     def ring_effect(self, pos, radius, color, width=1, game_coords=False):
         pos = self.camera.screen_coords(pos) if game_coords else pos
         x, y = pos
         pg.draw.circle(self.display, color, pos, radius / 8, width=width)
-  
+
     def glow_effect(self, pos, radius, color, game_coords=False):
         pos = self.camera.screen_coords(pos) if game_coords else pos
         x, y = pos
@@ -287,50 +288,61 @@ class Renderer:
             (x - radius, y - radius),
             special_flags=pg.BLEND_RGB_ADD,
         )
-  
-
 
     def draw_too_hot_warning(self):
-        self.render_lines("Warning: Too Hot!", 
-                         pos=(self.cx,self.cy-100),     
-                         font=self.font_custom_small, 
-                         **HOT_WARNING_PARAMS)
-        self.render_line("Press <RMB> to Cool!", 
-                         pos=(self.cx,self.cy-150),
-                         font=self.font_custom_small, 
-                         **HOT_WARNING_PARAMS)
-
+        self.render_lines(
+            "Warning: Too Hot!",
+            pos=(self.cx, self.cy - 100),
+            font=self.font_custom_small,
+            **HOT_WARNING_PARAMS,
+        )
+        self.render_line(
+            "Press <RMB> to Cool!",
+            pos=(self.cx, self.cy - 150),
+            font=self.font_custom_small,
+            **HOT_WARNING_PARAMS,
+        )
 
     def draw_too_cold_warning(self):
-        self.render_line("Warning: Too COLD!", 
-                         pos=(self.cx,self.cy+100),
-                         font=self.font_custom_large, 
-                         **COOL_WARNING_PARAMS)
-        self.render_line("Press <LMB> to Heat!", 
-                         pos=(self.cx,self.cy+150),
-                         font=self.font_custom_small, 
-                         **COOL_WARNING_PARAMS)
+        self.render_line(
+            "Warning: Too COLD!",
+            pos=(self.cx, self.cy + 100),
+            font=self.font_custom_large,
+            **COOL_WARNING_PARAMS,
+        )
+        self.render_line(
+            "Press <LMB> to Heat!",
+            pos=(self.cx, self.cy + 150),
+            font=self.font_custom_small,
+            **COOL_WARNING_PARAMS,
+        )
 
     def draw_low_money_warning(self):
-        self.render_line("Low money!", 
-                         pos=(self.cx,self.cy-200),
-                         font=self.font_custom_large, 
-                         **HOT_WARNING_PARAMS)
+        self.render_line(
+            "Low money!",
+            pos=(self.cx, self.cy - 200),
+            font=self.font_custom_large,
+            **HOT_WARNING_PARAMS,
+        )
 
     def draw_no_money_warning(self):
-        self.render_line("Not enough money!", 
-                         pos=(self.cx,self.cy+100),
-                         font=self.font_custom_large, 
-                         **COOL_WARNING_PARAMS)
+        self.render_line(
+            "Not enough money!",
+            pos=(self.cx, self.cy + 100),
+            font=self.font_custom_large,
+            **COOL_WARNING_PARAMS,
+        )
 
     def draw_paused_overlay(self):
         params = WARNING_PARAMS
-        self.render_line("Game Paused. Press <P> to Unpause!", 
-                         color=WHITE,
-                         border_color=GREY,
-                         pos=(self.cx,self.cy-250),
-                         font=self.font_custom_small, 
-                         **params)
+        self.render_line(
+            "Game Paused. Press <P> to Unpause!",
+            color=WHITE,
+            border_color=GREY,
+            pos=(self.cx, self.cy - 250),
+            font=self.font_custom_small,
+            **params,
+        )
 
     # main game UI
     def render_ui(self, ui_data):
@@ -350,7 +362,7 @@ class Renderer:
 
         self.left = screen_params[0] + 20
         self.top = screen_params[1] + 20
-        overlay = pg.Surface(panel_rect.size, pg.SRCALPHA) 
+        overlay = pg.Surface(panel_rect.size, pg.SRCALPHA)
         overlay.fill((*colors["PopupBG"], 150))  # 150 = alpha (0–255)
 
         self.display.blit(overlay, panel_rect.topleft)
@@ -359,7 +371,7 @@ class Renderer:
             (220, 220, 220),  # border color
             panel_rect,
             width=2,
-            border_radius=8
+            border_radius=8,
         )
 
         self.render_line(
@@ -389,7 +401,7 @@ class Renderer:
         self.left = screen_params[0] + 20
         self.top = screen_params[1] + 20
 
-        overlay = pg.Surface(panel_rect.size, pg.SRCALPHA) 
+        overlay = pg.Surface(panel_rect.size, pg.SRCALPHA)
         overlay.fill((*colors["PopupBG"], 150))  # 150 = alpha (0–255)
 
         self.display.blit(overlay, panel_rect.topleft)
@@ -398,7 +410,7 @@ class Renderer:
             (220, 220, 220),  # border color
             panel_rect,
             width=2,
-            border_radius=8
+            border_radius=8,
         )
 
         pg.draw.rect(
@@ -406,9 +418,8 @@ class Renderer:
             colors["TitleBG"],  # border color
             panel_rect,
             width=2,
-            border_radius=8
+            border_radius=8,
         )
-
 
         self.render_line(
             title,
@@ -416,15 +427,15 @@ class Renderer:
             size=40,
             font=self.font_custom_large,
         )
-        y = self.top + self.lineheight*2  # Larger space after title
+        y = self.top + self.lineheight * 2  # Larger space after title
         self.render_line(
             "PassyBUIRD!",
             color=WHITE,
-            pos=(self.left+10, y),
+            pos=(self.left + 10, y),
             size=80,
             font=self.font_custom_small,
             border_width=10,
-            pulse=1.05
+            pulse=1.05,
         )
         y = y + 100  # Larger space after title
 
@@ -458,9 +469,15 @@ class MenuRenderer:
         self.stats_text_color = colors["UI Text"]
 
         # Load the background image for the upgrade menu
-        bg_image = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2.png").convert()
-        bg_image_upgraded = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded.png").convert()
-        bg_image_upgraded_max = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded_max.png").convert()
+        bg_image = pg.image.load(
+            IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2.png"
+        ).convert()
+        bg_image_upgraded = pg.image.load(
+            IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded.png"
+        ).convert()
+        bg_image_upgraded_max = pg.image.load(
+            IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded_max.png"
+        ).convert()
         self.bg_images = [bg_image, bg_image_upgraded, bg_image_upgraded_max]
 
     def render(self, data, index=0):
@@ -484,8 +501,14 @@ class MenuRenderer:
 
         self.render_title(self.topleft)
         self.render_text((self.topleft[0], 150))
-        self.render_updrade_text(data["upgrade_text"], (48, 320), self.stats_text_color)
-        self.render_game_stats(data["game_stats"], (880, -20), self.stats_text_color)
+        self.render_updrade_text(
+            data["upgrade_text"],
+            settings.ANCHOR_SHOP_UPGRADE_TEXT,
+            self.stats_text_color,
+        )
+        self.render_game_stats(
+            data["game_stats"], settings.ANCHOR_SHOP_GAME_STATS, self.stats_text_color
+        )
 
     def render_background(self, index=0):
         bg_image = self.bg_images[index]
@@ -495,7 +518,13 @@ class MenuRenderer:
     def render_title(self, pos):
         title = "PassyBUIRD"
         self.render_line(
-            title, WHITE, pos, font=self.renderer.font_custom_small, size=80, border_width=8, pulse=1.05
+            title,
+            WHITE,
+            pos,
+            font=self.renderer.font_custom_small,
+            size=80,
+            border_width=8,
+            pulse=1.05,
         )
 
     def render_text(self, pos):
@@ -506,7 +535,11 @@ class MenuRenderer:
         spacing = 0
         for line in text:
             self.render_line(
-                line, colors["UI Text"], (pos[0], pos[1] + spacing), font=self.renderer.titlefont, size=40
+                line,
+                colors["UI Text"],
+                (pos[0], pos[1] + spacing),
+                font=self.renderer.titlefont,
+                size=40,
             )
             spacing += 40
 
@@ -569,10 +602,10 @@ class MenuRenderer:
         )
 
     def render_hvac_stats(
-            self,
-            data,
-            pos,
-            color,
+        self,
+        data,
+        pos,
+        color,
     ):
         self.render_lines(data["lines"], color=color, pos=pos)
 
@@ -580,9 +613,13 @@ class MenuRenderer:
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_updrade_text(self, data, pos, color):
-        spacing = 30    # spacing between Upgrade section title and upgradeable component list
-        self.render_line("Upgrades", colors["UI Text"], pos, font=self.renderer.titlefont, size=40)
-        self.render_lines(data["lines"], color=color, pos=(pos[0], pos[1]+spacing))
+        spacing = (
+            30  # spacing between Upgrade section title and upgradeable component list
+        )
+        self.render_line(
+            "Upgrades", colors["UI Text"], pos, font=self.renderer.titlefont, size=40
+        )
+        self.render_lines(data["lines"], color=color, pos=(pos[0], pos[1] + spacing))
 
     def render_game_stats(self, data, pos, color):
         self.render_lines(data["lines"], color=color, pos=pos, lineheight=30)
@@ -600,8 +637,7 @@ class CurvesRenderer:
         house.set_colorkey((255, 255, 0))
         self.house = pg.transform.scale(house, (64, 53))
 
-
-    def render(self, data, paused:bool):
+    def render(self, data, paused: bool):
         self.draw_area_between_curves(
             (100, 255, 150),
             data["Minimum Comfort Temperature"]["curve"],
@@ -610,10 +646,16 @@ class CurvesRenderer:
         )
 
         if paused:
-            self.draw_indicator(data["Minimum Comfort Temperature"]["indicator"]["pos"], colors["QC"],
-                                data["Minimum Comfort Temperature"]["indicator"]["text"])
-            self.draw_indicator(data["Maximum Comfort Temperature"]["indicator"]["pos"], colors["QH"],
-                                data["Maximum Comfort Temperature"]["indicator"]["text"])
+            self.draw_indicator(
+                data["Minimum Comfort Temperature"]["indicator"]["pos"],
+                colors["QC"],
+                data["Minimum Comfort Temperature"]["indicator"]["text"],
+            )
+            self.draw_indicator(
+                data["Maximum Comfort Temperature"]["indicator"]["pos"],
+                colors["QH"],
+                data["Maximum Comfort Temperature"]["indicator"]["text"],
+            )
 
         self.draw_curve("orange", data["Maximum Comfort Temperature"]["curve"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"]["curve"])
@@ -622,13 +664,16 @@ class CurvesRenderer:
         self.draw_curve("blue", data["Outdoor Temperature"], width=2)
         self.draw_TI_indicator(data["TA Indicator"])
         self.draw_curve(colors["Emissions"], data["Carbon Intensity"]["curve"], width=2)
-        self.draw_indicator(data["Carbon Intensity"]["indicator"]["pos"], BLACK, data["Carbon Intensity"]["indicator"]["text"])
+        self.draw_indicator(
+            data["Carbon Intensity"]["indicator"]["pos"],
+            BLACK,
+            data["Carbon Intensity"]["indicator"]["text"],
+        )
         self.draw_date_indicator(data["Date Indicator"])
         self.draw_house_indicator(data["TI Indicator"])
 
-
     def draw_date_indicator(self, data):
-        #print(f"{len(data)=}")
+        # print(f"{len(data)=}")
         for hour, y, dt in data:
             self.renderer.render_line(
                 dt.strftime("%d. %b"),
@@ -637,7 +682,7 @@ class CurvesRenderer:
                 centered=False,
                 size=30,
                 border_width=1,
-                font=self.renderer.font_custom_small
+                font=self.renderer.font_custom_small,
             )
 
     # curve renderer
@@ -646,7 +691,9 @@ class CurvesRenderer:
         """Draw curves representing game data."""
         if len(curve) < 2:
             return
-        screencoords = [self.screen_coords(point) for point in curve]  # Only last 300 points
+        screencoords = [
+            self.screen_coords(point) for point in curve
+        ]  # Only last 300 points
         pg.draw.lines(
             self.renderer.display,
             color,
@@ -660,8 +707,13 @@ class CurvesRenderer:
         if n < 2:
             return
 
-        if not hasattr(self, "_area_overlay") or self._area_overlay.get_size() != self.renderer.display.get_size():
-            self._area_overlay = pg.Surface(self.renderer.display.get_size(), pg.SRCALPHA)
+        if (
+            not hasattr(self, "_area_overlay")
+            or self._area_overlay.get_size() != self.renderer.display.get_size()
+        ):
+            self._area_overlay = pg.Surface(
+                self.renderer.display.get_size(), pg.SRCALPHA
+            )
 
         self._area_overlay.fill((0, 0, 0, 0))
 
@@ -677,14 +729,16 @@ class CurvesRenderer:
         x, y = self.screen_coords(data["Position"])
         color = colors.get(data["Color"], "comfort")
         if color == "comfort":
-            color = color_interpolation(color_indicator(data["Comfort dT"]), GREEN, data["score"] / 100)
+            color = color_interpolation(
+                color_indicator(data["Comfort dT"]), GREEN, data["score"] / 100
+            )
         size = self.size_TI_indicator * data["Scale"]
         pg.draw.circle(self.renderer.display, color, (x, y), size)
         w, h = self.house.get_size()
-        scale = data["Scale"] # e.g. 50%
-        #scaled = pg.transform.scale(self.house, (int(w * scale), int(h * scale)))
+        scale = data["Scale"]  # e.g. 50%
+        # scaled = pg.transform.scale(self.house, (int(w * scale), int(h * scale)))
         scaled = pg.transform.scale(self.house, (int(w * 1), int(h * 1)))
-        
+
         draw_pos = (x - scaled.get_width() // 2, y - scaled.get_height() // 2)
 
         self.renderer.outline(
@@ -696,28 +750,27 @@ class CurvesRenderer:
         )
         self.renderer.display.blit(scaled, draw_pos)
 
-    def draw_indicator(self, pos, color, text, game_coords = True):
+    def draw_indicator(self, pos, color, text, game_coords=True):
         screenpos = self.screen_coords(pos) if game_coords else pos
         bordercolor = color_interpolation(color, (255, 255, 255), 0.8)
         textcolor = color
         self.renderer.render_line(
-            text,
-            textcolor,
-            pos=screenpos,
-            border_color=bordercolor,
-            centered=False
+            text, textcolor, pos=screenpos, border_color=bordercolor, centered=False
         )
 
     def draw_TA_indicator(self, data):
         hour, TA = data["TA"]
         textcolor = seasonalcolor(hour)
-        self.draw_indicator(pos=(hour, TA/2), color=textcolor, text=f"Outdoor Temp {TA:+2.1f}°C")
-        
+        self.draw_indicator(
+            pos=(hour, TA / 2), color=textcolor, text=f"Outdoor Temp {TA:+2.1f}°C"
+        )
+
     def draw_TI_indicator(self, data):
         hour, TI = data["TI"]
         textcolor = seasonalcolor(hour)
-        self.draw_indicator(pos=(hour, TI), color=textcolor, text=f"Indoor Temp {TI:+2.1f}°C")
-        
+        self.draw_indicator(
+            pos=(hour, TI), color=textcolor, text=f"Indoor Temp {TI:+2.1f}°C"
+        )
 
 
 class UIRenderer:
@@ -734,8 +787,15 @@ class UIRenderer:
         comfort_pulse = 1.2 if bool(comfort_data["change"]) else False
 
         # render remaining days
-        self.render_line("Remaining hours", pos=(500,50), color=WHITE)
-        self.render_line(ui_data["Remaining hours"], pos=(655,55), color=GREEN, font=self.renderer.font_custom_small)
+        self.render_line(
+            "Remaining hours", pos=settings.POS_REMAINING_HOURS, color=WHITE
+        )
+        self.render_line(
+            ui_data["Remaining hours"],
+            pos=settings.POS_REMAINING_HOURS_VALUE,
+            color=GREEN,
+            font=self.renderer.font_custom_small,
+        )
 
         anchor_y = 950
         anchor_x = 20
@@ -750,29 +810,41 @@ class UIRenderer:
             size=52,
             pos=(anchor_y + 80, anchor_x + line_x - 5),
             font=self.renderer.font_custom_small,
-            pulse=0.9 / pulse if pulse else False
+            pulse=0.9 / pulse if pulse else False,
         )
         line_x += 60
 
-        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"], pulse=comfort_pulse,
-                                  pos=(anchor_y, anchor_x + line_x))
+        self.render_comfort_score(
+            score=comfort_data["score"],
+            dT=comfort_data["dT"],
+            pulse=comfort_pulse,
+            pos=(anchor_y, anchor_x + line_x),
+        )
         line_x += spacing_x
 
-        self.render_line(ui_data["Price"], pos=(anchor_y, anchor_x + line_x), color=colors["Price"])
+        self.render_line(
+            ui_data["Price"], pos=(anchor_y, anchor_x + line_x), color=colors["Price"]
+        )
         line_x += spacing_x
 
         self.render_line("CO2 emitted ", pos=(anchor_y, anchor_x + line_x), color=WHITE)
-        self.render_line(ui_data["CO2"], pos=(anchor_y + 120, anchor_x + line_x + 5), color=GREY, pulse=pulse,
-                         font=self.renderer.font_custom_small)
+        self.render_line(
+            ui_data["CO2"],
+            pos=(anchor_y + 120, anchor_x + line_x + 5),
+            color=GREY,
+            pulse=pulse,
+            font=self.renderer.font_custom_small,
+        )
         line_x += spacing_x
 
-        self.render_line(ui_data["COP"], pos=(anchor_y, anchor_x + line_x), color=colors["UI Text"])
+        self.render_line(
+            ui_data["COP"], pos=(anchor_y, anchor_x + line_x), color=colors["UI Text"]
+        )
         line_x += spacing_x
 
-        self.render_line(ui_data["Power"], pos=(anchor_y, anchor_x + line_x), color=colors["UI Text"])
-
-
-
+        self.render_line(
+            ui_data["Power"], pos=(anchor_y, anchor_x + line_x), color=colors["UI Text"]
+        )
 
     def energybalance(self, balance_data):
         """Render energy balance as waterfall diagram."""
@@ -843,7 +915,6 @@ class UIRenderer:
                 (anchor_x + 8 * width, anchor_y + 2 * self.renderer.lineheight),
             )  # Label
 
-
     def render_comfort_score(self, score, dT, pos=(880, 66), pulse=False):
         px, py = pos
         text = "Comfort"
@@ -851,8 +922,15 @@ class UIRenderer:
         color = color_indicator(dT)
 
         color = color_interpolation(color, GREEN, score / 100)
-        self.render_line(f"{score:.1f}", color, pos=(px+80, py-10), size=45, pulse=pulse, font=self.renderer.font_custom_small)
-        self.render_line("%", color, pos=(px+150, py), size=50)
+        self.render_line(
+            f"{score:.1f}",
+            color,
+            pos=(px + 80, py - 10),
+            size=45,
+            pulse=pulse,
+            font=self.renderer.font_custom_small,
+        )
+        self.render_line("%", color, pos=(px + 150, py), size=50)
 
 
 # test code

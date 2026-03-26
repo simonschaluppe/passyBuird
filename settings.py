@@ -1,33 +1,39 @@
-
-SCREEN_RESOLUTION = (1200, 700)
+SCREEN_RESOLUTION = (1280, 720)
 
 FONT = "custom"
-GAME_ZOOM = (20, 20) # x, y
+GAME_ZOOM = (20, 20)  # x, y
 
 GODMODE = True
-TEMP_WARNING_THRESHOLD = 0.2 # Kelvin lower than setpoint until warning shown
-MONEY_WARNING_THRESHOLD = 200 # €
-GAME_SPEED = 12 # sim hours / second
+TEMP_WARNING_THRESHOLD = 0.2  # Kelvin lower than setpoint until warning shown
+MONEY_WARNING_THRESHOLD = 200  # €
+GAME_SPEED = 12  # sim hours / second
 
 BUILDING_PATH = "building_bad.xlsx"
-BACKGROUND_FOLDER = "bg_pixelart" #"backgrounds"
+BACKGROUND_FOLDER = "bg_pixelart"  # "backgrounds"
+
+UI_ANCHOR = (100, 250)
+ANCHOR_SHOP_UPGRADE_TEXT = (48, 320)
+ANCHOR_SHOP_UPGRADE_BUTTONS = (48, 320)
+ANCHOR_SHOP_GAME_STATS = (880, -20)
+POS_REMAINING_HOURS = (500, 50)
+POS_REMAINING_HOURS_VALUE = (700, 50)
 
 BUTTON_SIZE = {
-    "Start New Game": (250,60),
-    "Retry": (250,60),
-    "Continue": (250,60),
-    "Go to Shop": (150,60),
-    "Start Level": (150,60),
-    "150x60": (150,60),
-    "170x60": (200,60)
+    "Start New Game": (250, 60),
+    "Retry": (250, 60),
+    "Continue": (250, 60),
+    "Go to Shop": (150, 60),
+    "Start Level": (150, 60),
+    "150x60": (150, 60),
+    "170x60": (200, 60),
 }
 
-SCREEN_ANCHORS = {  #width #height
-    "top left":     (0.2, 0.07),
-    "top right":    (0.8, 0.07),
-    "bottom left":  (0.12, 0.88),
-    "bottom center":(0.42, 0.88),
+SCREEN_ANCHORS = {  # width #height
+    "top left": (0.2, 0.07),
+    "top right": (0.8, 0.07),
+    "bottom left": (0.12, 0.88),
+    "bottom center": (0.42, 0.88),
     "bottom right": (0.7, 0.88),
-    "popup left":   (0.2, 0.78),
-    "popup right":  (0.67, 0.78)
+    "popup left": (0.2, 0.78),
+    "popup right": (0.67, 0.78),
 }

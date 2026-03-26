@@ -22,7 +22,15 @@ DEFAULT_SPEED = 24
 class Curve:
     """Manages game time of timeseries in model time"""
 
-    def __init__(self, label, points=None, x_list=None, y_list=None, display_y_offset=0, display_y_scale=1):
+    def __init__(
+        self,
+        label,
+        points=None,
+        x_list=None,
+        y_list=None,
+        display_y_offset=0,
+        display_y_scale=1,
+    ):
         self.wrap_length = 8760
         self.label = label
         if points is not None:
@@ -46,7 +54,10 @@ class Curve:
     def points_in_game(self, gamex_start, gamex_end):
         """returns the list of points in game time from the appropriate model time"""
         ys = self.y_slice(gamex_start % self.wrap_length, gamex_end % self.wrap_length)
-        return [(x, (y+self.dyo)*self.dys) for x, y in zip(range(gamex_start, gamex_end), ys)]
+        return [
+            (x, (y + self.dyo) * self.dys)
+            for x, y in zip(range(gamex_start, gamex_end), ys)
+        ]
 
     def update_point(self, gamex, y):
         self.y_list[gamex % self.wrap_length] = y
@@ -92,32 +103,32 @@ class GameModel:
     current_level: Level
     current_level_index: int
 
-    def __init__(self, speed = 24, godmode = False):
-        global DEFAULT_SPEED 
-        DEFAULT_SPEED =  speed  # simulated hours / game second
+    def __init__(self, speed=24, godmode=False):
+        global DEFAULT_SPEED
+        DEFAULT_SPEED = speed  # simulated hours / game second
         self.godmode = godmode
         self.paused = False
         self.finished = False
         self.model = EnergyModel(DATA_PATH / settings.BUILDING_PATH)
         self.model.init_sim()
         self.hour = 0
-        self._mh = 0 # energy model hour
+        self._mh = 0  # energy model hour
         self.upgrades: dict[str, Upgrade] = UPGRADES
         self.levels = LEVELS
         self.setup_new_game()
-
 
     def toggle_godmode(self):
         self.godmode = not self.godmode
         status = "enabled" if self.godmod else "disabled"
         print(f"Godmode {status}!")
 
-    def setup_new_game(self,
-                       starting_power=15,
-                       starting_cop=3,
-                       ):
+    def setup_new_game(
+        self,
+        starting_power=15,
+        starting_cop=3,
+    ):
 
-        self.money = 1_000_000 if self.godmode else 1_000 
+        self.money = 1_000_000 if self.godmode else 1_000
         self.insulation_level = 0
         self.moneyspent = 0
         self.total_GHG_emitted = 0
@@ -132,10 +143,10 @@ class GameModel:
         self.reset_levels()
 
     def reset_levels(self):
-        #self.levels = iter(LEVELS)
-        #self.setup_next_level() # setup level 1
-        self.total_comfort = 1 # average comfort score across all levels played
-        self.total_duration = 0 # hours simulated across all levels played
+        # self.levels = iter(LEVELS)
+        # self.setup_next_level() # setup level 1
+        self.total_comfort = 1  # average comfort score across all levels played
+        self.total_duration = 0  # hours simulated across all levels played
         self.setup_level(0)
 
     def setup_next_level(self):
@@ -144,7 +155,7 @@ class GameModel:
 
     def setup_level(self, index=None):
         """Level number of optional, if missing, current level will be reset"""
-        
+
         self.level_comfort = 100
         self.level_duration = 0
         if index is not None:
@@ -170,21 +181,28 @@ class GameModel:
             "TI", points=[(h, ti) for h, ti in zip(range(8760), self.model.TI)]
         )
         self.curve_TA = Curve(
-            "TA", points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)],
+            "TA",
+            points=[(h, ta) for h, ta in zip(range(8760), self.model.TA)],
             display_y_offset=+10,
         )
         self.curve_comfort_min = Curve(
             "Minimum comfort temperature",
-            points=[(h, p) for h, p in zip(range(8760), self.model.comfort.TI_minimum_setpoints)]
+            points=[
+                (h, p)
+                for h, p in zip(range(8760), self.model.comfort.TI_minimum_setpoints)
+            ],
         )
         self.curve_comfort_max = Curve(
             "Minimum comfort temperature",
-            points=[(h, p) for h, p in zip(range(8760), self.model.comfort.TI_maximum_setpoints)],
+            points=[
+                (h, p)
+                for h, p in zip(range(8760), self.model.comfort.TI_maximum_setpoints)
+            ],
         )
         self.curve_co2 = Curve(
             "CO2 Intensity",
             points=[(h, co2 * 100) for h, co2 in zip(range(8760), self.model.CO2)],
-            display_y_offset = 0
+            display_y_offset=0,
         )
         self.curve_date = Curve(
             "Date",
@@ -194,47 +212,54 @@ class GameModel:
 
         return True
 
-
     def update_level_finished(self):
         """at the end of level, update comfort rating"""
         start, stop = self.current_level.start, self.current_level.end
         average = self.level_comfort
         l = len(self.model.comfort_score_tsd[start:stop])
-        self.total_comfort = (self.total_duration * self.total_comfort + l * average) / (l + self.total_duration)
+        self.total_comfort = (
+            self.total_duration * self.total_comfort + l * average
+        ) / (l + self.total_duration)
         self.total_duration += l
         self.total_GHG_emitted += self.get_GHG_emitted()
         self.total_GHG_avoided += self.get_GHG_avoided()
-        #print("Achieved comfort level (average):", average, "over", l, "hours")
-        #print("Total comfort:", self.total_comfort, "over", self.total_duration, "hours total")
+        # print("Achieved comfort level (average):", average, "over", l, "hours")
+        # print("Total comfort:", self.total_comfort, "over", self.total_duration, "hours total")
 
     def is_bankrupt(self) -> bool:
-        if self.godmode:    return False
-        if self.money <= 0: return True
+        if self.godmode:
+            return False
+        if self.money <= 0:
+            return True
         return False
-    
+
     def is_max_comfort_reached(self) -> bool:
-        if self.godmode:    return False
+        if self.godmode:
+            return False
 
     def is_too_cold(self) -> bool:
-        if self.godmode: return False
-        if self.model.comfort.comfort_diff(self.TI) > 0: return False # as long as TI - min setpoint is positive, no freeze
+        if self.godmode:
+            return False
+        if self.model.comfort.comfort_diff(self.TI) > 0:
+            return False  # as long as TI - min setpoint is positive, no freeze
         cs = self.level_comfort
         mc = self.current_level.min_comfort
         if cs <= mc:
             print(f"FREEZE DEATH: comfort_score={cs} < min_comfort={mc}")
             return True
         return False
-    
+
     def is_too_hot(self) -> bool:
-        if self.godmode: return False
-        if self.model.comfort.comfort_diff(self.TI) < 0: return False # as long as TI - min setpoint is positive, no freeze
+        if self.godmode:
+            return False
+        if self.model.comfort.comfort_diff(self.TI) < 0:
+            return False  # as long as TI - min setpoint is positive, no freeze
         cs = self.level_comfort
         mc = self.current_level.min_comfort
         if cs <= mc:
             print(f"HEAT DEATH: comfort_score={cs} < min_comfort={mc}")
             return True
         return False
-
 
     def update(self, hours: int):
         for _ in range(hours):
@@ -253,14 +278,23 @@ class GameModel:
                 self.model.apply_cool(self._mh)
 
             self.model.calc_ED(self._mh)
-            moneydelta = self.model.ED[self._mh] * self.model.price_grid * (100 - self.energy_discount) / 100
+            moneydelta = (
+                self.model.ED[self._mh]
+                * self.model.price_grid
+                * (100 - self.energy_discount)
+                / 100
+            )
             self.moneyspent += moneydelta
             self.money -= moneydelta
 
             self.model.comfort.update(self._mh)
-            self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(self.TI)
-            self.level_comfort = max(0, self.level_comfort - 0.1*(100-self.get_comfort_score()))
-            #print(f"level average comfort: {self.level_comfort:.1f}%")
+            self.model.comfort_score_tsd[self._mh] = self.model.comfort.comfort_score(
+                self.TI
+            )
+            self.level_comfort = max(
+                0, self.level_comfort - 0.1 * (100 - self.get_comfort_score())
+            )
+            # print(f"level average comfort: {self.level_comfort:.1f}%")
 
             self.curve_TI.update((self.hour, self.TI))
 
@@ -324,17 +358,18 @@ class GameModel:
     def get_ED(self):
         """total electricity used (kWh)"""
         return self.model.ED.sum() / 1000 * self.model.building.bgf
-    
+
     def get_GHG_emitted(self):
         return self.model.emissions.sum()
-    
+
     def get_GHG_avoided(self):
         q = self.model.QH.sum() / 1000 * self.model.building.bgf
-        gas_ghg = q * 0.201 # kg/kWh oib rl6'18
+        gas_ghg = q * 0.201  # kg/kWh oib rl6'18
         return gas_ghg - self.get_GHG_emitted()
 
     def get_upgrade_text(self) -> dict:
-        return {"lines": f"""
+        return {
+            "lines": f"""
 Insulation: Lvl {self.upgrades['wall_insulation'].level} ({round(self.model.building.LT, 2)} W/K/m²)
 
 Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²)
@@ -342,14 +377,15 @@ Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating
 Heat Pump Efficiency: Lvl {self.upgrades['heatpump_efficiency'].level} ({self.model.HVAC.HP_COP * 100} %)
 
 Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({self.energy_discount} %)
-"""}  # todo: DUMMIES
+"""
+        }  # todo: DUMMIES
 
     def get_remaining_level_hours(self):
-        return self.final_hour_of_the_year - self.hour-1
-    
+        return self.final_hour_of_the_year - self.hour - 1
+
     def get_comfort_score(self):
         return self.model.comfort.comfort_score(self.TI)
-    
+
     def get_temp_diff(self):
         return self.model.comfort.comfort_diff(self.TI)
 
@@ -367,38 +403,41 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         fc_index = self.hour + self.forecast_hours
         bc_index = self.hour - self.backcast_hours
         color = "comfort"
-        if self.heat_on: color = "QH"
-        if self.cool_on: color = "QC"
+        if self.heat_on:
+            color = "QH"
+        if self.cool_on:
+            color = "QC"
         return {
             "Indoor Temperature": self.curve_TI.points_in_game(bc_index, self.hour),
             "Outdoor Temperature": self.curve_TA.points_in_game(bc_index, fc_index),
             "Carbon Intensity": {
                 "curve": self.curve_co2.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos":(self.hour, self.model.CO2[self.hour]*100), 
-                    "text": f"{self.model.CO2[self.hour]*100:.0f} g/kWh"
-                    }
+                    "pos": (self.hour, self.model.CO2[self.hour] * 100),
+                    "text": f"{self.model.CO2[self.hour]*100:.0f} g/kWh",
                 },
+            },
             "Minimum Comfort Temperature": {
                 "curve": self.curve_comfort_min.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos": (self.hour-8, self.model.comfort.minimum_room_temperature),
-                    "text": f"Min: {self.model.comfort.minimum_room_temperature:.1f} °C"
-                }
+                    "pos": (self.hour - 8, self.model.comfort.minimum_room_temperature),
+                    "text": f"Min: {self.model.comfort.minimum_room_temperature:.1f} °C",
+                },
             },
             "Maximum Comfort Temperature": {
                 "curve": self.curve_comfort_max.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos": (self.hour-8, self.model.comfort.maximum_room_temperature),
-                    "text": f"Max:: {self.model.comfort.maximum_room_temperature:.1f} °C"
-                }
+                    "pos": (self.hour - 8, self.model.comfort.maximum_room_temperature),
+                    "text": f"Max:: {self.model.comfort.maximum_room_temperature:.1f} °C",
+                },
             },
             "TI Indicator": {
                 "Position": self.position,
                 "Comfort dT": self.get_temp_diff(),
-                "Scale": self.get_comfort_score()/100 + 0.5 * (self.heat_on + self.cool_on),
+                "Scale": self.get_comfort_score() / 100
+                + 0.5 * (self.heat_on + self.cool_on),
                 "Color": color,
-                "score": self.get_comfort_score()
+                "score": self.get_comfort_score(),
             },
             "TA Indicator": {
                 "TA": (self.hour, self.model.TA[self._mh]),
@@ -418,7 +457,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         return {
             "player_activity": self.heat_on or self.cool_on,
             "Energy balance": {
-                "anchorpoint": (600, 250),
+                "anchorpoint": settings.UI_ANCHOR,
                 "first": {
                     "QV": self.model.QV[self._mh] * 5,
                     "QT": self.model.QT[self._mh] * 5,
@@ -429,15 +468,18 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             },
             "Scores": {
                 "Money": int(self.money),
-                "Comfort": {"dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
-                            "score": self.level_comfort,
-                            "change": self.get_comfort_score()-self.model.comfort.comfort_score(self.model.TI[self._mh-1])},
+                "Comfort": {
+                    "dT": self.model.comfort.comfort_diff(self.model.TI[self._mh]),
+                    "score": self.level_comfort,
+                    "change": self.get_comfort_score()
+                    - self.model.comfort.comfort_score(self.model.TI[self._mh - 1]),
+                },
             },
             "Price": f"Price {self.model.price_grid} €/Wh",
             "CO2": f"{self.get_GHG_emitted():.1f} kg",
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
-            "Remaining hours": f"{self.get_remaining_level_hours()}"
+            "Remaining hours": f"{self.get_remaining_level_hours()}",
         }
 
     def get_kpis(self) -> dict:
@@ -445,13 +487,13 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         return {
             "Erreichter Komfort": f"{self.level_comfort:.0f}%",
             "Rundenschnitt:": f"{self.total_comfort:.0f}%",
-            "Detailergebnisse" : "",
+            "Detailergebnisse": "",
             "Benötigte Heizenergie": f"{(self.model.QH.sum() / 1000 * self.model.building.bgf):.0f} kWh",
             "Benötigte Kühlenergie": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
             "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.0f} kg",
             "Verbrauchter Strom": f"{self.get_ED().sum():.0f} kWh",
             "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
-            "Wirtschaftlichkeit" : "",
+            "Wirtschaftlichkeit": "",
             "Kontostand zu Beginn": f"{self.money+self.moneyspent:.0f} €",
             "Kontostand am Ende": f"{self.money:.0f} €",
             "Energiekosten": f"{self.moneyspent:.0f} €",
@@ -460,15 +502,16 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         }
 
     def get_game_stats(self):
-        current_level = self.current_level.name.split(':')[0]
-        return {"lines": f"""
+        current_level = self.current_level.name.split(":")[0]
+        return {
+            "lines": f"""
             Current Level    {current_level}
             Available Money  {self.money:.0f} €
             Average Comfort  {self.total_comfort:.0f}%
             Total CO2 caused  {self.total_GHG_emitted:.0f} kg
             Total GHG avoided {self.total_GHG_avoided:.0f} kg
         """
-                }
+        }
 
     def setup_upgrades(self):
         def upgrade(upgrade: Upgrade, fn: callable):
@@ -487,9 +530,13 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
 
         def wall_insulation():
             # todo: Hard coded key
-            self.model.building.components['Aussenwand'].u_value *= 0.8 
-            self.model.building.components['Dach'].u_value *= 0.8       # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            self.model.building.components['Fenster'].u_value *= 0.8    # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            self.model.building.components["Aussenwand"].u_value *= 0.8
+            self.model.building.components[
+                "Dach"
+            ].u_value *= 0.8  # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            self.model.building.components[
+                "Fenster"
+            ].u_value *= 0.8  # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             self.model.building.update_LT()
             if self.model.building.LT <= 0.4:
                 self.insulation_level = 1
@@ -502,13 +549,16 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         def electricity_price_discount():
             self.energy_discount += 15
 
-        self.upgrades['wall_insulation'].callback = lambda: upgrade(self.upgrades['wall_insulation'], wall_insulation)
-        self.upgrades['power'].callback = lambda: upgrade(self.upgrades['power'], power)
-        self.upgrades['heatpump_efficiency'].callback = \
-            lambda: upgrade(self.upgrades['heatpump_efficiency'], heatpump_efficiency)
-        self.upgrades['electricity_price_discount'].callback = \
-            lambda: upgrade(self.upgrades['electricity_price_discount'], electricity_price_discount)
-
+        self.upgrades["wall_insulation"].callback = lambda: upgrade(
+            self.upgrades["wall_insulation"], wall_insulation
+        )
+        self.upgrades["power"].callback = lambda: upgrade(self.upgrades["power"], power)
+        self.upgrades["heatpump_efficiency"].callback = lambda: upgrade(
+            self.upgrades["heatpump_efficiency"], heatpump_efficiency
+        )
+        self.upgrades["electricity_price_discount"].callback = lambda: upgrade(
+            self.upgrades["electricity_price_discount"], electricity_price_discount
+        )
 
     @property
     def TI(self):
@@ -531,7 +581,6 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def qc(self):
         return self.model.QC[self._mh] / self.model.building.heat_capacity * 10
 
-
     def _timestamp_slice(self, start, stop):
         start = start % 8760
         stop = stop % 8760
@@ -539,8 +588,9 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         if start <= stop:
             return list(self.model.timestamp.iloc[start:stop])
         else:
-            return list(self.model.timestamp.iloc[start:]) + list(self.model.timestamp.iloc[:stop])
-        
+            return list(self.model.timestamp.iloc[start:]) + list(
+                self.model.timestamp.iloc[:stop]
+            )
 
     def __repr__(self) -> str:
         return f"t {self._mh:4} {self.hour:4}   Ti= {self.TI:.2f}°C   ED {self.model.ED.sum():.1f} Wh/m2"
