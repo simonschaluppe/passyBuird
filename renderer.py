@@ -599,13 +599,15 @@ class CurvesRenderer:
         self.draw_area_between_curves(
             (100, 255, 150),
             data["Minimum Comfort Temperature"]["curve"],
-            data["Maximum Comfort Temperature"],
+            data["Maximum Comfort Temperature"]["curve"],
             alpha=100,
         )
-        self.draw_curve("orange", data["Maximum Comfort Temperature"])
+        self.draw_curve("orange", data["Maximum Comfort Temperature"]["curve"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"]["curve"])
         self.draw_indicator(data["Minimum Comfort Temperature"]["indicator"]["pos"], colors["QC"],
                             data["Minimum Comfort Temperature"]["indicator"]["text"])
+        self.draw_indicator(data["Maximum Comfort Temperature"]["indicator"]["pos"], colors["QH"],
+                            data["Maximum Comfort Temperature"]["indicator"]["text"])
         self.draw_curve("red", data["Indoor Temperature"], width=4)
         self.draw_TA_indicator(data["TA Indicator"])
         self.draw_curve("blue", data["Outdoor Temperature"], width=2)
