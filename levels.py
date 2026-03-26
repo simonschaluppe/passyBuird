@@ -19,7 +19,7 @@ class Level:
     comfort: Comfortmodel
     min_comfort: int = 0 # level fail when falling below minimum comfort value [%]
     min_average_comfort: int = 0
-    speed: int = 12
+    speed: int = 12 # game hour per real second
     start_paused: bool = False
 
     def get_hour_of_month(self, month):
@@ -182,9 +182,8 @@ LEVELS = [
         ],
         start=5, # some indexing issues with 0 too close to 8760
         end=8759, # avoid modulo 8760 = 0 weirdness
-        
-        speed=24,
         start_TI=22,
+        speed=30,
         reward=1000,
         background = "Winter.png",
         comfort=Comfortmodel(
