@@ -720,6 +720,9 @@ class UIRenderer:
         comfort_data = ui_data["Scores"]["Comfort"]
         comfort_pulse = 1.2 if bool(comfort_data["change"]) else False
 
+        # render remaining days
+        self.render_line(ui_data["Remaining days"], pos=(800,100), color=colors["UI Text"])
+
         anchor_y = 950
         anchor_x = 20
         spacing_x = 40
