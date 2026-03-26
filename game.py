@@ -266,7 +266,7 @@ class ShopScreen(Screen):
                 if not res:
                     renderer.draw_no_money_warning()
 
-            return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(450, 60))
+            return Button(pos, callback, f"{upgrade.upgrade_text}  €{upgrade.cost}", size=(450, 50))
 
 
         buttons = [
