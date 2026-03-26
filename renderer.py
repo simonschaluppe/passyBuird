@@ -604,7 +604,7 @@ class CurvesRenderer:
         )
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"]["curve"])
-        self.draw_indicator(data["Minimum Comfort Temperature"]["indicator"]["pos"], BLACK,
+        self.draw_indicator(data["Minimum Comfort Temperature"]["indicator"]["pos"], colors["QC"],
                             data["Minimum Comfort Temperature"]["indicator"]["text"])
         self.draw_curve("red", data["Indoor Temperature"], width=4)
         self.draw_TA_indicator(data["TA Indicator"])
