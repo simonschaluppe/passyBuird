@@ -716,24 +716,29 @@ class UIRenderer:
     def render(self, ui_data):
         pulse = 1.1 if ui_data["player_activity"] else False
         self.energybalance(ui_data["Energy balance"])
-        self.render_line(
-            f"€ {ui_data["Scores"]["Money"]:.0f}",
-            color=RED if pulse else (100, 255, 120),
-            size=52,
-            pos=(650, 10),
-            font=self.renderer.font_custom_small,
-            pulse= 0.9 / pulse if pulse else False
-        )
+
+
 
         comfort_data = ui_data["Scores"]["Comfort"]
         comfort_pulse = 1.2 if bool(comfort_data["change"]) else False
 
-        anchor_y = 880
-        anchor_x = 100
+        anchor_y = 950
+        anchor_x = 20
         spacing_x = 40
         line_x = 0
 
-        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"], pulse=comfort_pulse, pos=(anchor_y,anchor_x)) ; line_x += spacing_x
+        # render player money
+        self.render_line("Moneyw", pos=(anchor_y, anchor_x + line_x), color=WHITE)
+        self.render_line(
+            f"€ {ui_data["Scores"]["Money"]:.0f}",
+            color=RED if pulse else (100, 255, 120),
+            size=52,
+            pos=(anchor_y+80, anchor_x+line_x-5),
+            font=self.renderer.font_custom_small,
+            pulse=0.9 / pulse if pulse else False
+        );line_x += 60
+
+        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"], pulse=comfort_pulse, pos=(anchor_y,anchor_x+line_x)) ; line_x += spacing_x
         self.render_line(ui_data["Price"], pos=(anchor_y, anchor_x+line_x), color=colors["Price"]); line_x += spacing_x
         self.render_line("CO2 emitted: ", pos=(anchor_y, anchor_x+line_x), color=WHITE)
         self.render_line(ui_data["CO2"], pos=(anchor_y + 120, anchor_x+line_x+5), color=GREY, pulse=pulse,font=self.renderer.font_custom_small); line_x += spacing_x
