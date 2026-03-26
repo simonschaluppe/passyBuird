@@ -446,8 +446,9 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         }
 
     def get_game_stats(self):
+        current_level = self.current_level.name.split(':')[0]
         return {"lines": f"""
-            Current Level    {self.current_level.name}
+            Current Level    {current_level}
             Available Money  {self.money:.0f} €
             Average Comfort  {self.total_comfort:.0f}%
             Total CO2 caused  {self.total_GHG_emitted:.0f} kg
