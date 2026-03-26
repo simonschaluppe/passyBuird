@@ -10,6 +10,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 DATA_PATH = ROOT_PATH / "data"
 
+import settings
+
 from upgrades import Upgrade, UPGRADES
 from levels import Level, LEVELS
 from model.Simulation import EnergyModel
@@ -96,7 +98,7 @@ class GameModel:
         self.godmode = godmode
         self.paused = False
         self.finished = False
-        self.model = EnergyModel()
+        self.model = EnergyModel(DATA_PATH / settings.BUILDING_PATH)
         self.model.init_sim()
         self.hour = 0
         self._mh = 0 # energy model hour
@@ -365,8 +367,14 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         return {
             "Indoor Temperature": self.curve_TI.points_in_game(bc_index, self.hour),
             "Outdoor Temperature": self.curve_TA.points_in_game(bc_index, fc_index),
-            "Carbon Intensity": self.curve_co2.points_in_game(bc_index, fc_index),
-            "Minimum Comfort Temperature": self.curve_comfort_min.points_in_game(
+            "Carbon Intensity": {
+                "curve": self.curve_co2.points_in_game(bc_index, fc_index),
+                "indicator": {
+                    "pos":(self.hour, self.model.CO2[self.hour]*100), 
+                    "text": f"{self.model.CO2[self.hour]*100:.0f} g/kWh"
+                    }
+                },
+                        "Minimum Comfort Temperature": self.curve_comfort_min.points_in_game(
                 bc_index, fc_index
             ),
             "Maximum Comfort Temperature": self.curve_comfort_max.points_in_game(

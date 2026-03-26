@@ -604,12 +604,13 @@ class CurvesRenderer:
         self.draw_curve("orange", data["Maximum Comfort Temperature"])
         self.draw_curve("lightblue", data["Minimum Comfort Temperature"])
         self.draw_curve("red", data["Indoor Temperature"], width=4)
+        self.draw_TA_indicator(data["TA Indicator"])
         self.draw_curve("blue", data["Outdoor Temperature"], width=2)
-        self.draw_curve(colors["Emissions"], data["Carbon Intensity"], width=2)
+        self.draw_TI_indicator(data["TA Indicator"])
+        self.draw_curve(colors["Emissions"], data["Carbon Intensity"]["curve"], width=2)
+        self.draw_indicator(data["Carbon Intensity"]["indicator"]["pos"], BLACK, data["Carbon Intensity"]["indicator"]["text"])
         self.draw_date_indicator(data["Date Indicator"])
         self.draw_house_indicator(data["TI Indicator"])
-        self.draw_TA_indicator(data["TA Indicator"])
-        self.draw_TI_indicator(data["TA Indicator"])
 
 
     def draw_date_indicator(self, data):
@@ -681,43 +682,28 @@ class CurvesRenderer:
         )
         self.renderer.display.blit(scaled, draw_pos)
 
-    def draw_indicator(self, gamepos1, gamepos2, color):
-        screenpos1 = self.screen_coords(gamepos1)
-        screenpos2 = self.screen_coords(gamepos2)
-        pg.draw.line(self.renderer.display, color, screenpos1, screenpos2)
-
+    def draw_indicator(self, pos, color, text, game_coords = True):
+        screenpos = self.screen_coords(pos) if game_coords else pos
+        bordercolor = color_interpolation(color, (255, 255, 255), 0.8)
+        textcolor = color
+        self.renderer.render_line(
+            text,
+            textcolor,
+            pos=screenpos,
+            border_color=bordercolor,
+            centered=False
+        )
 
     def draw_TA_indicator(self, data):
         hour, TA = data["TA"]
-        TA_pos = self.screen_coords((hour, TA))
         textcolor = seasonalcolor(hour)
-        bordercolor = color_interpolation(textcolor, (255, 255, 255), 0.8)
-        textcolor = color_interpolation(textcolor, (0, 0, 0), 0.5)
-        self.draw_indicator((hour, TA), data["TA"], "blue")
-        text = f"Outdoor Temp {TA:+2.1f}°C"
-        self.renderer.render_line(
-            text,
-            textcolor,
-            pos=self.screen_coords((hour, TA+10)),
-            border_color=bordercolor,
-            centered=True
-        )
-
+        self.draw_indicator(pos=(hour, TA/2), color=textcolor, text=f"Outdoor Temp {TA:+2.1f}°C")
+        
     def draw_TI_indicator(self, data):
         hour, TI = data["TI"]
-        TI_pos = self.screen_coords((hour, TI))
         textcolor = seasonalcolor(hour)
-        bordercolor = color_interpolation(textcolor, (255, 255, 255), 0.8)
-        textcolor = color_interpolation(textcolor, (0, 0, 0), 0.5)
-        self.draw_indicator((hour, TI), data["TI"], "blue")
-        text = f"Indoor Temp {TI:+2.1f}°C"
-        self.renderer.render_line(
-            text,
-            textcolor,
-            pos=self.screen_coords((hour, TI-2)),
-            border_color=bordercolor,
-            centered=True
-        )
+        self.draw_indicator(pos=(hour, TI), color=textcolor, text=f"Indoor Temp {TI:+2.1f}°C")
+        
 
 
 class UIRenderer:

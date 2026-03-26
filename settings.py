@@ -8,6 +8,8 @@ MONEY_WARNING_THRESHOLD = 200 # €
 GODMODE = False
 GAME_SPEED = 12 # sim hours / second
 
+BUILDING_PATH = "building_bad.xlsx"
+
 BUTTON_SIZE = {
     "Start New Game": (250,60),
     "Retry": (250,60),
