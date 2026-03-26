@@ -721,7 +721,8 @@ class UIRenderer:
         comfort_pulse = 1.2 if bool(comfort_data["change"]) else False
 
         # render remaining days
-        self.render_line(ui_data["Remaining days"], pos=(800,100), color=colors["UI Text"])
+        self.render_line("Remaining days", pos=(500,50), color=WHITE)
+        self.render_line(ui_data["Remaining days"], pos=(650,55), color=GREEN, font=self.renderer.font_custom_small)
 
         anchor_y = 950
         anchor_x = 20

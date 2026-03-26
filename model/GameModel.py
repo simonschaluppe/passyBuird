@@ -427,7 +427,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "CO2": f"{self.get_GHG_emitted():.1f} kg",
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
-            "Remaining days": f"Remaining days {self.get_remaining_level_days()}"
+            "Remaining days": f"{self.get_remaining_level_days()}"
         }
 
     def get_kpis(self) -> dict:
