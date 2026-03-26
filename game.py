@@ -270,13 +270,13 @@ class ShopScreen(Screen):
 
 
         buttons = [
-            Button(get_btn_pos("bottom right"), start_level_intro, "Start Level", size = settings.BUTTON_SIZE["150x60"]),
-            Button(get_btn_pos("bottom left"), start_new_game, "Start new game", size = settings.BUTTON_SIZE["150x60"]),
-            upgrade_button(game.upgrades['wall_insulation'], (500, 375)),
-            upgrade_button(game.upgrades['power'], (500, 425)),
-            upgrade_button(game.upgrades['heatpump_efficiency'], (500, 475)),
-            upgrade_button(game.upgrades['electricity_price_discount'], (500, 525)),
-            Button((get_btn_pos("bottom center")), lambda: start_level_intro(5), "Start level 5", size = settings.BUTTON_SIZE["150x60"]),
+            Button(get_btn_pos("bottom right"), start_level_intro, "Start Level", size = settings.BUTTON_SIZE["170x60"]),
+            Button(get_btn_pos("bottom left"), start_new_game, "Start new game", size = settings.BUTTON_SIZE["170x60"]),
+            Button((get_btn_pos("bottom center")), lambda: start_level_intro(5), "Start level 5", size=settings.BUTTON_SIZE["170x60"]),
+            upgrade_button(game.upgrades['wall_insulation'], (500, 345)),
+            upgrade_button(game.upgrades['power'], (500, 395)),
+            upgrade_button(game.upgrades['heatpump_efficiency'], (500, 445)),
+            upgrade_button(game.upgrades['electricity_price_discount'], (500, 495)),
         ]
         [self.handler.register_button(button) for button in buttons]
 

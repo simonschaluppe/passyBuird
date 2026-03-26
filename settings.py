@@ -17,14 +17,15 @@ BUTTON_SIZE = {
     "Go to Shop": (150,60),
     "Start Level": (150,60),
     "150x60": (150,60),
+    "170x60": (200,60)
 }
 
 SCREEN_ANCHORS = {  #width #height
     "top left":     (0.2, 0.07),
     "top right":    (0.8, 0.07),
-    "bottom left":  (0.2, 0.9),
-    "bottom center":(0.5, 0.9),
-    "bottom right": (0.8, 0.9),
+    "bottom left":  (0.12, 0.88),
+    "bottom center":(0.42, 0.88),
+    "bottom right": (0.7, 0.88),
     "popup left":   (0.2, 0.78),
     "popup right":  (0.67, 0.78)
 }
