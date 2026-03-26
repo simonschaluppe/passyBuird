@@ -420,7 +420,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                             "score": self.level_comfort,
                             "change": self.get_comfort_score()-self.model.comfort.comfort_score(self.model.TI[self._mh-1])},
             },
-            "Price": f"Price: {self.model.price_grid} €/Wh",
+            "Price": f"Price {self.model.price_grid} €/Wh",
             "CO2": f"{self.get_GHG_emitted():.1f} kg",
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
