@@ -3,7 +3,9 @@ import math
 from pathlib import Path
 
 import pygame as pg
+from pyparsing import White
 
+from model import GameModel
 import settings
 
 from camera import Camera2D
@@ -26,7 +28,7 @@ colors = {
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
     "Title": (100, 30, 0),  # (164, 196, 146), #
-    "DEBUG": (0, 0, 0),
+    "DEBUG": (255,255,255),
     "Winter BG": (60, 84, 153),  # (61, 98, 116),
     "Summer BG": (255, 232, 197),
     "Button hovered": (156, 252, 186),  # (61, 98, 116),
@@ -73,8 +75,9 @@ def color_indicator(dT):
 
 class Renderer:
     def __init__(
-        self, display: pg.Surface, camera: Camera2D, scale=1.0, font="couriernew"
+        self, game:GameModel, display: pg.Surface, camera: Camera2D, scale=1.0, font="couriernew",
     ):
+        self.game = game
         self.display = display
         self.cx, self.cy = display.get_width() // 2, display.get_height() // 2
         self.center = (self.cx, self.cy)
@@ -93,6 +96,11 @@ class Renderer:
             self.font = pg.font.SysFont(font, self.fontsize, bold=False)
             self.titlefont = pg.font.SysFont(font, self.fontsize, bold=True)
 
+        # load QR code
+        self.qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
+        self.qr_code.set_colorkey(WHITE)
+        self.qr_code = pg.transform.scale(self.qr_code, size=(200, 200))
+
         # components
         self.ui_renderer = UIRenderer(self)
         self.curves_renderer = CurvesRenderer(self)
@@ -107,7 +115,6 @@ class Renderer:
             "Fall.png",
             "Winter.png",
         ]
-
         for background in background_paths:
             bg_image = pg.image.load(
                 IMAGE_PATH / settings.BACKGROUND_FOLDER / background
@@ -116,6 +123,10 @@ class Renderer:
             self.level_backgrounds[background] = scaled_image
 
         self.level_background = self.level_backgrounds[background_paths[0]]
+
+        self.bg_overlay = pg.Surface(self.display.get_size(), pg.SRCALPHA)
+        self.bg_overlay.fill((0, 0, 0))
+        
 
     def set_background(self, path):
         self.level_background = self.level_backgrounds[path]
@@ -128,9 +139,7 @@ class Renderer:
             self.render_line(
                 debug_text,
                 colors["DEBUG"],
-                (20, 20 + i * self.lineheight),
-                size=10,
-                border_width=1,
+                (900, 20 + i * self.lineheight)
             )
 
     def pulse(self):
@@ -139,21 +148,23 @@ class Renderer:
         return 0.5 + 0.5 * math.sin(t * 2 * math.pi * 2.0)  # 2 Hz
 
     # basic rendering
-    def outline(self, surf, loc, pixel, color=OUTLINE, onto=False):
+    def outline(self, surf, loc, pixel, color=OUTLINE, onto=False, orig_color=None):
         if not onto:
             onto = self.display
+        orig_color = orig_color or color
+        color = color_interpolation(orig_color, BLACK, 0.5)
         mask = pg.mask.from_surface(surf)
         mask_surf = mask.to_surface(setcolor=color, unsetcolor=(0, 0, 0))
         mask_surf.set_colorkey((0, 0, 0))
         x, y = loc
-        onto.blit(mask_surf, (x - pixel, y))
+        #onto.blit(mask_surf, (x - pixel, y))
         onto.blit(mask_surf, (x + pixel, y))
-        onto.blit(mask_surf, (x, y - pixel))
+        #onto.blit(mask_surf, (x, y - pixel))
         onto.blit(mask_surf, (x, y + pixel))
-        onto.blit(mask_surf, (x - pixel, y - pixel))
+        #onto.blit(mask_surf, (x - pixel, y - pixel))
         onto.blit(mask_surf, (x + pixel, y + pixel))
-        onto.blit(mask_surf, (x + pixel, y - pixel))
-        onto.blit(mask_surf, (x - pixel, y + pixel))
+        #onto.blit(mask_surf, (x + pixel, y - pixel))
+        #onto.blit(mask_surf, (x - pixel, y + pixel))
 
     def render_line(
         self,
@@ -161,7 +172,7 @@ class Renderer:
         color=WHITE,
         pos=(0, 0),  # by default topleft corner of text
         size=None,
-        border_width=1,  # pixel
+        border_width=3,  # pixel
         border_color=OUTLINE,
         font=None,
         onto=None,
@@ -261,7 +272,7 @@ class Renderer:
         # --- BORDER ---
         pg.draw.rect(
             button_surf,
-            BLACK,  # or your outline color
+            settings.BUTTON_BORDER_COLOR,  # or your outline color
             rect,
             border_radius=radius,
         )
@@ -285,12 +296,18 @@ class Renderer:
             centered=True,
         )
         self.display.blit(button_surf, button.position)
+        
 
-    # main game loop
     def draw_background(self, hour_of_year=0):
-        # self.display.fill((0,0,0))
-        # self.display.fill(seasonalcolor(hour_of_year))
         self.display.blit(self.level_background, (0, 0))
+
+        hour = hour_of_year % 24
+        darkness = 0.2 * (1 - math.cos(2 * math.pi * (hour - 12) / 24))
+        alpha = int(255 * darkness)   # 0..127
+
+        if alpha > 0:
+            self.bg_overlay.set_alpha(alpha)
+            self.display.blit(self.bg_overlay, (0, 0))
 
     # draw stuff using camera (game)
     def render_curves(self, curve_data, paused: bool):
@@ -470,13 +487,10 @@ class Renderer:
             )
             y += line_spacing
 
-        # load QR code
-        qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
-        qr_code = pg.transform.scale(qr_code, size=(256, 256))
 
         # self.draw_grid(100)
 
-        self.display.blit(qr_code, (1300, 650))
+        self.display.blit(self.qr_code, (550, 450))
 
 
 class MenuRenderer:
@@ -501,12 +515,14 @@ class MenuRenderer:
         bg_image_upgraded_max = pg.image.load(
             IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded_max.png"
         ).convert()
-        self.bg_images = [bg_image, bg_image_upgraded, bg_image_upgraded_max]
-
+        self.bg_images = [
+            pg.transform.scale(img, self.display.get_size())
+            for img in [bg_image, bg_image_upgraded, bg_image_upgraded_max]
+        ]
     def render(self, data, index=0):
         """Render the upgrade menu including background, tiles, and costs."""
         # Draw the menu background first
-        self.render_background(index=index)
+        self.display.blit(self.bg_images[index], (0, 0))
 
         # self.renderer.draw_grid(50)
 
@@ -668,6 +684,20 @@ class CurvesRenderer:
             alpha=100,
         )
 
+
+
+        self.draw_curve("orange", 
+                        data["Maximum Comfort Temperature"]["curve"])
+        self.draw_curve("lightblue", data["Minimum Comfort Temperature"]["curve"])
+        self.draw_curve("red", data["Indoor Temperature"], width=5, alpha=200)
+        self.draw_curve(seasonalcolor(self.renderer.game.hour), data["Outdoor Temperature"], width=6, alpha=150)
+        self.draw_curve(colors["Emissions"], data["Carbon Intensity"]["curve"], 
+                        width=4, alpha=150)
+
+        self.draw_date_indicator(data["Date Indicator"])
+        self.draw_house_indicator(data["TI Indicator"])
+        self.draw_TI_indicator(data["TA Indicator"])
+
         if paused:
             self.draw_indicator(
                 data["Minimum Comfort Temperature"]["indicator"]["pos"],
@@ -679,22 +709,12 @@ class CurvesRenderer:
                 colors["QH"],
                 data["Maximum Comfort Temperature"]["indicator"]["text"],
             )
-
-        self.draw_curve("orange", data["Maximum Comfort Temperature"]["curve"])
-        self.draw_curve("lightblue", data["Minimum Comfort Temperature"]["curve"])
-        self.draw_curve("red", data["Indoor Temperature"], width=4)
-        self.draw_TA_indicator(data["TA Indicator"])
-        self.draw_curve("blue", data["Outdoor Temperature"], width=2)
-        self.draw_TI_indicator(data["TA Indicator"])
-        self.draw_curve(colors["Emissions"], data["Carbon Intensity"]["curve"], width=2)
-        self.draw_indicator(
+            self.draw_indicator(
             data["Carbon Intensity"]["indicator"]["pos"],
             BLACK,
             data["Carbon Intensity"]["indicator"]["text"],
         )
-        self.draw_date_indicator(data["Date Indicator"])
-        self.draw_house_indicator(data["TI Indicator"])
-
+            self.draw_TA_indicator(data["TA Indicator"])
     def draw_date_indicator(self, data):
         # print(f"{len(data)=}")
         for hour, y, dt in data:
@@ -709,21 +729,37 @@ class CurvesRenderer:
             )
 
     # curve renderer
-    def draw_curve(self, color, curve, width=None):
+    def draw_curve(self, color, curve, width=None, alpha=255):
         width = width or self.curve_width
-        """Draw curves representing game data."""
+        color=pg.Color(color)
+        color.a = alpha
         if len(curve) < 2:
             return
-        screencoords = [
-            self.screen_coords(point) for point in curve
-        ]  # Only last 300 points
+
+        screencoords = [self.screen_coords(point) for point in curve]
+        # Fast path (no transparency)
+        if alpha >= 255:
+            pg.draw.lines(
+                self.renderer.display,
+                color,
+                closed=False,
+                points=screencoords,
+                width=width,
+            )
+            return
+
+        # Transparent draw
+        overlay = pg.Surface(self.renderer.display.get_size(), pg.SRCALPHA)
+
         pg.draw.lines(
-            self.renderer.display,
+            overlay,
             color,
             closed=False,
             points=screencoords,
             width=width,
         )
+
+        self.renderer.display.blit(overlay, (0, 0))
 
     def draw_area_between_curves(self, color, curve1, curve2, alpha=80):
         n = min(len(curve1), len(curve2))
@@ -785,7 +821,7 @@ class CurvesRenderer:
         hour, TA = data["TA"]
         textcolor = seasonalcolor(hour)
         self.draw_indicator(
-            pos=(hour, TA / 2), color=textcolor, text=f"Outdoor Temp {TA:+2.1f}°C"
+            pos=(hour, TA + 10), color=textcolor, text=f"Outdoor Temp {TA:+2.1f}°C"
         )
 
     def draw_TI_indicator(self, data):
@@ -820,22 +856,20 @@ class UIRenderer:
             font=self.renderer.font_custom_small,
         )
 
-        anchor_y = 950
-        anchor_x = 20
-        spacing_x = 40
-        line_x = 0
+        anchor_x, anchor_y = settings.ANCHOR_LEVEL_STATS
+        spacing_x = settings.ANCHOR_LEVEL_SPACING_X
+        line_x = settings.ANCHOR_LEVEL_LINE_X
 
         # render player money
         self.render_line("Money", pos=(anchor_y, anchor_x + line_x), color=WHITE)
         self.render_line(
             f"€ {ui_data["Scores"]["Money"]:.0f}",
             color=RED if pulse else (100, 255, 120),
-            size=52,
-            pos=(anchor_y + 80, anchor_x + line_x - 5),
+            pos=(anchor_y + 150, anchor_x),
             font=self.renderer.font_custom_small,
             pulse=0.9 / pulse if pulse else False,
         )
-        line_x += 60
+        line_x += spacing_x
 
         self.render_comfort_score(
             score=comfort_data["score"],
@@ -845,19 +879,22 @@ class UIRenderer:
         )
         line_x += spacing_x
 
-        self.render_line(
-            ui_data["Price"], pos=(anchor_y, anchor_x + line_x), color=colors["Price"]
-        )
-        line_x += spacing_x
+       
 
         self.render_line("CO2 emitted ", pos=(anchor_y, anchor_x + line_x), color=WHITE)
         self.render_line(
-            ui_data["CO2"],
-            pos=(anchor_y + 120, anchor_x + line_x + 5),
+            f"{int(ui_data["CO2"])} kg",
+            pos=(anchor_y + 150, anchor_x + line_x),
             color=GREY,
             pulse=pulse,
+            size = 25+int(ui_data["CO2"]**0.6),
             font=self.renderer.font_custom_small,
+        ) 
+        line_x += spacing_x
+        self.render_line(
+            ui_data["Price"], pos=(anchor_y, anchor_x + line_x), color=colors["Price"]
         )
+
         line_x += spacing_x
 
         self.render_line(
@@ -918,7 +955,7 @@ class UIRenderer:
         # Render QH and QC bars relative to anchor point
         # QH (positive, down)
         pg.draw.rect(
-            self.display, colors["QH"], pg.Rect(anchor_x + 80, current_y - QH, 10, QH)
+            self.display, colors["QH"], pg.Rect(anchor_x + 50, current_y - QH, 10, QH)
         )
         if QH != 0:
             self.renderer.render_line(
@@ -929,7 +966,7 @@ class UIRenderer:
 
         # QC (negative, up)
         pg.draw.rect(
-            self.display, colors["QC"], pg.Rect(anchor_x + 80, current_y, 10, -QC)
+            self.display, colors["QC"], pg.Rect(anchor_x + 50, current_y, 10, -QC)
         )
         if QC != 0:
             self.renderer.render_line(
@@ -941,19 +978,17 @@ class UIRenderer:
     def render_comfort_score(self, score, dT, pos=(880, 66), pulse=False):
         px, py = pos
         text = "Comfort"
-        self.render_line(text, WHITE, pos=pos, size=50)
-        color = color_indicator(dT)
+        self.render_line(text, WHITE, pos=pos)
+        color = RED
 
         color = color_interpolation(color, GREEN, score / 100)
         self.render_line(
-            f"{score:.1f}",
+            f"{score:.1f}%",
             color,
-            pos=(px + 80, py - 10),
-            size=45,
+            pos=(px + 150, py),
             pulse=pulse,
             font=self.renderer.font_custom_small,
         )
-        self.render_line("%", color, pos=(px + 150, py), size=50)
 
 
 # test code

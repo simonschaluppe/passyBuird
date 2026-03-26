@@ -420,15 +420,15 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "Minimum Comfort Temperature": {
                 "curve": self.curve_comfort_min.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos": (self.hour - 8, self.model.comfort.minimum_room_temperature),
-                    "text": f"Min: {self.model.comfort.minimum_room_temperature:.1f} °C",
+                    "pos": (self.hour - 30, self.model.comfort.minimum_room_temperature),
+                    "text": f"Minimum Comfort Temperature: {self.model.comfort.minimum_room_temperature:.1f} °C",
                 },
             },
             "Maximum Comfort Temperature": {
                 "curve": self.curve_comfort_max.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos": (self.hour - 8, self.model.comfort.maximum_room_temperature),
-                    "text": f"Max:: {self.model.comfort.maximum_room_temperature:.1f} °C",
+                    "pos": (self.hour - 30, self.model.comfort.maximum_room_temperature),
+                    "text": f"Maximum Comfort Temperature: {self.model.comfort.maximum_room_temperature:.1f} °C",
                 },
             },
             "TI Indicator": {
@@ -441,7 +441,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             },
             "TA Indicator": {
                 "TA": (self.hour, self.model.TA[self._mh]),
-                "TI": self.position,
+                "TI": (self.position[0]-5, self.position[1]-1),
             },
             "Date Indicator": [
                 (x, ta + 18, ts)
@@ -476,7 +476,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                 },
             },
             "Price": f"Price {self.model.price_grid} €/Wh",
-            "CO2": f"{self.get_GHG_emitted():.1f} kg",
+            "CO2": self.get_GHG_emitted(),
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
             "Remaining hours": f"{self.get_remaining_level_hours()}",
@@ -486,19 +486,16 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
             "Erreichter Komfort": f"{self.level_comfort:.0f}%",
-            "Rundenschnitt:": f"{self.total_comfort:.0f}%",
-            "Detailergebnisse": "",
-            "Benötigte Heizenergie": f"{(self.model.QH.sum() / 1000 * self.model.building.bgf):.0f} kWh",
-            "Benötigte Kühlenergie": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
             "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.0f} kg",
+            "Detailergebnisse": "",
+            "Benoetigte Heizenergie": f"{(self.model.QH.sum() / 1000 * self.model.building.bgf):.0f} kWh",
+            "Benoetigte Kuehlenergie": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
             "Verbrauchter Strom": f"{self.get_ED().sum():.0f} kWh",
             "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
-            "Wirtschaftlichkeit": "",
-            "Kontostand zu Beginn": f"{self.money+self.moneyspent:.0f} €",
-            "Kontostand am Ende": f"{self.money:.0f} €",
-            "Energiekosten": f"{self.moneyspent:.0f} €",
-            "Level-Bonus": f"{self.current_level.reward} €",
-            "Kontostand neu": f"{self.money+self.current_level.reward:.0f} €",
+            "": "",
+            "Energiekosten ": f"{self.moneyspent:.0f} €",
+            "Belohnung    ": f"{self.current_level.reward} €",
+            "Saldo        ": f"{-self.moneyspent+self.current_level.reward:.0f} €",
         }
 
     def get_game_stats(self):

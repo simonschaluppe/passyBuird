@@ -33,7 +33,7 @@ camera = Camera2D(
 camera.follow(game, maxdist=0)
 
 # Set up renderer
-renderer = Renderer(display, camera, scale=0.8, font=settings.FONT)
+renderer = Renderer(game, display, camera, scale=0.8, font=settings.FONT)
 particle_manager = ParticleManager(renderer=renderer)
 
 
@@ -298,6 +298,8 @@ class TitleScreen(Screen):
             "along the way.",
             "",
             "Come on, let's get started!",
+            "",
+            "More Info about what we do:"
         ]
 
         renderer.render_title_screen(

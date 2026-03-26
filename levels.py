@@ -47,9 +47,17 @@ LEVELS = [
         month = "November",
         intro=[
             "It's the first week in your new home!",
-            "Press left mouse button to engage the heating and try to stay over the light blue comfort line.",
             "",
-            "Remember that heating is expensive! Keep an eye on your available money."
+            "Press the left mouse button to engage the heating and ",
+            "try to stay in the green comfort zone.",
+            "If you don't, you will slowly loose comfort.",
+            "",
+            "Once it reaches Zero, you loose."
+            "",
+            "Remember that heating is expensive! ,"
+            "Try to save your money for house upgrades.",
+            "",
+            "Good luck!"
         ],
         start=7297,
         end=7297 + 2 * 24 * 2,
@@ -61,7 +69,7 @@ LEVELS = [
             random=False,
             maximum_room_temperature=100,
         ),
-        start_paused= False
+        start_paused= True
     ),
 
     Level(
