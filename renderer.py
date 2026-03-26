@@ -228,8 +228,8 @@ class Renderer:
         px, py = pos
         dy = 0
         for line in text.splitlines():
-            dy += lineheight if lineheight else self.lineheight
             self.render_line(line, color, (px, py + dy), size, font=font, onto=onto,  **kwargs)
+            dy += lineheight if lineheight else self.lineheight
 
     def draw_grid(self, spacing, color=BLACK):
         for x in range(0, self.display.get_width(), spacing):
