@@ -727,13 +727,20 @@ class UIRenderer:
 
         comfort_data = ui_data["Scores"]["Comfort"]
         comfort_pulse = 1.2 if bool(comfort_data["change"]) else False
-        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"], pulse=comfort_pulse)
 
-        self.render_line(ui_data["Price"], pos=(880, 106), color=colors["Price"])
-        self.render_line("CO2 emitted: ", pos=(880, 133), color=WHITE)
-        self.render_line(ui_data["CO2"], pos=(1000, 133), color=GREY, pulse=pulse, font=self.renderer.font_custom_small)
-        self.render_line(ui_data["COP"], pos=(880, 160), color=colors["UI Text"])
-        self.render_line(ui_data["Power"], pos=(880, 186), color=colors["UI Text"])
+        anchor_y = 880
+        anchor_x = 100
+        spacing_x = 40
+        line_x = 0
+
+        self.render_comfort_score(score=comfort_data["score"], dT=comfort_data["dT"], pulse=comfort_pulse, pos=(anchor_y,anchor_x)) ; line_x += spacing_x
+        self.render_line(ui_data["Price"], pos=(anchor_y, anchor_x+line_x), color=colors["Price"]); line_x += spacing_x
+        self.render_line("CO2 emitted: ", pos=(anchor_y, anchor_x+line_x), color=WHITE)
+        self.render_line(ui_data["CO2"], pos=(anchor_y + 120, anchor_x+line_x+5), color=GREY, pulse=pulse,font=self.renderer.font_custom_small); line_x += spacing_x
+        self.render_line(ui_data["COP"], pos=(anchor_y, anchor_x+line_x), color=colors["UI Text"]); line_x += spacing_x
+        self.render_line(ui_data["Power"], pos=(anchor_y, anchor_x+line_x), color=colors["UI Text"]); line_x += spacing_x
+
+
 
     def energybalance(self, balance_data):
         """Render energy balance as waterfall diagram."""
