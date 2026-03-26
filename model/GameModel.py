@@ -216,9 +216,9 @@ class GameModel:
     def is_too_cold(self) -> bool:
         if self.godmode: return False
         if self.model.comfort.comfort_diff(self.TI) > 0: return False # as long as TI - min setpoint is positive, no freeze
-        cs = self.model.comfort.comfort_score(self.TI)
+        cs = self.level_comfort
         mc = self.current_level.min_comfort
-        if cs < mc:
+        if cs <= mc:
             print(f"FREEZE DEATH: comfort_score={cs} < min_comfort={mc}")
             return True
         return False
@@ -226,9 +226,9 @@ class GameModel:
     def is_too_hot(self) -> bool:
         if self.godmode: return False
         if self.model.comfort.comfort_diff(self.TI) < 0: return False # as long as TI - min setpoint is positive, no freeze
-        cs = self.model.comfort.comfort_score(self.TI)
+        cs = self.level_comfort
         mc = self.current_level.min_comfort
-        if cs < mc:
+        if cs <= mc:
             print(f"HEAT DEATH: comfort_score={cs} < min_comfort={mc}")
             return True
         return False
