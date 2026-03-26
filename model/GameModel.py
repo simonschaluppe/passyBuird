@@ -380,14 +380,14 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "Minimum Comfort Temperature": {
                 "curve": self.curve_comfort_min.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos": (self.hour, self.model.comfort.minimum_room_temperature),
+                    "pos": (self.hour-8, self.model.comfort.minimum_room_temperature),
                     "text": f"Min: {self.model.comfort.minimum_room_temperature:.1f} °C"
                 }
             },
             "Maximum Comfort Temperature": {
                 "curve": self.curve_comfort_max.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos": (self.hour, self.model.comfort.maximum_room_temperature),
+                    "pos": (self.hour-8, self.model.comfort.maximum_room_temperature),
                     "text": f"Max:: {self.model.comfort.maximum_room_temperature:.1f} °C"
                 }
             },
