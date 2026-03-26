@@ -479,8 +479,8 @@ class MenuRenderer:
         # self.render_player_stats(data["player"], pos=(600, 50))
 
         self.render_title(self.topleft)
-        self.render_text((self.topleft[0], 133))
-        self.render_updrade_text(data["upgrade_text"], (48, 332), self.stats_text_color)
+        self.render_text((self.topleft[0], 150))
+        self.render_updrade_text(data["upgrade_text"], (48, 320), self.stats_text_color)
         self.render_game_stats(data["game_stats"], (900, 0), self.stats_text_color)
 
     def render_background(self):
