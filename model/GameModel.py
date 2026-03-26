@@ -118,11 +118,13 @@ class GameModel:
                        ):
 
         self.money = 1_000_000 if self.godmode else 1_000 
+        self.insulation_level = 0
         self.moneyspent = 0
         self.total_GHG_emitted = 0
         self.total_GHG_avoided = 0
         self.current_level_index = 0
         self.energy_discount = 0  # 0-100 [%]
+        self.model.building.reset()
         self.set_heating_power(starting_power)
         self.set_cooling_power(starting_power)
         self.set_cop(starting_cop)
@@ -333,7 +335,7 @@ class GameModel:
 
     def get_upgrade_text(self) -> dict:
         return {"lines": f"""
-Insulation: Lvl {self.upgrades['wall_insulation'].level} ({round(self.model.building.components["Aussenwand"].u_value, 2)} W/m²K)
+Insulation: Lvl {self.upgrades['wall_insulation'].level} ({round(self.model.building.LT, 2)} W/K/m²)
 
 Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²)
 
@@ -488,6 +490,11 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             self.model.building.components['Aussenwand'].u_value *= 0.8 
             self.model.building.components['Dach'].u_value *= 0.8       # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             self.model.building.components['Fenster'].u_value *= 0.8    # IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            self.model.building.update_LT()
+            if self.model.building.LT <= 0.4:
+                self.insulation_level = 1
+            if self.model.building.LT <= 0.2:
+                self.insulation_level = 2
 
         def heatpump_efficiency():
             self.set_cop(self.model.HVAC.HP_COP + 1)

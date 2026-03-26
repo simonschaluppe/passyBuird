@@ -1,14 +1,16 @@
 
 SCREEN_RESOLUTION = (1200, 700)
 
-FONT = "Helvetica"
+FONT = "custom"
 GAME_ZOOM = (20, 20) # x, y
+
+GODMODE = True
 TEMP_WARNING_THRESHOLD = 0.2 # Kelvin lower than setpoint until warning shown
 MONEY_WARNING_THRESHOLD = 200 # €
-GODMODE = False
 GAME_SPEED = 12 # sim hours / second
 
 BUILDING_PATH = "building_bad.xlsx"
+BACKGROUND_FOLDER = "bg_pixelart" #"backgrounds"
 
 BUTTON_SIZE = {
     "Start New Game": (250,60),

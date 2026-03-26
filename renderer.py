@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pygame as pg
 
+import settings
+
 from camera import Camera2D
 from font import Font
 from handler import Button  # necessary?
@@ -118,7 +120,7 @@ class Renderer:
         background_paths = ["Dunkelflaute.png", "Spring.png", "Summer.png", "Fall.png", "Winter.png"]
 
         for background in background_paths:
-            bg_image = pg.image.load(IMAGE_PATH / "backgrounds" / background).convert()
+            bg_image = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / background).convert()
             scaled_image = pg.transform.scale(bg_image, self.display.get_size())
             self.level_backgrounds[background] = scaled_image
 
@@ -335,14 +337,14 @@ class Renderer:
         self.ui_renderer.render(ui_data)
 
     # menu screen
-    def render_menu(self, data):
-        self.menu_renderer.render(data)
+    def render_menu(self, data, index=0):
+        self.menu_renderer.render(data, index)
 
-    def render_popup(self, title: str, body: list, screen_params):
+    def render_popup(self, title: str, body: list, screen_params, index):
         line_size = 24
         line_spacing = 30  # slightly more than size to avoid overlap
 
-        self.menu_renderer.render_background()
+        self.menu_renderer.render_background(index=index)
 
         panel_rect = pg.Rect(*screen_params)
 
@@ -376,11 +378,11 @@ class Renderer:
             )
             y += line_spacing
 
-    def render_title_screen(self, title: str, body: list, screen_params):
+    def render_title_screen(self, title: str, body: list, screen_params, index):
         line_size = 24
         line_spacing = 30  # slightly more than size to avoid overlap
 
-        self.menu_renderer.render_background()
+        self.menu_renderer.render_background(index=index)
 
         panel_rect = pg.Rect(*screen_params)
 
@@ -456,13 +458,15 @@ class MenuRenderer:
         self.stats_text_color = colors["UI Text"]
 
         # Load the background image for the upgrade menu
-        bg_image = pg.image.load(IMAGE_PATH / "backgrounds/Closeup2.png").convert()
-        self.menu_background = pg.transform.scale(bg_image, self.display.get_size())
+        bg_image = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2.png").convert()
+        bg_image_upgraded = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded.png").convert()
+        bg_image_upgraded_max = pg.image.load(IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded_max.png").convert()
+        self.bg_images = [bg_image, bg_image_upgraded, bg_image_upgraded_max]
 
-    def render(self, data):
+    def render(self, data, index=0):
         """Render the upgrade menu including background, tiles, and costs."""
         # Draw the menu background first
-        self.render_background()
+        self.render_background(index=index)
 
         # self.renderer.draw_grid(50)
 
@@ -483,7 +487,9 @@ class MenuRenderer:
         self.render_updrade_text(data["upgrade_text"], (48, 320), self.stats_text_color)
         self.render_game_stats(data["game_stats"], (880, -20), self.stats_text_color)
 
-    def render_background(self):
+    def render_background(self, index=0):
+        bg_image = self.bg_images[index]
+        self.menu_background = pg.transform.scale(bg_image, self.display.get_size())
         self.display.blit(self.menu_background, (0, 0))
 
     def render_title(self, pos):

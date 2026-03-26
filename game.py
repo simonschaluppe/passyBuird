@@ -244,7 +244,8 @@ class TitleScreen(Screen):
             "Come on, let's get started!"
         ]
         
-        renderer.render_title_screen(title="Welcome to ", body=description, screen_params = center_screen(0.8))
+        
+        renderer.render_title_screen(title="Welcome to ", body=description, screen_params = center_screen(0.8), index=game.insulation_level)
 
         for button in self.handler.buttons:
             renderer.render_button(button)
@@ -287,7 +288,7 @@ class ShopScreen(Screen):
 
     @override
     def render(self) -> None:
-        renderer.render_menu(game.get_menu_data())
+        renderer.render_menu(game.get_menu_data(), index=game.insulation_level)
 
         for button in self.handler.buttons:
             renderer.render_button(button)
@@ -411,8 +412,7 @@ class Popup(Screen):
 
     @override
     def render(self) -> None:
-        renderer.draw_background()
-        renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8))
+        renderer.render_popup(title=self.title, body=self.body, screen_params = center_screen(size = 0.8), index=game.insulation_level)
         for button in self.handler.buttons:
             renderer.render_button(button)
         particle_manager.render()
@@ -442,6 +442,8 @@ class Victory(Screen):
 
     @override
     def render(self) -> None:
+        
+        renderer.menu_renderer.render_background(index=game.insulation_level)
         if random.random() < 0.5: 
             x = random.randint(0, settings.SCREEN_RESOLUTION[0])
             y = random.randint(0, settings.SCREEN_RESOLUTION[1])

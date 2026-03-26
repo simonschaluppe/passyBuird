@@ -42,8 +42,21 @@ class Building:
         self.heat_capacity = self.df.loc["effective_heat_capacity", "Value"]
         self.net_storey_height = self.df.loc["net_storey_height", "Value"]
         self.differential_cost = self.df.loc["differential_cost", "Value"]
+        
+        self.hull = self.load_hull(self.file)  # from excel
+        self.components = {}
+        # Außenwand
+        # Dach
+        # fenster
+        # Bodenplatte
+        for i, row in self.hull.iterrows():
+            bauteil = Component(row)
+            self.components.update({bauteil.name:bauteil})
+        self.update_LT()
 
-        self.hull = self.load_hull(path)  # from excel
+
+    def reset(self):
+        self.hull = self.load_hull(self.file)  # from excel
 
         self.components = {}
         # Außenwand
@@ -53,6 +66,7 @@ class Building:
         for i, row in self.hull.iterrows():
             bauteil = Component(row)
             self.components.update({bauteil.name:bauteil})
+        self.update_LT()
 
     def load_params(self, path, sheetname="params"):
         """loads the sheet "params" of a excel at path and returns it as a dataframe"""
@@ -69,16 +83,17 @@ class Building:
         hull = pd.read_excel(path, sheet_name="thermal_hull")
         return hull  # returns a dataframe
 
-    @property
-    def LT(self):
-        """calculates the LT [W/K/m²BGF] from a Hull Dataframe"""
-        # Todo: switch this to use self.components, as each component.L is available
-        A_B = self.hull["Fläche"].sum()
-        self.hull["L_B"] = self.hull["Fläche"] * self.hull["U-Wert"] * self.hull["Temperatur-Korrekturfaktor"]
-        L_B = self.hull.L_B.sum()
+    def update_LT(self):
+        A_B = 0
+        L_B = 0
+        for name, comp in self.components.items():
+            A_B += comp.area
+            l = comp.area * comp.u_value * comp.temp_factor
+            L_B += l
         L_PX = max(0, (0.2 * (0.75 - L_B / A_B) * L_B))  # wärmebrücken ZUschlag
         L_T = L_B + L_PX
-        return L_T / self.bgf
+        self.LT = L_T / self.bgf
+        
 
     def __repr__(self):
         data = 7
