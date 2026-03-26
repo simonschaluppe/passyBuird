@@ -375,7 +375,7 @@ class LevelScreen(Screen):
     def render(self) -> None:
         renderer.camera.update()
         renderer.draw_background(game.hour)
-        renderer.render_curves(game.get_curves_data())
+        renderer.render_curves(game.get_curves_data(), game.paused)
 
         particle_manager.render()
         if game.get_temp_diff() > settings.TEMP_WARNING_THRESHOLD: renderer.draw_too_hot_warning()
