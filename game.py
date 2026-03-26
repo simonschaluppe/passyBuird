@@ -127,8 +127,6 @@ def level_fail(text: str):
 
 def level_success(): 
     game.update_level_finished()
-    if game.current_level_index == len(game.levels):
-        victory_loop()
     title=f"You survived level {game.current_level.number}!"
     level_success_popup = Popup(
         title=title,
@@ -143,7 +141,11 @@ def level_success():
     )
     game.money += game.current_level.reward
     game.moneyspent = 0
-    game.setup_next_level()
+    try:
+        game.setup_next_level()
+    except IndexError:
+        victory_loop()
+
     for _ in range(50): 
         x = random.randint(0, settings.SCREEN_RESOLUTION[0])
         y = random.randint(0, settings.SCREEN_RESOLUTION[1])
@@ -436,7 +438,7 @@ class Victory(Screen):
     def __init__(self):
         self.title = "You beat the game!"
         self.body = "Congratulations, etc"
-        self.buttons = Button(get_btn_pos("popup right"), start_shop_loop, "Start new Game!"),
+        self.buttons = Button(get_btn_pos("popup right"), start_shop_loop, "Start new Game!", size = settings.BUTTON_SIZE["170x60"]),
         self.keys = [(pg.K_RETURN, start_shop_loop),(pg.K_ESCAPE, start_shop_loop),]
         super().__init__()
 

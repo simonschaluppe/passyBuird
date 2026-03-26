@@ -344,7 +344,7 @@ Heat Pump Efficiency: Lvl {self.upgrades['heatpump_efficiency'].level} ({self.mo
 Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({self.energy_discount} %)
 """}  # todo: DUMMIES
 
-    def get_remaining_level_days(self):
+    def get_remaining_level_hours(self):
         return self.final_hour_of_the_year - self.hour-1
     
     def get_comfort_score(self):
@@ -437,7 +437,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
             "CO2": f"{self.get_GHG_emitted():.1f} kg",
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
-            "Remaining days": f"{self.get_remaining_level_days()}"
+            "Remaining hours": f"{self.get_remaining_level_hours()}"
         }
 
     def get_kpis(self) -> dict:
