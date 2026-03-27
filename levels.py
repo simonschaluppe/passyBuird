@@ -46,7 +46,9 @@ LEVELS = [
         name="Level 1: Tutorial",
         month = "November",
         intro=[
-            "It's the first week in your new home!",
+            "Congratulations! You just bought your very own house and you can't wait to spend the",
+            "Winter warm and comfortable. The only issue is - heating has become very expensive",
+            "...and a major contributor to climate change!",
             "",
             "Press the left mouse button to engage the heating and ",
             "try to stay in the green comfort zone.",

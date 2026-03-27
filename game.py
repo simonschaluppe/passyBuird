@@ -289,17 +289,16 @@ class TitleScreen(Screen):
     @override
     def render(self) -> None:
         description = [
-            "Congratulations! You just bought your very own house and you can't wait to spend the",
-            "Winter warm and comfortable. The only issue is - heating has become very expensive",
-            "...and a major contributor to climate change!",
+            "We research climate-fit buildings, simulating building energy demand,"
+            "CO2 Emissions and how to reduce the carbon footprint of the built environment."
+            ""
+            "This game is based on a simulation model developed by students",
+            "Try it out and play a round!",
             "",
-            "But don't fret! You're smart! And dextrous! With these qualities, you can decide",
-            "exactly how much heating energy you need to be comfortable and conserve the climate",
-            "along the way.",
-            "",
-            "Come on, let's get started!",
-            "",
-            "More Info about what we do:"
+            "More Info about what we do:",
+            "Bachelor Renewable Energy",
+            "Master Renewable Energy Engineering",
+            "Master Climate-responsive building technologies"
         ]
 
         renderer.render_title_screen(
