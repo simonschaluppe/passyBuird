@@ -17,7 +17,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 DATA_PATH = ROOT_PATH / "data"
 
 DEFAULT_PATH_BUILDING = Path("building_oib_16linie.xlsx")
-DEFAULT_PATH_PV = Path("pv_1kWp.csv")
+DEFAULT_PATH_PV = Path("PV_1kWp.csv")
 
 
 class HVACSYSTEM:
@@ -60,6 +60,7 @@ class EnergyModel:
 
         self.PV = PV(csv=Path(DATA_PATH, DEFAULT_PATH_PV), kWp=1)
         self.PV.set_kWp(kWp)
+        print(self.PV)
 
         self.battery = Battery(kWh=battery_kWh)
 
@@ -252,7 +253,8 @@ class EnergyModel:
             self.TI[t] = self.TI_after_Q(TI, self.QC[t])
 
     def calc_ED(self, t):
-        self.ED[t] = self.ED_QH[t] + self.ED_QC[t]
+        print(self.ED_QH[t], self.ED_QC[t],self.PV.TSD[t])
+        self.ED[t] = self.ED_QH[t] + self.ED_QC[t] - self.PV.TSD[t]
         self.emissions[t] = self.ED[t] * self.CO2[t]
         #print("t is: ", t, " and ED is: ", self.ED[t], " and CO2 is: ", self.CO2[t], " and emissions are: ", self.emissions[t], " sum: ", self.emissions.sum())
         if self.include_user_plugloads:

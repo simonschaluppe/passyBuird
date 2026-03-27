@@ -693,6 +693,16 @@ class CurvesRenderer:
         self.draw_curve(seasonalcolor(self.renderer.game.hour), data["Outdoor Temperature"], width=6, alpha=150)
         self.draw_curve(colors["Emissions"], data["Carbon Intensity"]["curve"], 
                         width=4, alpha=150)
+        self.draw_curve((255,230, 50), data["PV"]["curve"], 
+                        width=4, alpha=100)
+
+        self.draw_area_between_curves(
+            (255, 220, 30),
+            data["PV"]["curve"],
+            data["PV"]["base"],
+            alpha=150,
+        )
+
 
         self.draw_date_indicator(data["Date Indicator"])
         self.draw_house_indicator(data["TI Indicator"])
@@ -887,14 +897,17 @@ class UIRenderer:
             pos=(anchor_y + 150, anchor_x + line_x),
             color=GREY,
             pulse=pulse,
-            size = 25+int(ui_data["CO2"]**0.6),
+            size = 25+int((ui_data["CO2"] if ui_data["CO2"] >= 0 else 0)**0.6),
             font=self.renderer.font_custom_small,
         ) 
         line_x += spacing_x
         self.render_line(
             ui_data["Price"], pos=(anchor_y, anchor_x + line_x), color=colors["Price"]
         )
-
+        line_x += spacing_x
+        self.render_line(
+            ui_data["Feedin"], pos=(anchor_y, anchor_x + line_x), color=colors["Price"]
+        )
         line_x += spacing_x
 
         self.render_line(

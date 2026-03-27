@@ -39,7 +39,7 @@ class PV:
         self.cost = kWp * self.cost_kWp
 
     def __repr__(self):
-        width = len(self.path) + 10
+        width = 100
         return f"""PV-System {str(self.path)}
 {"-" * width}
 kWp: {self.kWp:>{width - 5}.1f}

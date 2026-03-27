@@ -458,10 +458,10 @@ class LevelScreen(Screen):
                 accumulated_gamehours -= hours
 
                 if AUTOPILOT:
-                    if game.TI < 1.5+game.model.comfort.minimum_room_temperature:
+                    if game.TI < 0.5+game.model.comfort.minimum_room_temperature:
                         heat()
                         
-                    if game.TI > -1.5+game.model.comfort.maximum_room_temperature:
+                    if game.TI > -0.5+game.model.comfort.maximum_room_temperature:
                         cool()
 
                 game.update(hours=hours)

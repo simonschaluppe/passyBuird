@@ -109,7 +109,7 @@ class GameModel:
         self.godmode = godmode
         self.paused = False
         self.finished = False
-        self.model = EnergyModel(DATA_PATH / settings.BUILDING_PATH)
+        self.model = EnergyModel(DATA_PATH / settings.BUILDING_PATH, kWp=50)
         self.model.init_sim()
         self.hour = 0
         self._mh = 0  # energy model hour
@@ -208,6 +208,15 @@ class GameModel:
             "Date",
             points=[(h, ts) for h, ts in zip(range(8760), self.model.timestamp)],
         )
+        self.curve_pv = Curve(
+            "PV",
+            points=[(h, ts) for h, ts in zip(range(8760), self.model.PV.TSD)],
+        )
+
+        self.default_curve = Curve(
+            "Default",
+            points=[(h, 0) for h in range(8760)]
+        )
         self.cleanup()
 
         return True
@@ -273,7 +282,7 @@ class GameModel:
                 # print("next year")
                 # self.next_year(year)
             if self.AUTOPILOT:
-                self.money += 1
+                self.money += 5
 
 
             self.model.timestep(hour=self._mh)
@@ -366,6 +375,7 @@ class GameModel:
         return self.model.ED.sum() / 1000 * self.model.building.bgf
 
     def get_GHG_emitted(self):
+        print("GHG_emitted", self.model.emissions.sum())
         return self.model.emissions.sum()
 
     def get_GHG_avoided(self):
@@ -437,6 +447,14 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                     "text": f"Maximum Comfort Temperature: {self.model.comfort.maximum_room_temperature:.1f} °C",
                 },
             },
+            "PV": {
+                "curve": self.curve_pv.points_in_game(bc_index, fc_index),
+                "base": self.default_curve.points_in_game(bc_index, fc_index),
+                "indicator": {
+                    "pos": (self.hour - 30, self.model.comfort.maximum_room_temperature),
+                    "text": f"PV Ertrag: {self.model.PV.TSD[self._mh]:.1f} Wh",
+                },
+            } ,
             "TI Indicator": {
                 "Position": self.position,
                 "Comfort dT": self.get_temp_diff(),
@@ -482,6 +500,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                 },
             },
             "Price": f"Price {self.model.price_grid} €/Wh",
+            "Feedin": f"Feed-In Price {self.model.price_feedin} €/Wh",
             "CO2": self.get_GHG_emitted(),
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
@@ -491,13 +510,14 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
+            "Überlebte Stunden": f"{self.hour-self.current_level.start:.0f}%",
             "Erreichter Komfort": f"{self.level_comfort:.0f}%",
             "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.0f} kg",
             "Detailergebnisse": "",
             "Benoetigte Heizenergie": f"{(self.model.QH.sum() / 1000 * self.model.building.bgf):.0f} kWh",
             "Benoetigte Kuehlenergie": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
             "Verbrauchter Strom": f"{self.get_ED().sum():.0f} kWh",
-            "Mittlerer Strompreis": f"{self.model.price_grid:.3f} €/Wh",
+            "Mittlerer Strompreis": f"{self.model.price_grid*100:.0f} ct/kWh",
             "": "",
             "Energiekosten ": f"{self.moneyspent:.0f} €",
             "Belohnung    ": f"{self.current_level.reward} €",
