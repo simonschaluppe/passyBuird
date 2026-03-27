@@ -273,7 +273,7 @@ class GameModel:
     def update(self, hours: int):
         for _ in range(hours):
             year, self._mh = divmod(self.hour, 8760)
-            self.hour = self.hour % 8760
+            
 
             if self._mh == self.final_hour_of_the_year:
                 if not self.AUTOPILOT:
@@ -315,6 +315,7 @@ class GameModel:
             self.curve_TI.update((self.hour, self.TI))
 
             self.hour += 1
+            self.hour = self.hour % 8760
 
     def next_year(self, year=2020):
         self.hour = 0
