@@ -12,8 +12,10 @@ from particles import ParticleManager
 from renderer import Renderer
 
 
-DEBUG_MODE = settings.DEBUG_MODE
 
+
+DEBUG_MODE = settings.DEBUG_MODE
+AUTOPILOT = False
 # Initialize pygame
 pg.init()
 print(pg.version)
@@ -25,7 +27,7 @@ display = pg.Surface(settings.SCREEN_RESOLUTION)
 
 clock = pg.time.Clock()
 game = GameModel(speed=settings.GAME_SPEED, godmode=settings.GODMODE)
-
+game.AUTOPILOT = AUTOPILOT
 # Set up the camera with a zoom feature
 camera = Camera2D(
     surface=display, game_world_position=(game.position[0], 0), zoom=settings.GAME_ZOOM
@@ -92,6 +94,10 @@ def start_new_game():
     game.setup_new_game()
     start_title_loop()
 
+def toggle_autopilot():
+    global AUTOPILOT
+    AUTOPILOT = not AUTOPILOT
+    game.AUTOPILOT = not game.AUTOPILOT
 
 def game_over(reason="You have lost the game."):
     Popup(
@@ -423,6 +429,7 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_w, level_success)
         self.handler.bind_keypress(pg.K_v, victory_loop)
         self.handler.bind_keypress(pg.K_d, toggle_debug_mode)
+        self.handler.bind_keypress(pg.K_a, toggle_autopilot)
         self.handler.bind_keypress(pg.K_ESCAPE, start_shop_loop)
 
     @override
@@ -449,10 +456,19 @@ class LevelScreen(Screen):
             if not game.paused and accumulated_gamehours >= 1:
                 hours = int(accumulated_gamehours)
                 accumulated_gamehours -= hours
+
+                if AUTOPILOT:
+                    if game.TI < 1.5+game.model.comfort.minimum_room_temperature:
+                        heat()
+                        
+                    if game.TI > -1.5+game.model.comfort.maximum_room_temperature:
+                        cool()
+
                 game.update(hours=hours)
 
                 if game.hour + accumulated_gamehours >= game.final_hour_of_the_year - 1:
-                    level_success()
+                    if not AUTOPILOT: 
+                        level_success()
 
                 if game.is_bankrupt():
                     game_over(reason="You spent all your money!")
@@ -475,7 +491,7 @@ class LevelScreen(Screen):
 
             game.cleanup()
 
-            if game.finished:
+            if game.finished and not AUTOPILOT:
                 running = False
 
     @override

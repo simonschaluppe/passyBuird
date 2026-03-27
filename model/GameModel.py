@@ -266,7 +266,10 @@ class GameModel:
             year, self._mh = divmod(self.hour, 8760)
 
             if self._mh == self.final_hour_of_the_year:
-                return
+                if not self.AUTOPILOT:
+                    return
+                else:
+                    print("autopilot on")
                 # print("next year")
                 # self.next_year(year)
 
