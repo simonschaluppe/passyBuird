@@ -289,9 +289,9 @@ class TitleScreen(Screen):
     @override
     def render(self) -> None:
         description = [
-            "We research climate-fit buildings, simulating building energy demand,"
-            "CO2 Emissions and how to reduce the carbon footprint of the built environment."
-            ""
+            "We research climate-fit buildings, simulating building energy demand,",
+            "CO2 Emissions and how to reduce the carbon footprint of the built environment.",
+            "",
             "This game is based on a simulation model developed by students",
             "Try it out and play a round!",
             "",

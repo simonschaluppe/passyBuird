@@ -490,7 +490,7 @@ class Renderer:
 
         # self.draw_grid(100)
 
-        self.display.blit(self.qr_code, (550, 450))
+        self.display.blit(self.qr_code, (600, 450))
 
 
 class MenuRenderer:
