@@ -272,6 +272,9 @@ class GameModel:
                     print("autopilot on")
                 # print("next year")
                 # self.next_year(year)
+            if self.AUTOPILOT:
+                self.money += 1
+
 
             self.model.timestep(hour=self._mh)
 
