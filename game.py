@@ -150,7 +150,7 @@ def level_fail(text: str):
     title = "Level failed!"
     Popup(
         title=title,
-        body=[text],
+        body=[*text.split("\n")],
         buttons=[
             Button(
                 get_btn_pos("popup left"),
@@ -462,7 +462,12 @@ class LevelScreen(Screen):
                     level_fail(text="Everyone died of heat stroke!")
 
                 if game.is_too_cold():
-                    level_fail(text="Everyone froze into icicles!")
+                    text = """
+                    Everyone froze into icicles!
+                    
+                    If the temperature drops out of the green comfort zone,
+                    you will quickly loose indoor comfort."""
+                    level_fail(text=text)
 
             renderer.set_background(get_background(game.hour))
             particle_manager.update()

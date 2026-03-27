@@ -98,7 +98,7 @@ class Renderer:
 
         # load QR code
         self.qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
-        self.qr_code.set_colorkey(WHITE)
+        #self.qr_code.set_colorkey(WHITE)
         self.qr_code = pg.transform.scale(self.qr_code, size=(200, 200))
 
         # components
@@ -711,7 +711,7 @@ class CurvesRenderer:
             )
             self.draw_indicator(
             data["Carbon Intensity"]["indicator"]["pos"],
-            BLACK,
+            GREY,
             data["Carbon Intensity"]["indicator"]["text"],
         )
             self.draw_TA_indicator(data["TA Indicator"])
