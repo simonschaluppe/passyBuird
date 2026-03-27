@@ -373,16 +373,20 @@ class Renderer:
             **COOL_WARNING_PARAMS,
         )
 
-    def draw_paused_overlay(self):
+    def draw_overlay(self, text):
         params = WARNING_PARAMS
         self.render_line(
-            "Game Paused. Press <P> to Unpause!",
-            color=WHITE,
-            border_color=GREY,
-            pos=(self.cx, self.cy + 250),
-            font=self.font_custom_small,
-            **params,
-        )
+                    text,
+                    color=WHITE,
+                    border_color=GREY,
+                    pos=(self.cx, self.cy + 250),
+                    font=self.font_custom_large,
+                    **params,
+                )
+
+    def draw_paused_overlay(self):
+        params = WARNING_PARAMS
+        self.draw_overlay("Game Paused. Press <P> to Unpause!")
 
     # main game UI
     def render_ui(self, ui_data):

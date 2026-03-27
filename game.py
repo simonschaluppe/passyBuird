@@ -513,6 +513,9 @@ class LevelScreen(Screen):
         if game.paused:
             renderer.draw_paused_overlay()
 
+        if AUTOPILOT:
+            renderer.draw_overlay("Autopilot engaged. Press <a> to take control!")
+
         if DEBUG_MODE:
             renderer.debug(self.debug)
 
