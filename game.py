@@ -12,7 +12,7 @@ from particles import ParticleManager
 from renderer import Renderer
 
 
-DEBUG_MODE = True
+DEBUG_MODE = settings.DEBUG_MODE
 
 # Initialize pygame
 pg.init()

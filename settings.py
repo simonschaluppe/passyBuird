@@ -1,5 +1,5 @@
-from renderer import WHITE
 
+DEBUG_MODE = False
 
 SCREEN_RESOLUTION = (1280, 720)
 
@@ -24,7 +24,7 @@ ANCHOR_LEVEL_LINE_X = 0
 POS_REMAINING_HOURS = (500, 50)
 POS_REMAINING_HOURS_VALUE = (700, 50)
 
-BUTTON_BORDER_COLOR = WHITE
+BUTTON_BORDER_COLOR = (0,0,0)
 BUTTON_SIZE = {
     "Start New Game": (250, 60),
     "Retry": (250, 60),
@@ -38,9 +38,9 @@ BUTTON_SIZE = {
 SCREEN_ANCHORS = {  # width #height
     "top left": (0.2, 0.07),
     "top right": (0.8, 0.07),
-    "bottom left": (0.12, 0.88),
+    "bottom left": (0.08, 0.88),
     "bottom center": (0.42, 0.88),
-    "bottom right": (0.7, 0.88),
+    "bottom right": (0.74, 0.88),
     "popup left": (0.2, 0.78),
     "popup right": (0.67, 0.78),
 }

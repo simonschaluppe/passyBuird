@@ -379,7 +379,7 @@ class Renderer:
             "Game Paused. Press <P> to Unpause!",
             color=WHITE,
             border_color=GREY,
-            pos=(self.cx, self.cy - 250),
+            pos=(self.cx, self.cy + 250),
             font=self.font_custom_small,
             **params,
         )
