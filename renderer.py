@@ -380,7 +380,7 @@ class Renderer:
                     color=WHITE,
                     border_color=GREY,
                     pos=(self.cx, self.cy + 250),
-                    font=self.font_custom_large,
+                    font=self.font_custom_small,
                     **params,
                 )
 
