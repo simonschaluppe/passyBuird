@@ -451,7 +451,7 @@ class GameModel:
                 "base": self.default_curve.points_in_game(bc_index, fc_index),
                 "indicator": {
                     "pos": (self.hour, self.model.PV.TSD[self._mh]+2),
-                    "text": f"PV Ertrag: {self.model.PV.TSD[self._mh]:.1f} Wh",
+                    "text": f"PV Ertrag: {self.model.PV.TSD[self._mh]*1000:.0f} Wh",
                 },
             } ,
             "TI Indicator": {
@@ -508,15 +508,19 @@ class GameModel:
 
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
+        avg_price = self.moneyspent*100/self.get_ED().sum()
+        saved = 1 - avg_price/self.model.price_grid/100
+        pv_prod = self.model.PV.TSD[self.current_level.start:self.current_level.end].sum()
         return {
             "Ueberlebt": f"{self.hour-self.current_level.start/24:.0f} Tage",
             "Komfort": f"{self.level_comfort:.0f}%",
             "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000:.0f} kg/m2",
             "Detailergebnisse": "",
-            "Benoetigte Heizenergie": f"{(self.model.QH.sum() / 1000):.0f} kWh/m2",
-            "Benoetigte Kuehlenergie": f"{-self.model.QC.sum() / 1000:.0f} kWh/m2",
-            "Verbrauchter Strom": f"{self.get_ED().sum():.0f} kWh",
-            "Mittlerer Strompreis": f"{self.moneyspent*100/self.get_ED().sum():.0f} ct/kWh",
+            "Benoetigte Heizenergie": f"{(self.model.QH.sum() / 1000):.2f} kWh/m2",
+            "Benoetigte Kuehlenergie": f"{-self.model.QC.sum() / 1000:.2f} kWh/m2",
+            "Verbrauchter Strom": f"{self.get_ED().sum()/1000:.2f} kWh/m2",
+            "Produzierter Strom (PV)": f"{pv_prod:.2f} kWh",
+            "Strompreis": f"{avg_price:.0f} ct/kWh ({saved*100:.0f}% below market!)",
             "": "",
             "Energiekosten ": f"{self.moneyspent:.0f} €",
             "Belohnung    ": f"{self.current_level.reward} €",

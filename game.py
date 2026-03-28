@@ -191,7 +191,7 @@ def level_success():
     title = f"You survived level {game.current_level.number}!"
     level_success_popup = Popup(
         title=title,
-        body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
+        body=[f"{label} {value}" for label, value in game.get_kpis().items()],
         buttons=[
             Button(
                 get_btn_pos("popup right"),
