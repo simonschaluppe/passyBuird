@@ -109,7 +109,7 @@ class GameModel:
         self.godmode = godmode
         self.paused = False
         self.finished = False
-        self.model = EnergyModel(DATA_PATH / settings.BUILDING_PATH, kWp=50)
+        self.model = EnergyModel(DATA_PATH / settings.BUILDING_PATH, kWp=0)
         self.model.init_sim()
         self.hour = 0
         self._mh = 0  # energy model hour
@@ -387,14 +387,11 @@ class GameModel:
 
     def get_upgrade_text(self) -> dict:
         return {
-            "lines": f"""
-Insulation: Lvl {self.upgrades['wall_insulation'].level} ({round(self.model.building.LT, 2)} W/K/m²)
-
-Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²)
-
-Heat Pump Efficiency: Lvl {self.upgrades['heatpump_efficiency'].level} ({self.model.HVAC.HP_COP * 100} %)
-
-Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({self.energy_discount} %)
+            "lines": f"""-> Insulation: Lvl {self.upgrades['wall_insulation'].level} ({round(self.model.building.LT, 2)} W/K/m²)
+-> Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²)
+-> Heat Pump Efficiency: Lvl {self.upgrades['heatpump_efficiency'].level} ({self.model.HVAC.HP_COP * 100} %)
+-> Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({self.energy_discount} %)
+-> Electricity Production: Lvl {self.upgrades['pv'].level} ({self.model.PV.kWp} kWp)
 """
         }  # todo: DUMMIES
 
@@ -453,7 +450,7 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                 "curve": self.curve_pv.points_in_game(bc_index, fc_index),
                 "base": self.default_curve.points_in_game(bc_index, fc_index),
                 "indicator": {
-                    "pos": (self.hour - 30, self.model.comfort.maximum_room_temperature),
+                    "pos": (self.hour, self.model.PV.TSD[self._mh]+2),
                     "text": f"PV Ertrag: {self.model.PV.TSD[self._mh]:.1f} Wh",
                 },
             } ,
@@ -576,6 +573,10 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
                 90, self.energy_discount + 15 * (1 - self.energy_discount / 100)
             )
 
+        def add_pv():
+            kWp = self.model.PV.kWp + 5
+            self.model.PV.set_kWp(kWp)
+
         self.upgrades["wall_insulation"].callback = lambda: upgrade(
             self.upgrades["wall_insulation"], wall_insulation
         )
@@ -585,6 +586,9 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
         )
         self.upgrades["electricity_price_discount"].callback = lambda: upgrade(
             self.upgrades["electricity_price_discount"], electricity_price_discount
+        )
+        self.upgrades["pv"].callback = lambda: upgrade(
+            self.upgrades["pv"], add_pv
         )
 
     @property

@@ -354,16 +354,17 @@ class ShopScreen(Screen):
                 pos,
                 callback,
                 f"{upgrade.upgrade_text}  €{upgrade.cost}",
-                size=(450, 50),
+                size=settings.BUTTON_SIZE["Upgrade"],
             )
             b.upgrade = upgrade
             return b
 
         self.upgrade_buttons = [
-            upgrade_button(game.upgrades["wall_insulation"], (500, 345)),
-            upgrade_button(game.upgrades["power"], (500, 395)),
-            upgrade_button(game.upgrades["heatpump_efficiency"], (500, 445)),
-            upgrade_button(game.upgrades["electricity_price_discount"], (500, 495)),
+            upgrade_button(game.upgrades["wall_insulation"], (100, 345)),
+            upgrade_button(game.upgrades["power"], (100, 395)),
+            upgrade_button(game.upgrades["heatpump_efficiency"], (100, 445)),
+            upgrade_button(game.upgrades["electricity_price_discount"], (100, 495)),
+            upgrade_button(game.upgrades["pv"], (100, 545)),
         ]
         buttons = [
             Button(

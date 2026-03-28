@@ -4,7 +4,7 @@ DEBUG_MODE = False
 SCREEN_RESOLUTION = (1280, 720)
 
 FONT = "custom"
-GAME_ZOOM = (20, 20)  # x, y
+GAME_ZOOM = (17.5, 17.5)  # x, y
 
 GODMODE = False
 TEMP_WARNING_THRESHOLD = 0.2  # Kelvin lower than setpoint until warning shown
@@ -15,9 +15,10 @@ BUILDING_PATH = "building_bad.xlsx"
 BACKGROUND_FOLDER = "bg_pixelart"  # "backgrounds"
 
 UI_ANCHOR = (100, 250)
-ANCHOR_SHOP_UPGRADE_TEXT = (48, 320)
+ANCHOR_SHOP_TITLE = (100, 48)  # corner anchor
+ANCHOR_SHOP_UPGRADE_TEXT = (540, 300)
 ANCHOR_SHOP_UPGRADE_BUTTONS = (48, 320)
-ANCHOR_SHOP_GAME_STATS = (880, -20)
+ANCHOR_SHOP_GAME_STATS = (800, 0)
 ANCHOR_LEVEL_STATS = (20, 20)
 ANCHOR_LEVEL_SPACING_X = 40 
 ANCHOR_LEVEL_LINE_X = 0 
@@ -25,6 +26,7 @@ POS_REMAINING_HOURS = (500, 50)
 POS_REMAINING_HOURS_VALUE = (700, 50)
 
 BUTTON_BORDER_COLOR = (0,0,0)
+
 BUTTON_SIZE = {
     "Start New Game": (250, 60),
     "Retry": (250, 60),
@@ -33,6 +35,7 @@ BUTTON_SIZE = {
     "Start Level": (150, 60),
     "150x60": (150, 60),
     "170x60": (200, 60),
+    "Upgrade": (400, 50)
 }
 
 SCREEN_ANCHORS = {  # width #height

@@ -59,5 +59,12 @@ UPGRADES = {
         cost=2000,
         image="hvac.png",
         available=False,
+    ),
+    "pv": Upgrade(
+        name="PV System",
+        upgrade_text="Install 10 Panels",
+        cost=200,
+        image="PV.png",
+        available=False,
     )
 }

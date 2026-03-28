@@ -27,6 +27,7 @@ colors = {
     "QS": (200, 200, 0),
     "QH": (255, 0, 0),
     "QC": (0, 0, 255),
+    "PV": (255, 220, 30),
     "Title": (100, 30, 0),  # (164, 196, 146), #
     "DEBUG": (255,255,255),
     "Winter BG": (60, 84, 153),  # (61, 98, 116),
@@ -506,10 +507,7 @@ class MenuRenderer:
         self.render_line = renderer.render_line
         self.render_lines = renderer.render_lines
 
-        self.topleft = (64, 53)  # corner anchor
         self.tile_size = (160, 133)  # Size for each upgrade tile
-
-        self.stats_text_color = colors["UI Text"]
 
         # Load the background image for the upgrade menu
         bg_image = pg.image.load(
@@ -533,29 +531,16 @@ class MenuRenderer:
         # Draw the menu background first
         self.display.blit(self.bg_images[index], (0, 0))
 
-        # self.renderer.draw_grid(50)
-
-        # self.render_hull_stats(
-        #     data["hull"], pos=(self.topleft[0], 200), color=self.stats_text_color
-        # )
-        #
-        # self.render_hvac_stats(
-        #     data["hvac"], (self.topleft[0], 400), self.stats_text_color
-        # )
-
-        # Render upgrade tiles and costs
-        # self.render_upgrade_tiles(data["upgrades"], pos=(600, 100))
-        # self.render_player_stats(data["player"], pos=(600, 50))
-
-        self.render_title(self.topleft)
-        self.render_text((self.topleft[0], 150))
+        x,y = settings.ANCHOR_SHOP_TITLE
+        self.render_title((x,y))
+        self.render_text((x,y+150))
         self.render_updrade_text(
             data["upgrade_text"],
             settings.ANCHOR_SHOP_UPGRADE_TEXT,
-            self.stats_text_color,
+            colors["UI Text"],
         )
         self.render_game_stats(
-            data["game_stats"], settings.ANCHOR_SHOP_GAME_STATS, self.stats_text_color
+            data["game_stats"], settings.ANCHOR_SHOP_GAME_STATS, colors["UI Text"]
         )
 
     def render_background(self, index=0):
@@ -580,16 +565,14 @@ class MenuRenderer:
             "This is the shop. Here you can buy",
             "upgrades for your building.",
         ]
-        spacing = 0
-        for line in text:
-            self.render_line(
-                line,
+        self.render_lines(
+                "\n".join(text),
                 colors["UI Text"],
-                (pos[0], pos[1] + spacing),
+                pos,
                 font=self.renderer.titlefont,
                 size=40,
+                lineheight=45
             )
-            spacing += 40
 
     def render_upgrade_tiles(self, upgrades, pos):
         """Render upgrade tiles on the screen."""
@@ -661,16 +644,14 @@ class MenuRenderer:
         self.render_lines(data["lines"], color=color, pos=pos)
 
     def render_updrade_text(self, data, pos, color):
-        spacing = (
-            30  # spacing between Upgrade section title and upgradeable component list
-        )
+        spacing = 50  
         self.render_line(
             "Upgrades", colors["UI Text"], pos, font=self.renderer.titlefont, size=40
         )
-        self.render_lines(data["lines"], color=color, pos=(pos[0], pos[1] + spacing))
+        self.render_lines(data["lines"], color=color, pos=(pos[0], pos[1] + spacing+10), lineheight=spacing)
 
     def render_game_stats(self, data, pos, color):
-        self.render_lines(data["lines"], color=color, pos=pos, lineheight=30)
+        self.render_lines(data["lines"], color=color, pos=pos, lineheight=50)
 
 
 class CurvesRenderer:
@@ -734,6 +715,10 @@ class CurvesRenderer:
             data["Carbon Intensity"]["indicator"]["text"],
         )
             self.draw_TA_indicator(data["TA Indicator"])
+            self.draw_indicator(data["PV"]["indicator"]["pos"], colors["PV"],
+                                data["PV"]["indicator"]["text"])
+
+
     def draw_date_indicator(self, data):
         # print(f"{len(data)=}")
         for hour, y, dt in data:
