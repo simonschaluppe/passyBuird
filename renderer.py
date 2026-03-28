@@ -124,6 +124,8 @@ class Renderer:
 
         self.level_background = self.level_backgrounds[background_paths[0]]
 
+        
+
         self.bg_overlay = pg.Surface(self.display.get_size(), pg.SRCALPHA)
         self.bg_overlay.fill((0, 0, 0))
         
@@ -519,9 +521,12 @@ class MenuRenderer:
         bg_image_upgraded_max = pg.image.load(
             IMAGE_PATH / settings.BACKGROUND_FOLDER / "Closeup2_upgraded_max.png"
         ).convert()
+        bg_image_fail = pg.image.load(
+            IMAGE_PATH / settings.BACKGROUND_FOLDER / "Heat_Stroke.png"
+        ).convert()
         self.bg_images = [
             pg.transform.scale(img, self.display.get_size())
-            for img in [bg_image, bg_image_upgraded, bg_image_upgraded_max]
+            for img in [bg_image, bg_image_upgraded, bg_image_upgraded_max, bg_image_fail]
         ]
     def render(self, data, index=0):
         """Render the upgrade menu including background, tiles, and costs."""

@@ -512,14 +512,14 @@ Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].lev
     def get_kpis(self) -> dict:
         """Aggregierte Kennzahlen als zusammengefasste Werte für den End-of-Level-Bildschirm."""
         return {
-            "Überlebte Stunden": f"{self.hour-self.current_level.start:.0f}%",
-            "Erreichter Komfort": f"{self.level_comfort:.0f}%",
-            "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000 * self.model.building.bgf:.0f} kg",
+            "Ueberlebt": f"{self.hour-self.current_level.start/24:.0f} Tage",
+            "Komfort": f"{self.level_comfort:.0f}%",
+            "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000:.0f} kg/m2",
             "Detailergebnisse": "",
-            "Benoetigte Heizenergie": f"{(self.model.QH.sum() / 1000 * self.model.building.bgf):.0f} kWh",
-            "Benoetigte Kuehlenergie": f"{-self.model.QC.sum() / 1000 * self.model.building.bgf:.0f} kWh",
+            "Benoetigte Heizenergie": f"{(self.model.QH.sum() / 1000):.0f} kWh/m2",
+            "Benoetigte Kuehlenergie": f"{-self.model.QC.sum() / 1000:.0f} kWh/m2",
             "Verbrauchter Strom": f"{self.get_ED().sum():.0f} kWh",
-            "Mittlerer Strompreis": f"{self.model.price_grid*100:.0f} ct/kWh",
+            "Mittlerer Strompreis": f"{self.moneyspent*100/self.get_ED().sum():.0f} ct/kWh",
             "": "",
             "Energiekosten ": f"{self.moneyspent:.0f} €",
             "Belohnung    ": f"{self.current_level.reward} €",

@@ -178,9 +178,33 @@ LEVELS = [
         )
     ),
 
-    Level(
+        Level(
         number=6,
-        name="Level 6: A whole year",
+        name="Level 6: Toddler Trouble!",
+        month = "Oktober",
+        intro=[
+            "The baby is afoot! And it found the thermostat!",
+            "",
+            "Prepare for some seriously sudden setpoint shifts!!",
+        ],
+        start=6000,
+        end=6000 + 14 * 24 * 2,
+        speed=24,
+        start_TI=21,
+        reward=1500,
+        background = "Fall.png",
+        comfort=Comfortmodel(
+            p_change=1 / 4,
+            alpha=0.25,
+            sigma=1.0,
+            comfort_sensitivity=3
+        )
+    ),
+
+
+    Level(
+        number=7,
+        name="A whole year",
         month = "December",
         intro=[
             "Now its time to test your mettle! can you juggle fluctuating temperature",
@@ -200,7 +224,7 @@ LEVELS = [
             p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
-            comfort_sensitivity=31
+            comfort_sensitivity=5
         )
     ),
        Level(

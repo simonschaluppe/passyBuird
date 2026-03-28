@@ -164,9 +164,8 @@ def level_fail(text: str):
     game.setup_level()
     game.money += game.moneyspent
     game.moneyspent = 0
-
     title = "Level failed!"
-    Popup(
+    level_fail_screen = Popup(
         title=title,
         body=[*text.split("\n")],
         buttons=[
@@ -181,7 +180,9 @@ def level_fail(text: str):
             (pg.K_RETURN, start_level_loop),
             (pg.K_ESCAPE, start_new_game),
         ],
-    ).loop()
+        fail=True
+    )
+    level_fail_screen.loop()
 
 
 def level_success():
@@ -252,6 +253,7 @@ def heat():
 
 def cool():
     game.cool()
+    music.cool()
     particle_manager.cool(game.position, (0.5 * game.qc, -game.qc))
 
 
@@ -553,20 +555,23 @@ class Popup(Screen):
         body: list[str],
         buttons: list[Button] = None,
         keys: list[tuple[int, callable]] = None,
+        fail = False
     ):
         self.title = title
         self.body = body
         self.buttons = buttons
         self.keys = keys
+        self.fail = fail
         super().__init__()
 
     @override
     def render(self) -> None:
+        index = game.insulation_level if not self.fail else 3
         renderer.render_popup(
             title=self.title,
             body=self.body,
             screen_params=center_screen(size=0.8),
-            index=game.insulation_level,
+            index=index,
         )
         for button in self.handler.buttons:
             renderer.render_button(button)
