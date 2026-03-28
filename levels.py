@@ -52,9 +52,9 @@ LEVELS = [
             "",
             "Press the left mouse button to engage the heating and ",
             "try to stay in the green comfort zone.",
-            "If you don't, you will slowly loose comfort.",
+            "If you don't, you will slowly lose comfort.",
             "",
-            "Once it reaches Zero, you loose."
+            "Once it reaches Zero, you lose."
             "",
             "Remember that heating is expensive! ,"
             "Try to save your money for house upgrades.",
@@ -130,7 +130,7 @@ LEVELS = [
         month = "April",
         intro=[
             "The cold days are almost over and the sun is getting intense.",
-            "Now you have to heat aswell as cool to keep withing comfort limits.",
+            "Now you have to heat as well as cool to keep withing comfort limits.",
             "Press left mouse button to heat and right mouse button to cool.",
             "",
             "",

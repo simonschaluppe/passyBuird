@@ -1,9 +1,11 @@
+from pathlib import Path
 from re import DEBUG
 from typing import override
 
 import pygame as pg
 import random
 
+from music import Music
 import settings
 from camera import Camera2D
 from handler import Button, InputHandler
@@ -19,6 +21,8 @@ AUTOPILOT = False
 # Initialize pygame
 pg.init()
 print(pg.version)
+music = Music()
+
 # Set up the main display surface
 screen: pg.Surface = pg.display.set_mode(settings.SCREEN_RESOLUTION)
 pg.display.set_caption("passyBUIRD")
@@ -84,9 +88,15 @@ def get_background(hour_of_year):
 
 # Events
 
-start_title_loop = lambda: title_screen.loop()
-start_level_loop = lambda: level_screen.loop()
-start_shop_loop = lambda: shop_screen.loop()
+def start_title_loop():
+    music.play("shop")
+    title_screen.loop()
+def start_level_loop():
+    music.play("level")
+    level_screen.loop()
+def start_shop_loop():
+    music.play("shop")
+    shop_screen.loop()
 
 
 # Multi line functions
@@ -100,6 +110,7 @@ def toggle_autopilot():
     game.AUTOPILOT = not game.AUTOPILOT
 
 def game_over(reason="You have lost the game."):
+    music.play("game_over")
     Popup(
         title="Game over!",
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
@@ -148,6 +159,7 @@ def start_level_intro(level=None):
 
 
 def level_fail(text: str):
+    music.play("game_over")
     game.update_level_finished()
     game.setup_level()
     game.money += game.moneyspent
@@ -173,6 +185,7 @@ def level_fail(text: str):
 
 
 def level_success():
+    music.play("victory")
     game.update_level_finished()
     title = f"You survived level {game.current_level.number}!"
     level_success_popup = Popup(
@@ -233,6 +246,7 @@ def quit_game():
 
 def heat():
     game.heat()
+    music.heat()
     particle_manager.heat(game.position, (-game.qh * 0.5, -game.qh))
 
 
@@ -505,6 +519,7 @@ class LevelScreen(Screen):
             renderer.draw_too_hot_warning()
         if game.get_temp_diff() < -settings.TEMP_WARNING_THRESHOLD:
             renderer.draw_too_cold_warning()
+            music.cold_warning()
         if game.money < settings.MONEY_WARNING_THRESHOLD:
             renderer.draw_low_money_warning()
 
