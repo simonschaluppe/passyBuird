@@ -21,7 +21,7 @@ AUTOPILOT = False
 # Initialize pygame
 pg.init()
 print(pg.version)
-music = Music()
+sound_manager = Music()
 
 # Set up the main display surface
 screen: pg.Surface = pg.display.set_mode(settings.SCREEN_RESOLUTION)
@@ -89,13 +89,13 @@ def get_background(hour_of_year):
 # Events
 
 def start_title_loop():
-    music.play("shop")
+    sound_manager.play("shop")
     title_screen.loop()
 def start_level_loop():
-    music.play("level")
+    sound_manager.play("level")
     level_screen.loop()
 def start_shop_loop():
-    music.play("shop")
+    sound_manager.play("shop")
     shop_screen.loop()
 
 
@@ -110,7 +110,7 @@ def toggle_autopilot():
     game.AUTOPILOT = not game.AUTOPILOT
 
 def game_over(reason="You have lost the game."):
-    music.play("game_over")
+    sound_manager.play("game_over")
     Popup(
         title="Game over!",
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
@@ -159,7 +159,7 @@ def start_level_intro(level=None):
 
 
 def level_fail(text: str):
-    music.play("game_over")
+    sound_manager.play("game_over")
     game.update_level_finished()
     game.setup_level()
     game.money += game.moneyspent
@@ -186,7 +186,8 @@ def level_fail(text: str):
 
 
 def level_success():
-    music.play("victory")
+    sound_manager.yipie()
+    sound_manager.play("victory")
     game.update_level_finished()
     title = f"You survived level {game.current_level.number}!"
     level_success_popup = Popup(
@@ -247,13 +248,13 @@ def quit_game():
 
 def heat():
     game.heat()
-    music.heat()
+    sound_manager.heat()
     particle_manager.heat(game.position, (-game.qh * 0.5, -game.qh))
 
 
 def cool():
     game.cool()
-    music.cool()
+    sound_manager.cool()
     particle_manager.cool(game.position, (0.5 * game.qc, -game.qc))
 
 
@@ -266,7 +267,7 @@ class Screen:
     """Basic Screen class."""
 
     def __init__(self):
-        self.handler = InputHandler()
+        self.handler = InputHandler(sound_manager)
         self.config_handler()
 
     def loop(self) -> None:
@@ -320,7 +321,7 @@ class TitleScreen(Screen):
             "More Info about what we do:",
             "Bachelor Renewable Energy",
             "Master Renewable Energy Engineering",
-            "Master Climate-responsive building technologies"
+            "Master Climate-responsive Buildinga"
         ]
 
         renderer.render_title_screen(
@@ -501,7 +502,7 @@ class LevelScreen(Screen):
                     you will quickly loose indoor comfort."""
                     level_fail(text=text)
 
-            renderer.set_background(get_background(game.hour))
+            
             particle_manager.update()
 
             self.render()
@@ -514,6 +515,7 @@ class LevelScreen(Screen):
     @override
     def render(self) -> None:
         renderer.camera.update()
+        renderer.set_background(get_background(game.hour))
         renderer.draw_background(game.hour)
         renderer.render_curves(game.get_curves_data(), game.paused)
 
@@ -522,7 +524,7 @@ class LevelScreen(Screen):
             renderer.draw_too_hot_warning()
         if game.get_temp_diff() < -settings.TEMP_WARNING_THRESHOLD:
             renderer.draw_too_cold_warning()
-            music.cold_warning()
+            sound_manager.cold_warning()
         if game.money < settings.MONEY_WARNING_THRESHOLD:
             renderer.draw_low_money_warning()
 
@@ -610,7 +612,7 @@ class Victory(Screen):
             (pg.K_RETURN, start_shop_loop),
             (pg.K_ESCAPE, start_shop_loop),
         ]
-        super().__init__()
+        super().__init__(sound_manager)
 
     @override
     def render(self) -> None:

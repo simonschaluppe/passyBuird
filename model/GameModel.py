@@ -163,7 +163,6 @@ class GameModel:
         print(self.current_level_index)
         self.current_level = self.levels[self.current_level_index]
         self.set_speed(getattr(self.current_level, "speed", DEFAULT_SPEED))
-        self.paused = self.current_level.start_paused
         start_hour = self.current_level.start
 
         if not (0 <= start_hour <= 8759):
@@ -174,6 +173,9 @@ class GameModel:
 
         self.model.comfort = self.current_level.comfort
         self.model.init_sim(start_hour=start_hour, TI_init=self.current_level.start_TI)
+        self.model.TI[self._mh] = self.current_level.start_TI
+
+        self.paused = self.current_level.start_paused
 
         self.forecast_hours = 72
         self.backcast_hours = 72
@@ -503,7 +505,7 @@ class GameModel:
             "CO2": self.get_GHG_emitted(),
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
-            "Remaining hours": f"{self.get_remaining_level_hours()}",
+            "Remaining days": f"{int(self.get_remaining_level_hours()/24)+1}",
         }
 
     def get_kpis(self) -> dict:

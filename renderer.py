@@ -40,7 +40,7 @@ colors = {
     "Upgrade text": (255, 255, 255),  # (153, 64, 154),
     "Emission text": (255, 255, 255),  # (66, 62, 56),
     "Emissions": (50, 50, 50),  # (105, 95, 78),
-    "Purchase": (255, 100, 100),
+    "Purchase": (230, 255, 100),
     "TitleBG": (80, 80, 80),
     "PopupBG": (80, 80, 80),
 }
@@ -851,10 +851,10 @@ class UIRenderer:
 
         # render remaining days
         self.render_line(
-            "Remaining hours", pos=settings.POS_REMAINING_HOURS, color=WHITE
+            "Remaining days", pos=settings.POS_REMAINING_HOURS, color=WHITE
         )
         self.render_line(
-            ui_data["Remaining hours"],
+            ui_data["Remaining days"],
             pos=settings.POS_REMAINING_HOURS_VALUE,
             color=GREEN,
             font=self.renderer.font_custom_small,

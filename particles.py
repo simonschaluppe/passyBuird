@@ -55,9 +55,9 @@ class ParticleManager:
 
     def purchase(self, position, n=5):
         for _ in range(n):
-            lifetime = random.randint(5,10)
+            lifetime = random.randint(10,30)
             self.add("purchase", position,
-                 pg.Vector2(0,2).rotate(random.randint(-180, 180)), 
+                 pg.Vector2(0,5).rotate(random.randint(-180, 180)), 
                  lifetime=lifetime)
 
     def success(self, position, velocity):
@@ -88,7 +88,7 @@ class ParticleManager:
         
         self.draw_particles(self.groups["heating"], colors["QH"], game_coords=True) 
         self.draw_particles(self.groups["cooling"], colors["QC"], game_coords=True)
-        self.draw_particles(self.groups["purchase"], colors["Purchase"], game_coords=False, size=300)
+        self.draw_particles(self.groups["purchase"], colors["Purchase"], game_coords=False, size=5000)
         self.draw_particles(self.groups["success"], 
                             color=(random.randint(100,200), random.randint(200,255), random.randint(100,200)),
                             size=2000)

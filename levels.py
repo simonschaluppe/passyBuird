@@ -153,7 +153,7 @@ LEVELS = [
 
     Level(
         number=5,
-        name="Level 5: Cooling",
+        name="Summer sweat",
         month = "June",
         intro=[
             "The weatherman just called - there's some seriously hot days ahead.",
@@ -178,9 +178,35 @@ LEVELS = [
         )
     ),
 
-        Level(
+Level(
         number=6,
-        name="Level 6: Toddler Trouble!",
+        name="Game of Thaws",
+        month = "February",
+        intro=[
+            "That ski trip was amazing! Without heating, the house almost froze in your absence.",
+            "",
+            "Blast the heating and reach safe indoor temperatures!",
+            "",
+            "If you cannot heat the place quick enough, you may need an upgrade to your",
+            "*Heat Power* "
+        ],
+        start=500,
+        end=500 + 4 * 24 * 2,
+        speed=6,
+        start_TI=10,
+        reward=1500,
+        background = "Winter.png",
+        start_paused=True,
+        comfort=Comfortmodel(
+            random=False,
+            maximum_room_temperature=26,
+            comfort_sensitivity=10
+        )
+    ),
+
+        Level(
+        number=7,
+        name="Toddler Trouble!",
         month = "Oktober",
         intro=[
             "The baby is afoot! And it found the thermostat!",
@@ -203,7 +229,7 @@ LEVELS = [
 
 
     Level(
-        number=7,
+        number=8,
         name="A whole year",
         month = "December",
         intro=[

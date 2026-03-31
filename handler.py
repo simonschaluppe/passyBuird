@@ -1,5 +1,6 @@
 import pygame as pg
 
+import music
 
 class Button:
     def __init__(self, pos, callback, text="", size=(150, 40)):
@@ -28,12 +29,13 @@ class Button:
 
 
 class InputHandler(object):
-    def __init__(self):
+    def __init__(self, music):
         self.keypress_bindings = {}
         self.keyrelease_bindings = {}
         self.continuous_keypress_bindings = {}
         self.mousebutton_bindings = {}
         self.continuous_mousebutton_bindings = {}
+        self.music = music
 
         self.buttons = []
 
@@ -83,6 +85,7 @@ class InputHandler(object):
             self.mousebutton_bindings[event.button]()
         for button in self.buttons:
             if button.is_hovering(pg.mouse.get_pos()):
+                self.music.button(volume=5)
                 button.press()
 
     def handle_mouse_up(self, event):
