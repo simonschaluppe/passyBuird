@@ -1,5 +1,3 @@
-from pathlib import Path
-from re import DEBUG
 from typing import override
 
 import pygame as pg
@@ -13,9 +11,6 @@ from model.GameModel import GameModel
 from particles import ParticleManager
 from renderer import Renderer
 
-
-
-
 DEBUG_MODE = settings.DEBUG_MODE
 AUTOPILOT = False
 # Initialize pygame
@@ -24,7 +19,10 @@ print(pg.version)
 sound_manager = Music()
 
 # Set up the main display surface
-screen: pg.Surface = pg.display.set_mode(settings.SCREEN_RESOLUTION)
+screen: pg.Surface = pg.display.set_mode(
+    settings.SCREEN_RESOLUTION, 
+    #pg.FULLSCREEN
+    )
 pg.display.set_caption("passyBUIRD")
 # Create another surface to perform off-screen drawing
 display = pg.Surface(settings.SCREEN_RESOLUTION)
@@ -382,8 +380,8 @@ class ShopScreen(Screen):
             ),
             Button(
                 (get_btn_pos("bottom center")),
-                lambda: start_level_intro(5),
-                "Start level 5",
+                lambda: start_level_intro(3),
+                "Start level 3",
                 size=settings.BUTTON_SIZE["170x60"],
             ),
             *self.upgrade_buttons,

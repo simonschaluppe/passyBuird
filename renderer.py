@@ -252,8 +252,9 @@ class Renderer:
             pg.draw.line(self.display, color, (0, y), (self.display.get_width(), y))
 
     def render_button(self, button: Button):
+
         button_surf = pg.Surface(button.size, pg.SRCALPHA)
-        button_surf.fill((0, 0, 0, 0))  # clear
+        #button_surf.fill(WHITE)  # clear
         bw, bh = button_surf.get_size()
         text_color = WHITE
         color = colors["Button"]
@@ -298,6 +299,7 @@ class Renderer:
             font=self.font_custom_small,
             centered=True,
         )
+        
         self.display.blit(button_surf, button.position)
         
 

@@ -191,7 +191,7 @@ Level(
             "*Heat Power* "
         ],
         start=500,
-        end=500 + 4 * 24 * 2,
+        end=500 + 2 * 24 * 2,
         speed=6,
         start_TI=10,
         reward=1500,

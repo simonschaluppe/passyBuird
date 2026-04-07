@@ -253,7 +253,7 @@ class EnergyModel:
             self.TI[t] = self.TI_after_Q(TI, self.QC[t])
 
     def calc_ED(self, t):
-        print(self.ED_QH[t], self.ED_QC[t],self.PV.TSD[t])
+        #print(self.ED_QH[t], self.ED_QC[t],self.PV.TSD[t])
         self.ED[t] = self.ED_QH[t] + self.ED_QC[t] - self.PV.TSD[t]
         self.emissions[t] = self.ED[t] * self.CO2[t]
         #print("t is: ", t, " and ED is: ", self.ED[t], " and CO2 is: ", self.CO2[t], " and emissions are: ", self.emissions[t], " sum: ", self.emissions.sum())

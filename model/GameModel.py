@@ -379,7 +379,6 @@ class GameModel:
         return self.model.ED.sum() / 1000 * self.model.building.bgf
 
     def get_GHG_emitted(self):
-        print("GHG_emitted", self.model.emissions.sum())
         return self.model.emissions.sum()
 
     def get_GHG_avoided(self):
@@ -453,7 +452,7 @@ class GameModel:
                 "base": self.default_curve.points_in_game(bc_index, fc_index),
                 "indicator": {
                     "pos": (self.hour, self.model.PV.TSD[self._mh]+2),
-                    "text": f"PV Ertrag: {self.model.PV.TSD[self._mh]*1000:.0f} Wh",
+                    "text": f"PV Ertrag: {self.model.PV.TSD[self._mh]:.1f} kW",
                 },
             } ,
             "TI Indicator": {
