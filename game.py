@@ -10,9 +10,13 @@ from handler import Button, InputHandler
 from model.GameModel import GameModel
 from particles import ParticleManager
 from renderer import Renderer
+from Gametext import GameText as gt
+from pathlib import Path
+import datetime
 
 DEBUG_MODE = settings.DEBUG_MODE
 AUTOPILOT = False
+LANGUAGE = "Deutsch"
 # Initialize pygame
 pg.init()
 print(pg.version)
@@ -110,13 +114,13 @@ def toggle_autopilot():
 def game_over(reason="You have lost the game."):
     sound_manager.play("game_over")
     Popup(
-        title="Game over!",
+        title=gt.get(LANGUAGE, "game_over"),
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
             Button(
                 get_btn_pos("popup right"),
                 start_new_game,
-                "Start new game",
+                gt.get(LANGUAGE, "start_new_game"),
                 size=settings.BUTTON_SIZE["Start New Game"],
             )
         ],
@@ -138,13 +142,13 @@ def start_level_intro(level=None):
             Button(
                 get_btn_pos("popup left"),
                 start_shop_loop,
-                "Go to Shop",
+                gt.get(LANGUAGE, "shop"),
                 size=settings.BUTTON_SIZE["Go to Shop"],
             ),
             Button(
                 get_btn_pos("popup right"),
                 start_level_loop,
-                "Start Level",
+                gt.get(LANGUAGE, "start_level"),
                 size=settings.BUTTON_SIZE["Start Level"],
             ),
         ],
@@ -162,7 +166,7 @@ def level_fail(text: str):
     game.setup_level()
     game.money += game.moneyspent
     game.moneyspent = 0
-    title = "Level failed!"
+    title = gt.get(LANGUAGE, "level_failed")
     level_fail_screen = Popup(
         title=title,
         body=[*text.split("\n")],
@@ -170,7 +174,7 @@ def level_fail(text: str):
             Button(
                 get_btn_pos("popup left"),
                 start_level_intro,
-                "Retry",
+                gt.get(LANGUAGE, "retry"),
                 size=settings.BUTTON_SIZE["Retry"],
             )
         ],
@@ -187,7 +191,7 @@ def level_success():
     sound_manager.yipie()
     sound_manager.play("victory")
     game.update_level_finished()
-    title = f"You survived level {game.current_level.number}!"
+    title = gt.get(LANGUAGE, "survived1") + game.current_level.number + gt.get(LANGUAGE, "survived1")
     level_success_popup = Popup(
         title=title,
         body=[f"{label} {value}" for label, value in game.get_kpis().items()],
@@ -195,7 +199,7 @@ def level_success():
             Button(
                 get_btn_pos("popup right"),
                 start_level_intro,
-                "Continue",
+                gt.get(LANGUAGE, "continue"),
                 size=settings.BUTTON_SIZE["Continue"],
             )
         ],
@@ -228,7 +232,7 @@ def victory_loop():
         particle_manager.success(
             position=(x, y), velocity=(random.randint(-10, 10), random.randint(-10, 10))
         )
-    print("You've finished the game, Good Job!")
+    print(gt.get(LANGUAGE, "victory"))
     Victory().loop()
 
 
@@ -236,6 +240,22 @@ def toggle_debug_mode():
     global DEBUG_MODE
     DEBUG_MODE = not DEBUG_MODE
     print("DEBUG_MODE ", DEBUG_MODE)
+
+def take_screenshot(filename=None):
+        """Speichert einen Screenshot des aktuellen Engine-Bildschirms."""
+        screenshot_dir = Path("Screenshots")
+        screenshot_dir.mkdir(parents=True, exist_ok=True)  # Ordner anlegen falls nicht vorhanden
+
+        now = datetime.datetime.now().strftime('%d-%m-%y_%H-%M')
+        #datetime.datetime(2009, 1, 6, 15, 8, 24, 78915)
+
+        if filename is None:
+            filename = "Screenshot " + str(now) + ".png"
+            
+        filepath = screenshot_dir / filename
+
+        pg.image.save(screen, filepath)
+        print(f"Screenshot saved at {filename}")  
 
 
 def quit_game():
@@ -297,7 +317,7 @@ class TitleScreen(Screen):
             Button(
                 get_btn_pos("popup right"),
                 start_level_intro,
-                "Start the Game!",
+                gt.get(LANGUAGE, "start_new_game"),
                 size=settings.BUTTON_SIZE["Start New Game"],
             ),
         ]
@@ -306,24 +326,14 @@ class TitleScreen(Screen):
         # bind key presses
         self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
         self.handler.bind_keypress(pg.K_q, quit_game)
+        self.handler.bind_keypress(pg.K_s, take_screenshot)
 
     @override
     def render(self) -> None:
-        description = [
-            "We research climate-fit buildings, simulating building energy demand,",
-            "CO2 Emissions and how to reduce the carbon footprint of the built environment.",
-            "",
-            "This game is based on a simulation model developed by students",
-            "Try it out and play a round!",
-            "",
-            "More Info about what we do:",
-            "Bachelor Renewable Energy",
-            "Master Renewable Energy Engineering",
-            "Master Climate-responsive Buildinga"
-        ]
+        description = gt.get(LANGUAGE, "description")
 
         renderer.render_title_screen(
-            title="Welcome to ",
+            title=gt.get(LANGUAGE, "welcome"),
             body=description,
             screen_params=center_screen(0.8),
             index=game.insulation_level,
@@ -369,13 +379,13 @@ class ShopScreen(Screen):
             Button(
                 get_btn_pos("bottom right"),
                 start_level_intro,
-                "Start Level",
+                gt.get(LANGUAGE, "start_level"),
                 size=settings.BUTTON_SIZE["170x60"],
             ),
             Button(
                 get_btn_pos("bottom left"),
                 start_new_game,
-                "Start new game",
+                gt.get(LANGUAGE, "start_new_game"),
                 size=settings.BUTTON_SIZE["170x60"],
             ),
             Button(
@@ -391,6 +401,7 @@ class ShopScreen(Screen):
         # bind key presses
         self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
         self.handler.bind_keypress(pg.K_q, quit)
+        self.handler.bind_keypress(pg.K_s, take_screenshot)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
     @override
@@ -447,6 +458,7 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_d, toggle_debug_mode)
         self.handler.bind_keypress(pg.K_a, toggle_autopilot)
         self.handler.bind_keypress(pg.K_ESCAPE, start_shop_loop)
+        self.handler.bind_keypress(pg.K_s, take_screenshot)
 
     @override
     def loop(self) -> None:
@@ -583,6 +595,7 @@ class Popup(Screen):
     @override
     def config_handler(self) -> None:
         self.handler.bind_keypress(pg.K_q, quit_game)
+        self.handler.bind_keypress(pg.K_s, take_screenshot)
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
         if self.keys:
@@ -602,7 +615,7 @@ class Victory(Screen):
             Button(
                 get_btn_pos("popup right"),
                 start_shop_loop,
-                "Start new Game!",
+                gt.get(LANGUAGE,"start_new_game"),
                 size=settings.BUTTON_SIZE["170x60"],
             ),
         )
@@ -640,7 +653,7 @@ class Victory(Screen):
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
         if self.keys:
-            [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]
+            [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]            
 
 
 """Screen instances"""

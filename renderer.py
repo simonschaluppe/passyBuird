@@ -100,7 +100,7 @@ class Renderer:
         # load QR code
         self.qr_code = pg.image.load(IMAGE_PATH / "qrcode.png").convert()
         #self.qr_code.set_colorkey(WHITE)
-        self.qr_code = pg.transform.scale(self.qr_code, size=(200, 200))
+        self.qr_code = pg.transform.scale(self.qr_code, size=(180, 180))
 
         # components
         self.ui_renderer = UIRenderer(self)
@@ -499,7 +499,7 @@ class Renderer:
 
         # self.draw_grid(100)
 
-        self.display.blit(self.qr_code, (600, 450))
+        self.display.blit(self.qr_code, (930, 370))
 
 
 class MenuRenderer:
