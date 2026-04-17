@@ -137,7 +137,15 @@ class GameModel:
         self.current_level_index = 0
         self.energy_discount = 0  # 0-100 [%]
         self.model.building.reset()
-        self.reset_upgrades()
+        self.set_heating_power(starting_power)
+        self.set_cooling_power(starting_power)
+        self.set_cop(starting_cop)
+        self.model.PV.set_kWp(0)
+        self.upgrades['wall_insulation'].level = 0
+        self.upgrades["power"].level = 0
+        self.upgrades['heatpump_efficiency'].level = 0
+        self.upgrades['electricity_price_discount'].level = 0
+        self.upgrades['pv'].level = 0
         self.setup_upgrades()
         self.reset_levels()
  
@@ -148,17 +156,6 @@ class GameModel:
         self.total_comfort = 1  # average comfort score across all levels played
         self.total_duration = 0  # hours simulated across all levels played
         self.setup_level(0)
-
-    def reset_upgrades(self):
-            self.set_heating_power(starting_power)
-            self.set_cooling_power(starting_power)
-            self.set_cop(starting_cop)
-
-            self.upgrades['wall_insulation'].level = 0
-            self.upgrades["power"].level = 0
-            self.upgrades['heatpump_efficiency'].level = 0
-            self.upgrades['electricity_price_discount'].level = 0
-            self.upgrades['pv'].level = 0
 
     def setup_next_level(self):
         self.current_level_index += 1
@@ -409,7 +406,7 @@ class GameModel:
             "lines": f"""-> Insulation: Lvl {self.upgrades['wall_insulation'].level} ({round(self.model.building.LT, 2)} W/K/m²)
 -> Heat Pump Power: Lvl {self.upgrades["power"].level} ({self.model.HVAC.HP_heating_power} W/m²)
 -> Heat Pump Efficiency: Lvl {self.upgrades['heatpump_efficiency'].level} ({self.model.HVAC.HP_COP * 100} %)
--> Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({self.energy_discount} %)
+-> Electricity Price Discount: Lvl {self.upgrades['electricity_price_discount'].level} ({round(self.energy_discount, 2)} %)
 -> Electricity Production: Lvl {self.upgrades['pv'].level} ({self.model.PV.kWp} kWp)
 """
         }  # todo: DUMMIES

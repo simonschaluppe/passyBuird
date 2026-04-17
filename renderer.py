@@ -264,7 +264,7 @@ class Renderer:
         if button.pressed:
             color = colors["Button pressed"]
         if button.disabled:
-            print("disabled gray")
+            #print("disabled gray")
             color = GREY
             text_color = GREY
             pulse = None

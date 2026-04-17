@@ -504,7 +504,7 @@ class LevelScreen(Screen):
                         level_success()
 
                 if game.is_bankrupt():
-                    game_over(reason=gt.get(LANGUAGE, "bancrupt"))
+                    game_over(reason=gt.get(LANGUAGE, "bankrupt"))
 
                 if game.is_too_hot():
                     level_fail(text=gt.get(LANGUAGE, "too_hot"))
