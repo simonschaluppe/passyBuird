@@ -331,6 +331,7 @@ class TitleScreen(Screen):
 
         # bind key presses
         self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
+        self.handler.bind_keypress(pg.K_v, victory_loop)
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
@@ -631,7 +632,7 @@ class Victory(Screen):
             (pg.K_RETURN, start_shop_loop),
             (pg.K_ESCAPE, start_shop_loop),
         ]
-        #super().__init__(sound_manager)
+        super().__init__()
 
     @override
     def render(self) -> None:
@@ -646,7 +647,7 @@ class Victory(Screen):
             )
 
         renderer.render_popup(
-            title=self.title, body=self.body, screen_params=center_screen(size=0.8)
+            title=self.title, body=self.body, screen_params=center_screen(size=0.8), index=game.insulation_level
         )
         for button in self.handler.buttons:
             renderer.render_button(button)
