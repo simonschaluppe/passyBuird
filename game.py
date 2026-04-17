@@ -12,6 +12,7 @@ from particles import ParticleManager
 from renderer import Renderer
 from Gametext import GameText as gt
 from pathlib import Path
+from Highscores import Scoreboard
 import datetime
 
 DEBUG_MODE = settings.DEBUG_MODE
@@ -96,8 +97,11 @@ def start_level_loop():
     sound_manager.play("level")
     level_screen.loop()
 def start_shop_loop():
-    sound_manager.play("shop")
+    #sound_manager.play("shop")
     shop_screen.loop()
+def start_highscore_loop():
+    #sound_manager.play("highscore")
+    highscore_screen.loop()
 
 
 # Multi line functions
@@ -330,6 +334,7 @@ class TitleScreen(Screen):
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
+        self.handler.bind_keypress(pg.K_h, start_highscore_loop)
 
     @override
     def render(self) -> None:
@@ -393,8 +398,8 @@ class ShopScreen(Screen):
             ),
             Button(
                 (get_btn_pos("bottom center")),
-                lambda: start_level_intro(3),
-                "Start level 3",
+                start_highscore_loop,
+                "Highscores",
                 size=settings.BUTTON_SIZE["170x60"],
             ),
             *self.upgrade_buttons,
@@ -598,6 +603,7 @@ class Popup(Screen):
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
+        
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
         if self.keys:
@@ -625,7 +631,7 @@ class Victory(Screen):
             (pg.K_RETURN, start_shop_loop),
             (pg.K_ESCAPE, start_shop_loop),
         ]
-        super().__init__(sound_manager)
+        #super().__init__(sound_manager)
 
     @override
     def render(self) -> None:
@@ -657,7 +663,7 @@ class Victory(Screen):
         if self.keys:
             [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]            
 
-class Highscore(Screen):
+class HighscoreScreen(Screen):
     """Highscore screen, where player can view the best scores."""
 
     @override
@@ -666,24 +672,23 @@ class Highscore(Screen):
 
         buttons = [
             Button(
-                get_btn_pos("bottom right"),
+                get_btn_pos("bottom left"),
                 start_new_game,
                 gt.get(LANGUAGE, "start_new_game"),
-                size=settings.BUTTON_SIZE["start_new_game"],
+                size=settings.BUTTON_SIZE["Start New Game"],
             ),
             Button(
-                get_btn_pos("bottom left"),
+                get_btn_pos("bottom right"),
                 start_shop_loop,
                 gt.get(LANGUAGE, "shop"),
                 size=settings.BUTTON_SIZE["Go to Shop"],
             ),
             Button(
                 (get_btn_pos("bottom center")),
-                lambda: start_level_intro(3),
-                "Start level 3",
+                start_shop_loop,
+                "Shop",
                 size=settings.BUTTON_SIZE["170x60"],
             ),
-            *self.upgrade_buttons,
         ]
         [self.handler.register_button(button) for button in buttons]
 
@@ -696,7 +701,7 @@ class Highscore(Screen):
 
     @override
     def render(self) -> None:
-        renderer.render_menu(game.get_menu_data(), index=game.insulation_level)
+        renderer.render_highscores(Scoreboard().get_highscores())
 
         for button in self.handler.buttons:
             renderer.render_button(button)
@@ -713,10 +718,6 @@ class Highscore(Screen):
         while running:
             running = self.handler.update()
             particle_manager.update()
-            for b in self.upgrade_buttons:
-                b.disabled = False
-                if b.upgrade.cost > game.money:
-                    b.disabled = True
             self.render()
 
             clock.tick(60)
@@ -726,6 +727,7 @@ class Highscore(Screen):
 title_screen = TitleScreen()
 shop_screen = ShopScreen()
 level_screen = LevelScreen()
+highscore_screen = HighscoreScreen()
 
 
 """Start"""

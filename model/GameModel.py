@@ -430,6 +430,7 @@ class GameModel:
             "game_stats": self.get_game_stats(),
         }
 
+
     def get_curves_data(self):
         fc_index = self.hour + self.forecast_hours
         bc_index = self.hour - self.backcast_hours

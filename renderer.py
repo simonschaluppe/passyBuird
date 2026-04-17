@@ -106,6 +106,7 @@ class Renderer:
         self.ui_renderer = UIRenderer(self)
         self.curves_renderer = CurvesRenderer(self)
         self.menu_renderer = MenuRenderer(self)
+        self.highscores_renderer = HighscoreRenderer(self)
 
         # Load the background image for the upgrade menu
         self.level_backgrounds = {}
@@ -401,6 +402,9 @@ class Renderer:
     def render_menu(self, data, index=0):
         self.menu_renderer.render(data, index)
 
+    def render_highscores(self, data, index = 0):
+        self.highscores_renderer.render(data, index)
+
     def render_popup(self, title: str, body: list, screen_params, index):
         line_size = 24
         line_spacing = 30  # slightly more than size to avoid overlap
@@ -655,6 +659,61 @@ class MenuRenderer:
     def render_game_stats(self, data, pos, color):
         self.render_lines(data["lines"], color=color, pos=pos, lineheight=50)
 
+class HighscoreRenderer:
+    def __init__(self, renderer: Renderer) -> None:
+        self.renderer = renderer
+        self.display = renderer.display
+        self.render_line = renderer.render_line
+        self.render_lines = renderer.render_lines
+
+        self.tile_size = (160, 133)  # Size for each upgrade tile
+
+        # Load the background image for the upgrade menu
+        bg_image = pg.image.load(
+            IMAGE_PATH / "backgrounds" / "Highscore.png"
+        ).convert()
+        self.bg_images = [
+            pg.transform.scale(img, self.display.get_size())
+            for img in [bg_image]
+        ]
+    def render(self, data, index=0):
+        """Render the Highscore menu including background"""
+        # Draw the menu background first
+        self.display.blit(self.bg_images[index], (0, 0))
+        self.data = data
+
+        x,y = settings.ANCHOR_SHOP_TITLE
+        self.render_title((x+400,y))
+        self.render_text((x+250,y+100))
+
+    def render_background(self, index=0):
+        bg_image = self.bg_images[index]
+        self.menu_background = pg.transform.scale(bg_image, self.display.get_size())
+        self.display.blit(self.menu_background, (0, 0))
+
+    def render_title(self, pos):
+        title = "Highscores"
+        self.render_line(
+            title,
+            WHITE,
+            pos,
+            font=self.renderer.font_custom_small,
+            size=80,
+            border_width=8,
+            pulse=1.05,
+        )
+
+    def render_text(self, pos):
+        text = self.data
+
+        self.render_lines(
+                "\n".join(text),
+                colors["UI Text"],
+                pos,
+                font=self.renderer.titlefont,
+                size=50,
+                lineheight=25
+            )
 
 class CurvesRenderer:
     def __init__(self, renderer: Renderer) -> None:
