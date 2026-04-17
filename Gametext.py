@@ -1,4 +1,4 @@
-from attr import dataclass
+
 
 
 class GameText:

@@ -221,10 +221,8 @@ class GameModel:
             "Date",
             points=[(h, ts) for h, ts in zip(range(8760), self.model.timestamp)],
         )
-        self.curve_pv = Curve(
-            "PV",
-            points=[(h, ts) for h, ts in zip(range(8760), self.model.PV.TSD)],
-        )
+        
+        self.setup_curve_pv()
 
         self.default_curve = Curve(
             "Default",
@@ -233,6 +231,12 @@ class GameModel:
         self.cleanup()
 
         return True
+    
+    def setup_curve_pv(self):
+        self.curve_pv = Curve(
+                "PV",
+                points=[(h, ts) for h, ts in zip(range(8760), self.model.PV.TSD)],
+            )
 
     def update_level_finished(self):
         """at the end of level, update comfort rating"""
@@ -595,6 +599,8 @@ class GameModel:
         def add_pv():
             kWp = self.model.PV.kWp + 5
             self.model.PV.set_kWp(kWp)
+            self.setup_curve_pv()
+            # pv 
 
 
 
