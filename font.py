@@ -22,12 +22,13 @@ class Font():
                                 'w', 'x', 'y', 'z', '.', '-', ',', ':', '+', '\'', '!', '?',
                                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')',
                                 '/', '_', '=', '\\', '[', ']', '*', '"', '<', '>', ';', '°',
-                                '#', '²', '³', '|', '??', '%', '€']
+                                '#', '²', '³', '|', '?', '%', '€', 'Ä', 'Ö', 'Ü', 'ä', 'ö',
+                                'ü', 'ß', '₂']
         font_img = pygame.image.load(path).convert()
         self.height = font_img.get_height()
         current_char_width = 0
         self.characters = {}
-        self.missing_char_replacement = "??"
+        self.missing_char_replacement = "?"
         character_count = 0
         for x in range(font_img.get_width()):
             c = font_img.get_at((x, 0))

@@ -191,7 +191,7 @@ def level_success():
     sound_manager.yipie()
     sound_manager.play("victory")
     game.update_level_finished()
-    title = gt.get(LANGUAGE, "survived1") + game.current_level.number + gt.get(LANGUAGE, "survived1")
+    title = gt.get(LANGUAGE, "survived1") + str(game.current_level.number) + gt.get(LANGUAGE, "survived2")
     level_success_popup = Popup(
         title=title,
         body=[f"{label} {value}" for label, value in game.get_kpis().items()],
@@ -499,17 +499,13 @@ class LevelScreen(Screen):
                         level_success()
 
                 if game.is_bankrupt():
-                    game_over(reason="You spent all your money!")
+                    game_over(reason=gt.get(LANGUAGE, "bancrupt"))
 
                 if game.is_too_hot():
-                    level_fail(text="Everyone died of heat stroke!")
+                    level_fail(text=gt.get(LANGUAGE, "too_hot"))
 
                 if game.is_too_cold():
-                    text = """
-                    Everyone froze into icicles!
-                    
-                    If the temperature drops out of the green comfort zone,
-                    you will quickly loose indoor comfort."""
+                    text = gt.get(LANGUAGE, "too_cold")
                     level_fail(text=text)
 
             

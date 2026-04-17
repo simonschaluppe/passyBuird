@@ -15,7 +15,7 @@ class GameText:
         "victory": "You've completed the game, Good Job!",
         "description": [
             "We research climate-fit buildings, simulating building energy demand,",
-            "CO2-Emissions and how to reduce the carbon footprint of the built environment.",
+            "CO₂-Emissions and how to reduce the carbon footprint of the built environment.",
             "",
             "This game is based on a simulation model developed by students",
             "Try it out and play a round!",
@@ -28,12 +28,13 @@ class GameText:
         ],
         "welcome": "Welcome to ",
         "upgrade": "Upgrade",
-        "freeze_death": [
-            "Everyone froze into icicles!",
-            "",
-            "If the temperature drops out of the green comfort zone,",
-            "you will quickly lose indoor comfort.",
-        ],
+        "bankrupt":"You spent all your money!",
+        "too hot":"Everyone died of heat stroke!",
+        "too_cold": """
+                    Everyone froze into icicles!
+                    
+                    If the temperature drops out of the green comfort zone,
+                    you will quickly loose indoor comfort."""
     }
 
     ger = {
@@ -48,26 +49,62 @@ class GameText:
         "continue": "Weiter",
         "victory": "Gratuliere! Du hast das Spiel gewonnen!",
         "description": [
-            "Wir erforschen klimafitte Gebaeude, simulieren deren Energiebedarf und CO2-Emissionen",
-            "und untersuchen, wie sich der CO2-Fussabdruck der bebauten Umwelt verringern laesst.",
+            "Wir erforschen klimafitte Gebäude, simulieren deren Energiebedarf und CO₂-Emissionen",
+            "und untersuchen, wie sich der CO₂-Fußabdruck der bebauten Umwelt verringern lässt.",
             "",
             "Dieses Spiel basiert auf einem von Studierenden entwickelten Simulationsmodell",
             "Probieren Sie es aus und spielen Sie eine Runde!",
             "",
             "",
-            "Weitere Informationen zu unseren Aktivitaeten:",
+            "Weitere Informationen zu unseren Aktivitäten:",
             "   -Bachelor-Studiengang Erneuerbare Energien",
             "   -Master-Studiengang Renewable Energy Engineering",
-            "   -Master-Studiengang Klimabewusste Gebaeudetechnik",
+            "   -Master-Studiengang Klimabewusste Gebäudetechnik",
         ],
         "welcome": "Willkommen zu ",
         "upgrade": "Upgrade",
-        "freeze_death": [
-            "Alle sind zu Eiszapfen gefroren!",
+        "bankrupt":"Du bist pleite!",
+        "too hot":"Das wurde ein bisschen zu heiß!",
+        "too_cold": """
+                    Alle sind zu Eiszapfen gefroren!
+                    
+                    Wenn die Temperatur den grünen Komfortbereich verlässt,
+                    wird der Komfortwert schnell negativ."""
+    }
+
+    wien = {
+        "game_over": "GAME OVER!",
+        "start_new_game": "Neichs Spü startn",
+        "shop": "Zum Gschäftl",
+        "start_level": "Level startn",
+        "level_failed": "Level versemmelt!",
+        "retry": "No amoi",
+        "survived1": "Du hosts Level ",
+        "survived2": " g'schafft!",
+        "continue": "Weita",
+        "victory": "I wea narrisch! Du hosts Spü g'wonnen!",
+        "description": [
+            "Ma erforschen klimafitte Gebäud, simuliern deren Energiebedarf und CO₂-Emissionen",
+            "und schaugn, wia si da CO₂-Fußabdruck von da bebautn Umwelt verringern lässt.",
             "",
-            "Wenn die Temperatur den grünen Komfortbereich verlässt,",
-            "verlieren Sie schnell den Innenkomfort.",
+            "Des Spü basiert auf am Simulationsmodell, des von Studierenden entwickelt wor'n is.",
+            "Probier's aus und spü a Rundn!",
+            "",
+            "",
+            "Weitane Infos zu unsana Aktivitätn:",
+            "   -Bachelor-Studiengang Erneuerbare Energien",
+            "   -Master-Studiengang Renewable Energy Engineering",
+            "   -Master-Studiengang Klimabewusste Gebäudetechnik",
         ],
+        "welcome": "Servus bei ",
+        "upgrade": "Upgrade",
+        "bankrupt":"Fuat is die Marie!",
+        "too hot":"Es is' hoasser wia in da U6!",
+        "too_cold": """
+                    I schlotter wie narrisch!
+                    
+                    Wenn d' Temperatur den grüna Komfortbereich verlasst,
+                    verlierst da schnö an Innenkomfort."""
     }
 
     @staticmethod
