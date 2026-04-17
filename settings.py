@@ -28,13 +28,13 @@ POS_REMAINING_HOURS_VALUE = (700, 50)
 BUTTON_BORDER_COLOR = (255,255,255)
 
 BUTTON_SIZE = {
-    "Start New Game": (300, 60),
+    "Start New Game": (280, 60),
     "Retry": (250, 60),
     "Continue": (250, 60),
     "Go to Shop": (150, 60),
     "Start Level": (200, 60),
     "150x60": (150, 60),
-    "170x60": (200, 60),
+    "170x60": (170, 60),
     "Upgrade": (400, 50)
 }
 

@@ -67,7 +67,6 @@ def get_btn_pos(orientation=None):
         )
     )
 
-
 # TODO: Move to utility or renderer
 def get_background(hour_of_year):
     # Use modular arithmetic to cycle through the backgrounds
@@ -110,6 +109,9 @@ def toggle_autopilot():
     global AUTOPILOT
     AUTOPILOT = not AUTOPILOT
     game.AUTOPILOT = not game.AUTOPILOT
+
+def toggle_audio():
+    sound_manager.toggle_mute()
 
 def game_over(reason="You have lost the game."):
     sound_manager.play("game_over")
@@ -246,7 +248,7 @@ def take_screenshot(filename=None):
         screenshot_dir = Path("Screenshots")
         screenshot_dir.mkdir(parents=True, exist_ok=True)  # Ordner anlegen falls nicht vorhanden
 
-        now = datetime.datetime.now().strftime('%d-%m-%y_%H-%M')
+        now = datetime.datetime.now().strftime('%d-%m-%y_%H-%M-%S')
         #datetime.datetime(2009, 1, 6, 15, 8, 24, 78915)
 
         if filename is None:
@@ -327,6 +329,7 @@ class TitleScreen(Screen):
         self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
+        self.handler.bind_keypress(pg.K_m, toggle_audio)
 
     @override
     def render(self) -> None:
@@ -380,13 +383,13 @@ class ShopScreen(Screen):
                 get_btn_pos("bottom right"),
                 start_level_intro,
                 gt.get(LANGUAGE, "start_level"),
-                size=settings.BUTTON_SIZE["170x60"],
+                size=settings.BUTTON_SIZE["Start Level"],
             ),
             Button(
                 get_btn_pos("bottom left"),
                 start_new_game,
                 gt.get(LANGUAGE, "start_new_game"),
-                size=settings.BUTTON_SIZE["170x60"],
+                size=settings.BUTTON_SIZE["Start New Game"],
             ),
             Button(
                 (get_btn_pos("bottom center")),
@@ -402,6 +405,7 @@ class ShopScreen(Screen):
         self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
         self.handler.bind_keypress(pg.K_q, quit)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
+        self.handler.bind_keypress(pg.K_m, toggle_audio)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
     @override
@@ -459,6 +463,7 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_a, toggle_autopilot)
         self.handler.bind_keypress(pg.K_ESCAPE, start_shop_loop)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
+        self.handler.bind_keypress(pg.K_m, toggle_audio)
 
     @override
     def loop(self) -> None:
@@ -592,6 +597,7 @@ class Popup(Screen):
     def config_handler(self) -> None:
         self.handler.bind_keypress(pg.K_q, quit_game)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
+        self.handler.bind_keypress(pg.K_m, toggle_audio)
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
         if self.keys:
@@ -651,6 +657,69 @@ class Victory(Screen):
         if self.keys:
             [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]            
 
+class Highscore(Screen):
+    """Highscore screen, where player can view the best scores."""
+
+    @override
+    def config_handler(self) -> None:
+        # register buttons
+
+        buttons = [
+            Button(
+                get_btn_pos("bottom right"),
+                start_new_game,
+                gt.get(LANGUAGE, "start_new_game"),
+                size=settings.BUTTON_SIZE["start_new_game"],
+            ),
+            Button(
+                get_btn_pos("bottom left"),
+                start_shop_loop,
+                gt.get(LANGUAGE, "shop"),
+                size=settings.BUTTON_SIZE["Go to Shop"],
+            ),
+            Button(
+                (get_btn_pos("bottom center")),
+                lambda: start_level_intro(3),
+                "Start level 3",
+                size=settings.BUTTON_SIZE["170x60"],
+            ),
+            *self.upgrade_buttons,
+        ]
+        [self.handler.register_button(button) for button in buttons]
+
+        # bind key presses
+        self.handler.bind_keypress(pg.K_RETURN, start_level_intro)
+        self.handler.bind_keypress(pg.K_q, quit)
+        self.handler.bind_keypress(pg.K_s, take_screenshot)
+        self.handler.bind_keypress(pg.K_m, toggle_audio)
+        # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
+
+    @override
+    def render(self) -> None:
+        renderer.render_menu(game.get_menu_data(), index=game.insulation_level)
+
+        for button in self.handler.buttons:
+            renderer.render_button(button)
+
+        particle_manager.render()
+
+        screen.blit(renderer.display, (0, 0))
+        pg.display.update()
+
+    @override
+    def loop(self) -> None:
+        """Basic handler/render loop."""
+        running = True
+        while running:
+            running = self.handler.update()
+            particle_manager.update()
+            for b in self.upgrade_buttons:
+                b.disabled = False
+                if b.upgrade.cost > game.money:
+                    b.disabled = True
+            self.render()
+
+            clock.tick(60)
 
 """Screen instances"""
 

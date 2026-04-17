@@ -15,6 +15,7 @@ import settings
 from upgrades import Upgrade, UPGRADES
 from levels import Level, LEVELS
 from model.Simulation import EnergyModel
+from model.Simulation import HVACSYSTEM
 
 DEFAULT_SPEED = 24
 
@@ -126,7 +127,7 @@ class GameModel:
         self,
         starting_power=15,
         starting_cop=3,
-    ):
+        ):
 
         self.money = 1_000_000 if self.godmode else 1_000
         self.insulation_level = 0
@@ -136,11 +137,10 @@ class GameModel:
         self.current_level_index = 0
         self.energy_discount = 0  # 0-100 [%]
         self.model.building.reset()
-        self.set_heating_power(starting_power)
-        self.set_cooling_power(starting_power)
-        self.set_cop(starting_cop)
+        self.reset_upgrades()
         self.setup_upgrades()
         self.reset_levels()
+ 
 
     def reset_levels(self):
         # self.levels = iter(LEVELS)
@@ -148,6 +148,17 @@ class GameModel:
         self.total_comfort = 1  # average comfort score across all levels played
         self.total_duration = 0  # hours simulated across all levels played
         self.setup_level(0)
+
+    def reset_upgrades(self):
+            self.set_heating_power(starting_power)
+            self.set_cooling_power(starting_power)
+            self.set_cop(starting_cop)
+
+            self.upgrades['wall_insulation'].level = 0
+            self.upgrades["power"].level = 0
+            self.upgrades['heatpump_efficiency'].level = 0
+            self.upgrades['electricity_price_discount'].level = 0
+            self.upgrades['pv'].level = 0
 
     def setup_next_level(self):
         self.current_level_index += 1
@@ -357,6 +368,9 @@ class GameModel:
         """cleans up logic and other flags for the next time step"""
         self.heat_on = False
         self.cool_on = False
+
+    def set_highscore(self):
+        return None
 
     # model data wrappers
     def get_insulation(self):
@@ -581,6 +595,8 @@ class GameModel:
         def add_pv():
             kWp = self.model.PV.kWp + 5
             self.model.PV.set_kWp(kWp)
+
+
 
         self.upgrades["wall_insulation"].callback = lambda: upgrade(
             self.upgrades["wall_insulation"], wall_insulation

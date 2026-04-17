@@ -29,12 +29,17 @@ class GameText:
         "welcome": "Welcome to ",
         "upgrade": "Upgrade",
         "bankrupt":"You spent all your money!",
-        "too hot":"Everyone died of heat stroke!",
+        "too_hot":"Everyone died of heat stroke!",
         "too_cold": """
                     Everyone froze into icicles!
                     
                     If the temperature drops out of the green comfort zone,
-                    you will quickly loose indoor comfort."""
+                    you will quickly loose indoor comfort.""",
+        "upgrade_text": ["-> Insulation: Lvl ",
+                    "-> Heat Pump Power: Lvl ",
+                    "-> Heat Pump Efficiency: Lvl ",
+                    "-> Electricity Price Discount: Lvl ",
+                    "-> Electricity Production: Lvl "]
     }
 
     ger = {
@@ -64,12 +69,17 @@ class GameText:
         "welcome": "Willkommen zu ",
         "upgrade": "Upgrade",
         "bankrupt":"Du bist pleite!",
-        "too hot":"Das wurde ein bisschen zu heiß!",
+        "too_hot":"Das wurde ein bisschen zu heiß!",
         "too_cold": """
                     Alle sind zu Eiszapfen gefroren!
                     
                     Wenn die Temperatur den grünen Komfortbereich verlässt,
-                    wird der Komfortwert schnell negativ."""
+                    wird der Komfortwert schnell negativ.""",
+        "upgrade_text":["Dämmung: Lvl ",
+                    "-> Leistung Wärmepumpe: Lvl ",
+                    "-> Effizienz Wärmepumpe: Lvl ",
+                    "-> Strompreisrabatt: Lvl ",
+                    "-> Stromproduktion: Lvl "]
     }
 
     wien = {
@@ -99,12 +109,17 @@ class GameText:
         "welcome": "Servus bei ",
         "upgrade": "Upgrade",
         "bankrupt":"Fuat is die Marie!",
-        "too hot":"Es is' hoasser wia in da U6!",
+        "too_hot":"Es is' hoasser wia in da U6!",
         "too_cold": """
                     I schlotter wie narrisch!
                     
                     Wenn d' Temperatur den grüna Komfortbereich verlasst,
-                    verlierst da schnö an Innenkomfort."""
+                    verlierst da schnö an Innenkomfort.""",
+        "upgrade_text":["-> Dämmung: Lvl ",
+                        "-> Wärmepump'n Leistung: Lvl ",
+                        "-> Wärmepump'n Effiziänz : Lvl ",
+                        "-> Freinderlwirtschoft: Lvl ",
+                        "-> Stromerzeigung: Lvl "]
     }
 
     @staticmethod
@@ -113,4 +128,6 @@ class GameText:
             return GameText.eng[key]
         if language == "Deutsch":
             return GameText.ger[key]
+        if language == "Wienerisch":
+            return GameText.wien[key]
         raise ValueError(f"Unsupported language: {language}")

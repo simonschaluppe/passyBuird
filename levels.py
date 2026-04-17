@@ -80,7 +80,7 @@ LEVELS = [
         background = "Fall.png",
         comfort=Comfortmodel(
             random=False,
-            maximum_room_temperature=30,
+            maximum_room_temperature=27,
         ),
         start_paused= False
     ),
@@ -106,7 +106,7 @@ LEVELS = [
         ],
 
         start = 0,
-        end= 0 + 7 * 24 * 2,
+        end= 7 * 24 * 2,
         speed=14,
         start_TI=18,
         reward=700,
