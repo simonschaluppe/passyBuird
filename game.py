@@ -10,14 +10,14 @@ from handler import Button, InputHandler
 from model.GameModel import GameModel
 from particles import ParticleManager
 from renderer import Renderer
-from Gametext import GameText as gt
 from pathlib import Path
 from Highscores import Scoreboard
 import datetime
+import language.german as language  # set language here
 
 DEBUG_MODE = settings.DEBUG_MODE
 AUTOPILOT = False
-LANGUAGE = "Deutsch"
+
 # Initialize pygame
 pg.init()
 print(pg.version)
@@ -120,13 +120,13 @@ def toggle_audio():
 def game_over(reason="You have lost the game."):
     sound_manager.play("game_over")
     Popup(
-        title=gt.get(LANGUAGE, "game_over"),
+        title=language.GAME_OVER,
         body=[f"{label}: {value}" for label, value in game.get_kpis().items()],
         buttons=[
             Button(
                 get_btn_pos("popup right"),
                 start_new_game,
-                gt.get(LANGUAGE, "start_new_game"),
+                language.START_NEW_GAME,
                 size=settings.BUTTON_SIZE["Start New Game"],
             )
         ],
@@ -148,13 +148,13 @@ def start_level_intro(level=None):
             Button(
                 get_btn_pos("popup left"),
                 start_shop_loop,
-                gt.get(LANGUAGE, "shop"),
+                language.SHOP,
                 size=settings.BUTTON_SIZE["Go to Shop"],
             ),
             Button(
                 get_btn_pos("popup right"),
                 start_level_loop,
-                gt.get(LANGUAGE, "start_level"),
+                language.START_LEVEL,
                 size=settings.BUTTON_SIZE["Start Level"],
             ),
         ],
@@ -172,7 +172,7 @@ def level_fail(text: str):
     game.setup_level()
     game.money += game.moneyspent
     game.moneyspent = 0
-    title = gt.get(LANGUAGE, "level_failed")
+    title = language.LEVEL_FAILED
     level_fail_screen = Popup(
         title=title,
         body=[*text.split("\n")],
@@ -180,7 +180,7 @@ def level_fail(text: str):
             Button(
                 get_btn_pos("popup left"),
                 start_level_intro,
-                gt.get(LANGUAGE, "retry"),
+                language.RETRY,
                 size=settings.BUTTON_SIZE["Retry"],
             )
         ],
@@ -197,7 +197,7 @@ def level_success():
     sound_manager.yipie()
     sound_manager.play("victory")
     game.update_level_finished()
-    title = gt.get(LANGUAGE, "survived1") + str(game.current_level.number) + gt.get(LANGUAGE, "survived2")
+    title = language.SURVIVED1 + str(game.current_level.number) + language.SURVIVED2
     level_success_popup = Popup(
         title=title,
         body=[f"{label} {value}" for label, value in game.get_kpis().items()],
@@ -205,7 +205,7 @@ def level_success():
             Button(
                 get_btn_pos("popup right"),
                 start_level_intro,
-                gt.get(LANGUAGE, "continue"),
+                language.CONTINUE,
                 size=settings.BUTTON_SIZE["Continue"],
             )
         ],
@@ -238,7 +238,7 @@ def victory_loop():
         particle_manager.success(
             position=(x, y), velocity=(random.randint(-10, 10), random.randint(-10, 10))
         )
-    print(gt.get(LANGUAGE, "victory"))
+    print(language.VICTORY)
     Victory().loop()
 
 
@@ -323,7 +323,7 @@ class TitleScreen(Screen):
             Button(
                 get_btn_pos("popup right"),
                 start_level_intro,
-                gt.get(LANGUAGE, "start_new_game"),
+                language.START_NEW_GAME,
                 size=settings.BUTTON_SIZE["Start New Game"],
             ),
         ]
@@ -339,10 +339,10 @@ class TitleScreen(Screen):
 
     @override
     def render(self) -> None:
-        description = gt.get(LANGUAGE, "description")
+        description = language.DESCRIPTION
 
         renderer.render_title_screen(
-            title=gt.get(LANGUAGE, "welcome"),
+            title=language.WELCOME,
             body=description,
             screen_params=center_screen(0.8),
             index=game.insulation_level,
@@ -388,13 +388,13 @@ class ShopScreen(Screen):
             Button(
                 get_btn_pos("bottom right"),
                 start_level_intro,
-                gt.get(LANGUAGE, "start_level"),
+                language.START_LEVEL,
                 size=settings.BUTTON_SIZE["Start Level"],
             ),
             Button(
                 get_btn_pos("bottom left"),
                 start_new_game,
-                gt.get(LANGUAGE, "start_new_game"),
+                language.START_NEW_GAME,
                 size=settings.BUTTON_SIZE["Start New Game"],
             ),
             Button(
@@ -510,14 +510,13 @@ class LevelScreen(Screen):
                         level_success()
 
                 if game.is_bankrupt():
-                    game_over(reason=gt.get(LANGUAGE, "bankrupt"))
+                    game_over(reason=language.BANKRUPT)
 
                 if game.is_too_hot():
-                    level_fail(text=gt.get(LANGUAGE, "too_hot"))
+                    level_fail(text=language.TOO_HOT)
 
                 if game.is_too_cold():
-                    text = gt.get(LANGUAGE, "too_cold")
-                    level_fail(text=text)
+                    level_fail(text=language.TOO_COLD)
 
             
             particle_manager.update()
@@ -619,13 +618,13 @@ class Victory(Screen):
 
     def __init__(self):
         self.title = "You beat the game!"
-        self.body = "Congratulations, etc"
+        self.body = language.VICTORY        # Needs to be list
         self.buttons = (
             Button(
                 get_btn_pos("popup right"),
                 start_shop_loop,
-                gt.get(LANGUAGE,"start_new_game"),
-                size=settings.BUTTON_SIZE["170x60"],
+                language.START_NEW_GAME,
+                size=settings.BUTTON_SIZE["Start New Game"],
             ),
         )
         self.keys = [
@@ -659,6 +658,9 @@ class Victory(Screen):
 
     @override
     def config_handler(self) -> None:
+        self.handler.bind_keypress(pg.K_q, quit_game)
+        self.handler.bind_keypress(pg.K_s, take_screenshot)
+        self.handler.bind_keypress(pg.K_m, toggle_audio)
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
         if self.keys:
@@ -675,13 +677,13 @@ class HighscoreScreen(Screen):
             Button(
                 get_btn_pos("bottom left"),
                 start_new_game,
-                gt.get(LANGUAGE, "start_new_game"),
+                language.START_NEW_GAME,
                 size=settings.BUTTON_SIZE["Start New Game"],
             ),
             Button(
                 get_btn_pos("bottom right"),
                 start_shop_loop,
-                gt.get(LANGUAGE, "shop"),
+                language.SHOP,
                 size=settings.BUTTON_SIZE["Go to Shop"],
             ),
             Button(
