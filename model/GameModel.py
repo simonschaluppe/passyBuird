@@ -370,9 +370,6 @@ class GameModel:
         self.heat_on = False
         self.cool_on = False
 
-    def set_highscore(self):
-        return None
-
     # model data wrappers
     def get_insulation(self):
         return self.model.building.LT

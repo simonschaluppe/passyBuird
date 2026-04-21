@@ -37,4 +37,7 @@ UPGRADE_TEXT = [
     "-> Freinderlwirtschoft: Lvl ",
     "-> Stromerzeigung: Lvl ",
 ]
-VICTORY = ["Sicha da dei Platz auf da G'winnatofl!", "Gib dei Nam ein, damit dei Punkt' g'speichat wird."]
+VICTORY = "Sicha da dei Platz auf da G'winnatofl!"
+VICTORY_TEXTBOX = "Gib dei Nam ein, damit dei Punkt' g'speichat wird."
+
+HIGHSCORE = "Highscores"
