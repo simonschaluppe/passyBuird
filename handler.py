@@ -1,9 +1,11 @@
 import pygame as pg
 
+import settings
+
 import music
 
 class Button:
-    def __init__(self, pos, callback, text="", size=(150, 40)):
+    def __init__(self, pos, callback, text="", size=settings.BUTTON_SIZE_DEFAULT):
         self.position = pos
         self.size = size
         self.text = text
@@ -104,9 +106,9 @@ class TextInput:
 
     def handle_keydown(self, event: pg.event.Event):
         # Returns True if handled (so outer handler doesn’t process it again)
-        if event.key == pg.K_RETURN:
-            self.submit()
-            return True
+        # if event.key == pg.K_RETURN:
+        #     self.submit()
+        #     return True
         if event.key == pg.K_BACKSPACE:
             self.backspace()
             return True

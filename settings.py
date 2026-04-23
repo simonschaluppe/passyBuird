@@ -37,10 +37,11 @@ TEXTBOX_BORDER_COLOR = (50, 50, 50)
 TEXTBOX_POS = (250,300)
 TEXTBOX_SIZE = (800, 60)
 
+BUTTON_SIZE_DEFAULT = (250, 60)
 BUTTON_SIZE = {
-    "Start New Game": (280, 60),
-    "Retry": (250, 60),
-    "Continue": (250, 60),
+    "Start New Game": BUTTON_SIZE_DEFAULT,
+    "Retry": BUTTON_SIZE_DEFAULT,
+    "Continue": BUTTON_SIZE_DEFAULT,
     "Go to Shop": (150, 60),
     "Start Level": (200, 60),
     "150x60": (150, 60),

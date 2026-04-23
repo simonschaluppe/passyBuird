@@ -342,6 +342,12 @@ class TitleScreen(Screen):
         # register buttons
         buttons = [
             Button(
+                get_btn_pos("popup left"),
+                start_highscore_loop,
+                language.HIGHSCORE,
+                size=settings.BUTTON_SIZE["Start New Game"],
+            ),
+            Button(
                 get_btn_pos("popup right"),
                 start_level_intro,
                 language.START_NEW_GAME,
@@ -414,9 +420,8 @@ class ShopScreen(Screen):
             ),
             Button(
                 get_btn_pos("bottom left"),
-                start_new_game,
-                language.START_NEW_GAME,
-                size=settings.BUTTON_SIZE["Start New Game"],
+                start_title_loop,
+                language.MAIN_MENU,
             ),
             Button(
                 (get_btn_pos("bottom center")),
@@ -649,6 +654,7 @@ class Victory(Screen):
         self.body = [language.VICTORY_TEXT]         # needs to be list
         # Text input position near center popup; adjust as needed
         input_pos = (180,300)  # or a fixed (x, y)
+        submit_score = None
         self.name_input = TextInput(
             pos=input_pos,
             size=(900, 60),
@@ -656,23 +662,14 @@ class Victory(Screen):
             text="",
             max_length=24,
         )
+        def submit_score():
+            save_highscore(self.name_input.text, calculate_score())
+            start_highscore_loop
 
         self.buttons = (
             Button(
                 get_btn_pos("popup right"),
-                start_shop_loop,
-                language.START_NEW_GAME,
-                size=settings.BUTTON_SIZE["Start New Game"],
-            ),
-            Button(
-                get_btn_pos("popup left"),
-                start_highscore_loop,
-                language.HIGHSCORE,
-                size=settings.BUTTON_SIZE["Start New Game"],
-            ),
-            Button(
-                (180, 370),
-                lambda: save_highscore(self.name_input.text, calculate_score()),
+                submit_score,
                 language.SAVE_HIGHSCORE,
                 size=settings.BUTTON_SIZE["Start New Game"],
             ),
@@ -684,8 +681,8 @@ class Victory(Screen):
             # )
         )
         self.keys = [
-            (pg.K_RETURN, start_shop_loop),  # keep if you want Enter to also start
-            (pg.K_ESCAPE, start_shop_loop),
+            (pg.K_RETURN, submit_score),  # keep if you want Enter to also start
+            (pg.K_ESCAPE, start_new_game),
         ]
         super().__init__()
 
@@ -738,21 +735,18 @@ class HighscoreScreen(Screen):
         buttons = [
             Button(
                 get_btn_pos("bottom left"),
-                start_new_game,
-                language.START_NEW_GAME,
-                size=settings.BUTTON_SIZE["Start New Game"],
-            ),
-            Button(
-                get_btn_pos("bottom right"),
-                start_shop_loop,
-                language.SHOP,
-                size=settings.BUTTON_SIZE["Go to Shop"],
+                start_title_loop,
+                language.MAIN_MENU,
             ),
             Button(
                 (get_btn_pos("bottom center")),
                 start_shop_loop,
-                "Shop",
-                size=settings.BUTTON_SIZE["170x60"],
+                language.SHOP,
+            ),
+            Button(
+                get_btn_pos("bottom right"),
+                start_new_game,
+                language.START_NEW_GAME,
             ),
         ]
         [self.handler.register_button(button) for button in buttons]
