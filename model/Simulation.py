@@ -124,9 +124,9 @@ class EnergyModel:
 
         self.Btt_to_ED = np.zeros(8760)
 
-        self.CO2 = conversion.get_default_co2_profile(
+        self.CO2 = conversion.get_default_co2_profile( # kg/kWh
             conversion.DEFAULT_PROFILES.ElectricityMap2018
-        )
+        ) 
 
         self.emissions = np.zeros(8760)
 

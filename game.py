@@ -139,6 +139,7 @@ def game_over(reason="You have lost the game."):
             (pg.K_RETURN, start_new_game),
             (pg.K_ESCAPE, start_new_game),
         ],
+        fail_reason=reason
     ).loop()
 
 
@@ -171,7 +172,7 @@ def start_level_intro(level=None):
     level_intro_popup.loop()
 
 
-def level_fail(text: str):
+def level_fail(text: str, reason="None"):
     sound_manager.play("game_over")
     game.update_level_finished()
     game.setup_level()
@@ -193,7 +194,7 @@ def level_fail(text: str):
             (pg.K_RETURN, start_level_loop),
             (pg.K_ESCAPE, start_new_game),
         ],
-        fail=True
+        fail_reason=reason,
     )
     level_fail_screen.loop()
 
@@ -287,6 +288,7 @@ def cool():
     particle_manager.cool(game.position, (0.5 * game.qc, -game.qc))
 
 def calculate_score():
+    return int(game.total_GHG_avoided)
     comfort_score = game.get_comfort_score()
     ui_data = game.get_ui_data()
     comfort = ui_data["Scores"]["Comfort"]["score"]
@@ -299,7 +301,6 @@ def calculate_score():
           "money",money,
           "emissions", emissions,
           "score",score)
-    #return score
 
 
 # def place_buttons()
@@ -533,10 +534,10 @@ class LevelScreen(Screen):
                     game_over(reason=language.BANKRUPT)
 
                 if game.is_too_hot():
-                    level_fail(text=language.TOO_HOT)
+                    level_fail(text=language.TOO_HOT, reason="Too hot")
 
                 if game.is_too_cold():
-                    level_fail(text=language.TOO_COLD)
+                    level_fail(text=language.TOO_COLD, reason="Too cold")
 
             
             particle_manager.update()
@@ -594,18 +595,25 @@ class Popup(Screen):
         body: list[str],
         buttons: list[Button] = None,
         keys: list[tuple[int, callable]] = None,
-        fail = False
+        fail_reason = False,
     ):
         self.title = title
         self.body = body
         self.buttons = buttons
         self.keys = keys
-        self.fail = fail
+        self.fail_reason = fail_reason
         super().__init__()
 
     @override
     def render(self) -> None:
-        index = game.insulation_level if not self.fail else 3
+        index = game.insulation_level  
+        if self.fail_reason:
+            index = 5 # no money
+            if self.fail_reason == "Too hot":
+                index = 3 
+            elif self.fail_reason == "Too cold":
+                index = 4
+                
         renderer.render_popup(
             title=self.title,
             body=self.body,

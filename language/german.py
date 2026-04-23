@@ -26,10 +26,17 @@ UPGRADE = "Upgrade"
 BANKRUPT = "Du bist pleite!"
 TOO_HOT = "Das wurde ein bisschen zu heiß!"
 TOO_COLD = """
-                    Alle sind zu Eiszapfen gefroren!
-                    
-                    Wenn die Temperatur den grünen Komfortbereich verlässt,
-                    wird der Komfortwert schnell negativ."""
+Oh nein!
+Alle sind zu Eiszapfen gefroren!
+
+Hinweis:                  
+Je weiter die Innen-Temperatur außerhalb 
+des  grünen Komfortbereich ist,
+umso schneller sinkt der Nutzerkomfort!
+
+Versuche frühzeitig zu heizen, sobald 
+eine Unterschreitung droht.
+"""
 UPGRADE_TEXT = [
     "Dämmung: Lvl ",
     "-> Leistung Wärmepumpe: Lvl ",

@@ -390,13 +390,14 @@ class GameModel:
         """total electricity used (kWh)"""
         return self.model.ED.sum() / 1000 * self.model.building.bgf
 
-    def get_GHG_emitted(self):
-        return self.model.emissions.sum()
+    def get_GHG_emitted(self) -> float:
+        """kg"""
+        return self.model.emissions.sum() / 1000 * self.model.building.bgf
 
     def get_GHG_avoided(self):
         q = self.model.QH.sum() / 1000 * self.model.building.bgf
         gas_ghg = q * 0.201  # kg/kWh oib rl6'18
-        return gas_ghg - self.get_GHG_emitted()
+        return gas_ghg - self.get_GHG_emitted() 
 
     def get_upgrade_text(self) -> dict:
         return {
@@ -515,6 +516,7 @@ class GameModel:
             "Price": f"Price {self.model.price_grid} €/Wh",
             "Feedin": f"Feed-In Price {self.model.price_feedin} €/Wh",
             "CO2": self.get_GHG_emitted(),
+            "CO2 avoided": self.get_GHG_avoided(),
             "COP": f"Efficiency    {self.get_cop() * 100:.0f}%",
             "Power": f"Heating Power {self.get_power()} W/m²",
             "Remaining days": f"{int(self.get_remaining_level_hours()/24)+1}",
@@ -526,18 +528,20 @@ class GameModel:
         saved = 1 - avg_price/self.model.price_grid/100
         pv_prod = self.model.PV.TSD[self.current_level.start:self.current_level.end].sum()
         return {
-            "Ueberlebt": f"{self.hour-self.current_level.start/24:.0f} Tage",
-            "Komfort": f"{self.level_comfort:.0f}%",
-            "Verursachte CO2-Emissionen": f"{self.model.emissions.sum()/1000:.0f} kg/m2",
-            "Detailergebnisse": "",
+            #"Ueberlebt": f"{self.hour-self.current_level.start/24:.0f} Tage",
+            "Erreichter Komfort:": f"{self.level_comfort:.0f}%",
+            "Verursachte CO2-Emissionen:": f"{self.get_GHG_emitted():.0f} kg",
+            "Vermiedene CO2-Emissionen:": f"{self.get_GHG_avoided():.0f} kg",
+            #"Detailergebnisse": "",
             "   -Benoetigte Heizenergie": f"{(self.model.QH.sum() / 1000):.2f} kWh/m2",
             "   -Benoetigte Kuehlenergie": f"{-self.model.QC.sum() / 1000:.2f} kWh/m2",
             "   -Verbrauchter Strom": f"{self.get_ED().sum()/1000:.2f} kWh/m2",
             "   -Produzierter Strom (PV)": f"{pv_prod:.2f} kWh",
-            "   -Strompreis": f"{avg_price:.0f} ct/kWh ({saved*100:.0f}% below market!)",
+            "   -Strompreis": f"{avg_price:.0f} ct/kWh ({saved*100:.0f}% unter Marktpreis!)",
             "": "",
-            "Energiekosten ": f"{self.moneyspent:.0f} €",
-            "Belohnung    ": f"{self.current_level.reward} €",
+            "Energiekosten ": f"-{self.moneyspent:.0f} €",
+            "Belohnung    ": f"+{self.current_level.reward} €",
+            "":"",
             "Saldo        ": f"{-self.moneyspent+self.current_level.reward:.0f} €",
         }
 

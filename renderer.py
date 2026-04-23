@@ -629,9 +629,16 @@ class MenuRenderer:
         bg_image_fail = pg.image.load(
             IMAGE_PATH / settings.BACKGROUND_FOLDER / "Heat_Stroke.png"
         ).convert()
+        bg_image_cold = pg.image.load(
+            IMAGE_PATH / settings.BACKGROUND_FOLDER / "Cold_death.png"
+        ).convert()
+        bg_image_no_money = pg.image.load(
+            IMAGE_PATH / settings.BACKGROUND_FOLDER / "No_money.png"
+        ).convert()
         self.bg_images = [
             pg.transform.scale(img, self.display.get_size())
-            for img in [bg_image, bg_image_upgraded, bg_image_upgraded_max, bg_image_fail]
+            for img in [bg_image, bg_image_upgraded, bg_image_upgraded_max, 
+                        bg_image_fail, bg_image_cold, bg_image_no_money]
         ]
     def render(self, data, index=0):
         """Render the upgrade menu including background, tiles, and costs."""
@@ -767,11 +774,9 @@ class HighscoreRenderer:
         self.render_line = renderer.render_line
         self.render_lines = renderer.render_lines
 
-        self.tile_size = (160, 133)  # Size for each upgrade tile
-
         # Load the background image for the upgrade menu
         bg_image = pg.image.load(
-            IMAGE_PATH / "backgrounds" / "Highscore.png"
+            IMAGE_PATH / "bg_pixelart" / "Highscore.png"
         ).convert()
         self.bg_images = [
             pg.transform.scale(img, self.display.get_size())
@@ -782,10 +787,8 @@ class HighscoreRenderer:
         # Draw the menu background first
         self.display.blit(self.bg_images[index], (0, 0))
         self.data = data
-        
-        x,y = settings.ANCHOR_SHOP_TITLE
-        self.render_title((x+400,y))
-        self.render_text((x+250,y+100))
+        self.render_title(settings.ANCHOR_HIGHSCORES_TITLE)
+        self.render_text(settings.ANCHOR_HIGHSCORES_TEXT)
 
     def render_background(self, index=0):
         bg_image = self.bg_images[index]
@@ -806,15 +809,15 @@ class HighscoreRenderer:
 
     def render_text(self, pos):
         text = self.data
-
-        self.render_lines(
-                "\n".join(text),
-                colors["UI Text"],
-                pos,
-                font=self.renderer.titlefont,
-                size=50,
-                lineheight=25
-            )
+        if text:
+            self.render_lines(
+                    "\n".join(text),
+                    colors["UI Text"],
+                    pos,
+                    font=self.renderer.titlefont,
+                    size=40,
+                    lineheight=45
+                )
 
 class CurvesRenderer:
     def __init__(self, renderer: Renderer) -> None:
