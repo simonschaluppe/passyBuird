@@ -6,7 +6,7 @@ import random
 from music import Music
 import settings
 from camera import Camera2D
-from handler import Button, InputHandler
+from handler import Button, InputHandler, TextInput
 from model.GameModel import GameModel
 from particles import ParticleManager
 from renderer import Renderer
@@ -22,6 +22,7 @@ AUTOPILOT = False
 pg.init()
 print(pg.version)
 sound_manager = Music()
+scoreboard = Scoreboard()
 
 # Set up the main display surface
 screen: pg.Surface = pg.display.set_mode(
@@ -102,6 +103,10 @@ def start_shop_loop():
 def start_highscore_loop():
     #sound_manager.play("highscore")
     highscore_screen.loop()
+def save_highscore(name, score):
+    #sound_manager.play("highscore")
+    scoreboard.add_score(name, score)
+    start_highscore_loop()
 
 
 # Multi line functions
@@ -280,6 +285,21 @@ def cool():
     game.cool()
     sound_manager.cool()
     particle_manager.cool(game.position, (0.5 * game.qc, -game.qc))
+
+def calculate_score():
+    comfort_score = game.get_comfort_score()
+    ui_data = game.get_ui_data()
+    comfort = ui_data["Scores"]["Comfort"]["score"]
+    money = ui_data["Scores"]["Money"]
+    emissions = ui_data["CO2"]
+
+    score = comfort + money - emissions
+    print("comfort_score",comfort_score,
+          "comfort",comfort,
+          "money",money,
+          "emissions", emissions,
+          "score",score)
+    #return score
 
 
 # def place_buttons()
@@ -617,8 +637,18 @@ class Victory(Screen):
     """
 
     def __init__(self):
-        self.title = "You beat the game!"
-        self.body = language.VICTORY        # Needs to be list
+        self.title = language.VICTORY_HEAD
+        self.body = [language.VICTORY_TEXT]         # needs to be list
+        # Text input position near center popup; adjust as needed
+        input_pos = (180,300)  # or a fixed (x, y)
+        self.name_input = TextInput(
+            pos=input_pos,
+            size=(900, 60),
+            placeholder="Enter your name",
+            text="",
+            max_length=24,
+        )
+
         self.buttons = (
             Button(
                 get_btn_pos("popup right"),
@@ -626,16 +656,33 @@ class Victory(Screen):
                 language.START_NEW_GAME,
                 size=settings.BUTTON_SIZE["Start New Game"],
             ),
+            Button(
+                get_btn_pos("popup left"),
+                start_highscore_loop,
+                language.HIGHSCORE,
+                size=settings.BUTTON_SIZE["Start New Game"],
+            ),
+            Button(
+                (180, 370),
+                lambda: save_highscore(self.name_input.text, calculate_score()),
+                language.SAVE_HIGHSCORE,
+                size=settings.BUTTON_SIZE["Start New Game"],
+            ),
+            Button(
+                get_btn_pos("bottom center"),
+                lambda: calculate_score(),
+                "Calculate Score",
+                size=settings.BUTTON_SIZE["Start New Game"],
+            )
         )
         self.keys = [
-            (pg.K_RETURN, start_shop_loop),
+            (pg.K_RETURN, start_shop_loop),  # keep if you want Enter to also start
             (pg.K_ESCAPE, start_shop_loop),
         ]
         super().__init__()
 
     @override
     def render(self) -> None:
-
         renderer.menu_renderer.render_background(index=game.insulation_level)
         if random.random() < 0.5:
             x = random.randint(0, settings.SCREEN_RESOLUTION[0])
@@ -646,13 +693,18 @@ class Victory(Screen):
             )
 
         renderer.render_popup(
-            title=self.title, body=self.body, screen_params=center_screen(size=0.8), index=game.insulation_level
+            title=self.title,
+            body=self.body,
+            screen_params=center_screen(size=0.8),
+            index=game.insulation_level
         )
+
+        # NEW: draw the input
+        renderer.render_text_input(self.name_input)
+
         for button in self.handler.buttons:
             renderer.render_button(button)
 
-        # particle_manager.render(renderer)
-        # renderer.draw_particles(particle_manager.groups["success"], color=(random.randint(100,255), random.randint(100,255), random.randint(100,255)))
         screen.blit(renderer.display, (0, 0))
         pg.display.update()
 
@@ -663,8 +715,10 @@ class Victory(Screen):
         self.handler.bind_keypress(pg.K_m, toggle_audio)
         if self.buttons:
             [self.handler.register_button(button) for button in self.buttons]
+        # NEW: register text input
+        self.handler.register_input(self.name_input)
         if self.keys:
-            [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]            
+            [self.handler.bind_keypress(pg_key, fun) for pg_key, fun in self.keys]           
 
 class HighscoreScreen(Screen):
     """Highscore screen, where player can view the best scores."""
@@ -704,7 +758,7 @@ class HighscoreScreen(Screen):
 
     @override
     def render(self) -> None:
-        renderer.render_highscores(Scoreboard().get_highscores())
+        renderer.render_highscores(scoreboard.get_highscores())
 
         for button in self.handler.buttons:
             renderer.render_button(button)

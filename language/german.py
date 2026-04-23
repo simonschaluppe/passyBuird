@@ -37,7 +37,8 @@ UPGRADE_TEXT = [
     "-> Strompreisrabatt: Lvl ",
     "-> Stromproduktion: Lvl ",
 ]
-VICTORY = "Sichere dir deinen Platz am Leaderboard!"
+VICTORY_HEAD = "Du hast das Spiel gewonnen!"
+VICTORY_TEXT = "Sichere dir deinen Platz am Leaderboard!"
 VICTORY_TEXTBOX = "Gib deinen Namen ein, um deinen Punktestand zu speichern."
-
+SAVE_HIGHSCORE = "Highscore speichern"
 HIGHSCORE = "Highscores"

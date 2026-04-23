@@ -505,6 +505,107 @@ class Renderer:
 
         self.display.blit(self.qr_code, (930, 370))
 
+    def render_text_input(self, ti: 'TextInput'):
+        # background surface
+        surf = pg.Surface(ti.size, pg.SRCALPHA)
+        w, h = ti.size
+        radius = 12
+        border = 4 + (2 if ti.hovered else 0)
+        offset = 2
+        rect = surf.get_rect().move(offset, int(offset / 2))
+
+        # border
+        pg.draw.rect(
+            surf,
+            settings.TEXTBOX_BORDER_COLOR,
+            rect,
+            border_radius=radius,
+        )
+
+        # inner fill color
+        if ti.active:
+            inner_color = settings.TEXTBOX_HOVERED_COLOR
+        elif ti.hovered:
+            inner_color = settings.TEXTBOX_HOVERED_COLOR
+        else:
+            inner_color = settings.TEXTBOX_COLOR
+
+        inner_rect = rect.inflate(-border * 2, -border * 2)
+        pg.draw.rect(
+            surf,
+            inner_color,
+            inner_rect,
+            border_radius=max(0, radius - border),
+        )
+
+        # text and cursor
+        padding_x = 10
+        padding_y = max(4, (inner_rect.height - self.fontsize) // 2)
+        text_color = WHITE if (ti.text or ti.active) else (180, 180, 180)
+
+        # render text (or placeholder)
+        display_text = ti.text if (ti.text or ti.active) else ti.placeholder
+
+        # Use the same font as buttons for consistency
+        fnt = self.font if type(self.font) is not Font else self.font_custom_small
+
+        # text surface
+        txt_surf = fnt.render(display_text, True, text_color).convert_alpha() if type(fnt) is not Font \
+            else fnt.surface(display_text, self.fontsize, text_color).convert_alpha()
+
+        # clip text if too long
+        max_text_w = inner_rect.width - 2 * padding_x
+        # if pygame font: measure substring width; for custom bitmap font we approximate using render
+        render_fn = (lambda s: fnt.render(s, True, text_color).convert_alpha()) if type(fnt) is not Font \
+            else (lambda s: fnt.surface(s, self.fontsize, text_color).convert_alpha())
+
+        # compute visible substring and caret x
+        full = ti.text
+        caret_index = ti.cursor_pos
+        # simple left-clipping view so caret stays visible at the end
+        start_index = 0
+        caret_x = 0
+        if full:
+            # ensure caret fits; back off start_index until width <= max_text_w
+            while True:
+                sub = full[start_index:caret_index]
+                sub_w = render_fn(sub).get_width() if sub else 0
+                total_w = render_fn(full[start_index:]).get_width()
+                if total_w <= max_text_w or start_index >= caret_index:
+                    caret_x = sub_w
+                    break
+                start_index += 1
+        else:
+            caret_x = 0
+
+        visible_text = (full[start_index:] if full else "")
+        if not full and not ti.active:
+            # show placeholder
+            visible_text = ti.placeholder
+
+        text_to_render = visible_text
+        # trim from right if still too long
+        while render_fn(text_to_render).get_width() > max_text_w and text_to_render:
+            text_to_render = text_to_render[:-1]
+
+        # draw text
+        text_pos = (inner_rect.x + padding_x, inner_rect.y + padding_y)
+        if type(fnt) is Font:
+            self.render_line(text_to_render, color=text_color, pos=text_pos, size=self.fontsize, font=fnt, onto=surf)
+        else:
+            txt_final = fnt.render(text_to_render, True, text_color).convert_alpha()
+            surf.blit(txt_final, text_pos)
+
+        # caret
+        if ti.active and ti._cursor_visible:
+            caret_screen_x = inner_rect.x + padding_x + caret_x
+            caret_top = inner_rect.y + padding_y
+            caret_bottom = caret_top + (self.fontsize - 2)
+            pg.draw.line(surf, WHITE, (caret_screen_x, caret_top), (caret_screen_x, caret_bottom), 2)
+
+        # blit to display
+        self.display.blit(surf, ti.position)
+
 
 class MenuRenderer:
     def __init__(self, renderer: Renderer) -> None:
@@ -681,7 +782,7 @@ class HighscoreRenderer:
         # Draw the menu background first
         self.display.blit(self.bg_images[index], (0, 0))
         self.data = data
-
+        
         x,y = settings.ANCHOR_SHOP_TITLE
         self.render_title((x+400,y))
         self.render_text((x+250,y+100))

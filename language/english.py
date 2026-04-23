@@ -36,7 +36,8 @@ UPGRADE_TEXT = ["-> Insulation: Lvl ",
                     "-> Heat Pump Efficiency: Lvl ",
                     "-> Electricity Price Discount: Lvl ",
                     "-> Electricity Production: Lvl "]
-VICTORY = "Claim your spot on the leaderboard!"
+VICTORY_HEAD = "You beat the game!"
+VICTORY_TEXT= "Claim your spot on the leaderboard!"
 VICTORY_TEXTBOX = "Enter your name to save your score."
-
+SAVE_HIGHSCORE = "Save Highscore"
 HIGHSCORE = "Highscores"
