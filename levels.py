@@ -291,56 +291,56 @@ Level(
     ),
 
 
-    Level(
-        number=8,
-        name="Level 8: Le quattro stagioni",
-        month = "December",
-        # intro=[
-        #     "Now its time to test your mettle! can you juggle fluctuating temperature",
-        #     "demands, energy prices and CO2 intensities and survive an entire year?",
-        #     "",
-        #     "",
-        #     "",
-        #     "If you run into trouble, take a look at the upgrades in the shop!"
-        # ],
-        intro=[
-            "Jetzt ist es Zeit, dein Können zu testen! Kannst du schwankende Temperatur-",
-            "anforderungen, Energiepreise und CO2-Intensitäten ein ganzes Jahr lang jonglieren?",
-            "",
-            "",
-            "",
-            "Wenn du in Schwierigkeiten gerätst, wirf einen Blick auf die Upgrades im Shop!"
-        ],
-        start=5, # some indexing issues with 0 too close to 8760
-        end=8759, # avoid modulo 8760 = 0 weirdness
-        start_TI=21,
-        speed=30,
-        reward=1000,
-        background = "Winter.png",
-        comfort=Comfortmodel(
-            p_change=1 / 6,
-            alpha=0.25,
-            sigma=0.8,
-            comfort_sensitivity=5
-        )
-    ),
-       Level(
-        number=7,
-        name="Great!",
-        month = "December",
-        intro=[
-            "This is what we do in teaching and researching climate fit buildings and districts"
-        ],
-        start=5, # some indexing issues with 0 too close to 8760
-        end=8760,
-        start_TI=21,
-        reward=1000,
-        background = "Winter.png",
-        comfort=Comfortmodel(
-            p_change=1 / 6,
-            alpha=0.25,
-            sigma=0.8,
-            comfort_sensitivity=31
-        )
-    )
+    # Level(
+    #     number=8,
+    #     name="Level 8: Le quattro stagioni",
+    #     month = "December",
+    #     # intro=[
+    #     #     "Now its time to test your mettle! can you juggle fluctuating temperature",
+    #     #     "demands, energy prices and CO2 intensities and survive an entire year?",
+    #     #     "",
+    #     #     "",
+    #     #     "",
+    #     #     "If you run into trouble, take a look at the upgrades in the shop!"
+    #     # ],
+    #     intro=[
+    #         "Jetzt ist es Zeit, dein Können zu testen! Kannst du schwankende Temperatur-",
+    #         "anforderungen, Energiepreise und CO2-Intensitäten ein ganzes Jahr lang jonglieren?",
+    #         "",
+    #         "",
+    #         "",
+    #         "Wenn du in Schwierigkeiten gerätst, wirf einen Blick auf die Upgrades im Shop!"
+    #     ],
+    #     start=5, # some indexing issues with 0 too close to 8760
+    #     end=8759, # avoid modulo 8760 = 0 weirdness
+    #     start_TI=21,
+    #     speed=30,
+    #     reward=1000,
+    #     background = "Winter.png",
+    #     comfort=Comfortmodel(
+    #         p_change=1 / 6,
+    #         alpha=0.25,
+    #         sigma=0.8,
+    #         comfort_sensitivity=5
+    #     )
+    # ),
+    #    Level(
+    #     number=9,
+    #     name="Great!",
+    #     month = "December",
+    #     intro=[
+    #         "This is what we do in teaching and researching climate fit buildings and districts"
+    #     ],
+    #     start=5, # some indexing issues with 0 too close to 8760
+    #     end=8760,
+    #     start_TI=21,
+    #     reward=1000,
+    #     background = "Winter.png",
+    #     comfort=Comfortmodel(
+    #         p_change=1 / 6,
+    #         alpha=0.25,
+    #         sigma=0.8,
+    #         comfort_sensitivity=31
+    #     )
+    # )
 ]

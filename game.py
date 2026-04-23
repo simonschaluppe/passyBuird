@@ -676,12 +676,12 @@ class Victory(Screen):
                 language.SAVE_HIGHSCORE,
                 size=settings.BUTTON_SIZE["Start New Game"],
             ),
-            Button(
-                get_btn_pos("bottom center"),
-                lambda: calculate_score(),
-                "Calculate Score",
-                size=settings.BUTTON_SIZE["Start New Game"],
-            )
+            # Button(
+            #     get_btn_pos("bottom center"),
+            #     lambda: calculate_score(),
+            #     "Calculate Score",
+            #     size=settings.BUTTON_SIZE["Start New Game"],
+            # )
         )
         self.keys = [
             (pg.K_RETURN, start_shop_loop),  # keep if you want Enter to also start

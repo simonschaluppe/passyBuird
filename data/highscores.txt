@@ -1,66 +1,6 @@
 [
   {
-    "name": "Simon",
-    "score": 2353234
-  },
-  {
-    "name": "Simon",
-    "score": 2362
-  },
-  {
-    "name": "Test",
-    "score": 0
-  },
-  {
-    "name": "Simon",
-    "score": 430
-  },
-  {
-    "name": "Simon",
-    "score": 430
-  },
-  {
-    "name": "Simon",
-    "score": 430
-  },
-  {
-    "name": "zedz",
-    "score": 0
-  },
-  {
-    "name": "Simon",
-    "score": 0
-  },
-  {
-    "name": "Simon",
-    "score": 0
-  },
-  {
-    "name": "tsasdq234567aasdayxcyxc",
-    "score": 0
-  },
-  {
-    "name": "asdasdasdsadghjktrewtiue",
-    "score": 0
-  },
-  {
-    "name": "asdasd",
-    "score": 0
-  },
-  {
-    "name": "test",
-    "score": 0
-  },
-  {
-    "name": "aha",
-    "score": 0
-  },
-  {
-    "name": "Hoho",
-    "score": 990
-  },
-  {
-    "name": "hm",
-    "score": 0
+    "name": "Paul",
+    "score": 100
   }
 ]
