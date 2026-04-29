@@ -138,6 +138,7 @@ def game_over(reason="You have lost the game."):
         keys=[
             (pg.K_RETURN, start_new_game),
             (pg.K_ESCAPE, start_new_game),
+            (pg.K_r, start_new_game),
         ],
         fail_reason=reason
     ).loop()
@@ -167,6 +168,7 @@ def start_level_intro(level=None):
         keys=[
             (pg.K_RETURN, start_level_loop),
             (pg.K_ESCAPE, start_title_loop),
+            (pg.K_r, start_new_game),
         ],
     )
     level_intro_popup.loop()
@@ -193,6 +195,7 @@ def level_fail(text: str, reason="None"):
         keys=[
             (pg.K_RETURN, start_level_loop),
             (pg.K_ESCAPE, start_new_game),
+            (pg.K_r, start_new_game),
         ],
         fail_reason=reason,
     )
@@ -218,6 +221,7 @@ def level_success():
         keys=[
             (pg.K_RETURN, start_shop_loop),
             (pg.K_ESCAPE, start_shop_loop),
+            (pg.K_r, start_new_game),
         ],
     )
     game.money += game.current_level.reward
@@ -363,6 +367,7 @@ class TitleScreen(Screen):
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
         self.handler.bind_keypress(pg.K_h, start_highscore_loop)
+        self.handler.bind_keypress(pg.K_r, start_new_game)
 
     @override
     def render(self) -> None:
@@ -439,6 +444,7 @@ class ShopScreen(Screen):
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
+        self.handler.bind_keypress(pg.K_r, start_new_game)
 
     @override
     def render(self) -> None:
@@ -683,6 +689,7 @@ class Victory(Screen):
         self.keys = [
             (pg.K_RETURN, submit_score),  # keep if you want Enter to also start
             (pg.K_ESCAPE, start_new_game),
+            (pg.K_r, start_new_game)
         ]
         super().__init__()
 
@@ -756,6 +763,7 @@ class HighscoreScreen(Screen):
         self.handler.bind_keypress(pg.K_q, quit)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
+        self.handler.bind_keypress(pg.K_r, start_new_game)
         # self.handler.bind_keypress(pg.K_ESCAPE, quit_game)
 
     @override

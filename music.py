@@ -48,8 +48,8 @@ class Music:
         self.hvac   = pg.mixer.Channel(3)
 
         # Store base volumes so we can mute/unmute cleanly
-        self._music_vol  = 0.2
-        self._sounds_vol = 1.0
+        self._music_vol  = 1.0
+        self._sounds_vol = 0.1
         self._hvac_vol   = 0.5
 
         self.music.set_volume(self._music_vol)
