@@ -26,5 +26,9 @@
   {
     "name": "Simon",
     "score": 0
+  },
+  {
+    "name": "asdasdasd",
+    "score": 0
   }
 ]
