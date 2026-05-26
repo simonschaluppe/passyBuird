@@ -9,6 +9,9 @@ The game turns building physics into something playable. Every simulated hour, t
 
 Keep the house comfortable. Use your own solar power. Buy as little grid electricity as possible. Feed in what you cannot use. Survive the levels.
 
+<img width="1280" height="720" alt="Screenshot 26-05-26_17-33-17" src="https://github.com/user-attachments/assets/a4accc7f-89c1-41f3-ba94-f09e3c1623ee" />
+
+
 ## What is this?
 
 PassyBuird is a **serious game for exploring building energy behaviour**.
