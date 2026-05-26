@@ -1,4 +1,5 @@
 from typing import Protocol
+
 import pygame as pg
 
 
@@ -16,10 +17,10 @@ class Camera(Protocol):
 
 class Camera2D(Camera):
     def __init__(
-        self,
-        surface: pg.Surface = None,
-        game_world_position=(0, 0),
-        zoom: tuple = (1, 1),
+            self,
+            surface: pg.Surface = None,
+            game_world_position=(0, 0),
+            zoom: tuple = (1, 1),
     ):
         self.screen = surface
         self.screen_width, self.screen_height = surface.get_size()
@@ -41,7 +42,9 @@ class Camera2D(Camera):
             gap = screendist.length() - self.maxdist
             if gap > 0:
                 self.position.move_towards_ip(self.follows.position, gap)
-
+                
+        self.position = pg.Vector2(self.position[0],20)
+                                
     @property
     def view_rect(self):
         rect = pg.Rect(
@@ -58,7 +61,7 @@ class Camera2D(Camera):
         return image, rect
 
     def project_rect(
-        self, rect: pg.Rect
+            self, rect: pg.Rect
     ) -> pg.Rect:  # TODO: this should just be in screen coords
         v_game = pg.Vector2(rect.center[0], rect.center[1])
         v_proj = self.screen_coords(v_game)

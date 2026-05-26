@@ -1,25 +1,23 @@
+import sys
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import matplotlib.pyplot as plt
-
-import sys
-
-ROOT_PATH = Path(__file__).parent.parent
-sys.path.append(str(Path(__file__).parent.parent))
-DATA_PATH = ROOT_PATH / "data"
-
-DEFAULT_PATH_BUILDING = Path("building_oib_16linie.xlsx")
-DEFAULT_PATH_PV = Path("pv_1kWp.csv")
-DEFAULT_PATH_USAGES = Path("usage_profiles.csv")
-
-
 
 from model import conversion
 from model.Comfort import Comfortmodel
 from model.Building import Building
 from model.PV import PV
 from model.Battery import Battery
+
+DEFAULT_PATH_USAGES = Path("usage_profiles.csv")
+ROOT_PATH = Path(__file__).parent.parent
+sys.path.append(str(Path(__file__).parent.parent))
+DATA_PATH = ROOT_PATH / "data"
+
+DEFAULT_PATH_BUILDING = Path("building_oib_16linie.xlsx")
+DEFAULT_PATH_PV = Path("PV_1kWp.csv")
 
 
 class HVACSYSTEM:
@@ -34,6 +32,7 @@ class HVACSYSTEM:
     # to supply heat demand
     HP_cooling_power = 20
     cooling_eff = 0.95
+
     # use COP,power and efficiency from heating also for cooling
 
     def __repr__(self):
@@ -47,10 +46,10 @@ class EnergyModel:
     simulated = []  # this is not strictly neccessary
 
     def __init__(
-        self,
-        building_path=Path(DATA_PATH, DEFAULT_PATH_BUILDING),
-        kWp=1,  # PV kWp
-        battery_kWh=1,
+            self,
+            building_path=Path(DATA_PATH, DEFAULT_PATH_BUILDING),
+            kWp=1,  # PV kWp
+            battery_kWh=1,
     ):  # Battery kWh
 
         ###### Compononets #####
@@ -61,6 +60,7 @@ class EnergyModel:
 
         self.PV = PV(csv=Path(DATA_PATH, DEFAULT_PATH_PV), kWp=1)
         self.PV.set_kWp(kWp)
+        print(self.PV)
 
         self.battery = Battery(kWh=battery_kWh)
 
@@ -110,7 +110,7 @@ class EnergyModel:
         self.QI = np.zeros(8760)  # Internal losses/gains
         self.Q_loss = np.zeros(8760)  # total losses without heating/cooling
 
-        self.TI = np.ones(8760)*20  # indoor temperature
+        self.TI = np.ones(8760) * 20  # indoor temperature
 
         self.QH = np.zeros(8760)  # Heating demand Wh/m²
         self.QC = np.zeros(8760)  # Cooling demand Wh/m²
@@ -124,14 +124,16 @@ class EnergyModel:
 
         self.Btt_to_ED = np.zeros(8760)
 
-        self.CO2 = conversion.get_default_co2_profile(
+        self.CO2 = conversion.get_default_co2_profile( # kg/kWh
             conversion.DEFAULT_PROFILES.ElectricityMap2018
-        )
+        ) 
+
+        self.emissions = np.zeros(8760)
 
         self.comfort_score_tsd = np.zeros(8760)
 
         ## initialize starting conditions
-        
+
         self.TI[0:start_hour] = TI_init
 
     def calc_QV(self, t):
@@ -141,7 +143,7 @@ class EnergyModel:
         cp_air = self.cp_air
         # thermally effective air change
         eff_airchange = (
-            self.ACH_I[t] + self.ACH_V[t]
+                self.ACH_I[t] + self.ACH_V[t]
         )  # * M.VentilationSystem.share_cs * rel_ACH_after_heat_recovery
 
         self.QV[t] = eff_airchange * room_height * cp_air * dT
@@ -155,7 +157,7 @@ class EnergyModel:
         heat = self.comfort.heating_season(t)
         cool = self.comfort.cooling_season(t)
         if (heat and cool) or (
-            not heat and not cool
+                not heat and not cool
         ):  # wenn beides oder keinss von beiden, mittelwert
             self.QI[t] = (self.QI_winter[t] + self.QI_summer[t]) / 2
         elif heat:
@@ -173,7 +175,7 @@ class EnergyModel:
 
     def TI_after_Q(self, TI_before, Q):
         """cp = spec. building heat_capacity"""
-        return TI_before + Q / self.building.heat_capacity # W/m²K
+        return TI_before + Q / self.building.heat_capacity  # W/m²K
 
     def is_heating_on(self, t, TI_new):
         if not self.HVAC.heating_system:
@@ -251,7 +253,10 @@ class EnergyModel:
             self.TI[t] = self.TI_after_Q(TI, self.QC[t])
 
     def calc_ED(self, t):
-        self.ED[t] = self.ED_QH[t] + self.ED_QC[t]
+        #print(self.ED_QH[t], self.ED_QC[t],self.PV.TSD[t])
+        self.ED[t] = self.ED_QH[t] + self.ED_QC[t] - self.PV.TSD[t]
+        self.emissions[t] = self.ED[t] * self.CO2[t]
+        #print("t is: ", t, " and ED is: ", self.ED[t], " and CO2 is: ", self.CO2[t], " and emissions are: ", self.emissions[t], " sum: ", self.emissions.sum())
         if self.include_user_plugloads:
             self.ED[t] += self.ED_user[t]
 
@@ -263,9 +268,9 @@ class EnergyModel:
 
         # calculate the remaining PV to Battery
         self.PV_to_battery[t] = (
-            self.battery.charge(remain * self.building.bgf / 1000)
-            * 1000
-            / self.building.bgf
+                self.battery.charge(remain * self.building.bgf / 1000)
+                * 1000
+                / self.building.bgf
         )
         remain = remain - self.PV_to_battery[t]
         # calculate the remaining PV to Battery
@@ -281,7 +286,7 @@ class EnergyModel:
 
         # calculate remaining electricity demand not covered after PV use for time t
         remaining_ED = (
-            (self.ED[t] - self.PV_use[t]) * self.building.bgf / 1000
+                (self.ED[t] - self.PV_use[t]) * self.building.bgf / 1000
         )  # kW not W/m²
         # conditions
         # if remaining energy demand > 0 AND battery.SoC > 0
@@ -289,20 +294,20 @@ class EnergyModel:
         c2 = self.battery.SoC > 0
         if all([c1, c2]):
             self.Btt_to_ED[t] = (
-                self.battery.discharge(remaining_ED) * 1000 / self.building.bgf
+                    self.battery.discharge(remaining_ED) * 1000 / self.building.bgf
             )
 
     def calc_cost(self, years=20, verbose=True):
         """calculates the total cost of the system"""
         # calc investment
         self.investment_cost = (
-            self.building.differential_cost * self.building.bgf
-            + self.PV.cost
-            + self.battery.cost
+                self.building.differential_cost * self.building.bgf
+                + self.PV.cost
+                + self.battery.cost
         )
         self.operational_cost = self.building.bgf * (
-            -self.PV_feedin.sum() / 1000 * self.price_feedin
-            + self.ED_grid.sum() / 1000 * self.price_grid
+                -self.PV_feedin.sum() / 1000 * self.price_feedin
+                + self.ED_grid.sum() / 1000 * self.price_grid
         )
 
         self.total_cost = self.investment_cost + self.operational_cost * years
@@ -384,11 +389,11 @@ class EnergyModel:
         )
 
     def plot_heat_balance(
-        self,
-        fig=None,
-        ax=None,
-        start=None,
-        end=None,
+            self,
+            fig=None,
+            ax=None,
+            start=None,
+            end=None,
     ):
         """plots the building heat balances"""
         self.plot_df(
@@ -412,11 +417,11 @@ class EnergyModel:
         )
 
     def plot_temperatures(
-        self,
-        fig=None,
-        ax=None,
-        start=None,
-        end=None,
+            self,
+            fig=None,
+            ax=None,
+            start=None,
+            end=None,
     ):
         """plots the indoor and outdoor temperatures"""
         self.plot_df(

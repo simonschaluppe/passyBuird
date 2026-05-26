@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
-DATA_DIR = Path("data")
+DATA_DIR = Path("../data")
+
 
 class Component:
     """
@@ -41,17 +42,31 @@ class Building:
         self.heat_capacity = self.df.loc["effective_heat_capacity", "Value"]
         self.net_storey_height = self.df.loc["net_storey_height", "Value"]
         self.differential_cost = self.df.loc["differential_cost", "Value"]
-
-        self.hull = self.load_hull(path)  # from excel
-
-        self.components = []
+        
+        self.hull = self.load_hull(self.file)  # from excel
+        self.components = {}
         # Außenwand
         # Dach
         # fenster
         # Bodenplatte
         for i, row in self.hull.iterrows():
             bauteil = Component(row)
-            self.components.append(bauteil)
+            self.components.update({bauteil.name:bauteil})
+        self.update_LT()
+
+
+    def reset(self):
+        self.hull = self.load_hull(self.file)  # from excel
+
+        self.components = {}
+        # Außenwand
+        # Dach
+        # fenster
+        # Bodenplatte
+        for i, row in self.hull.iterrows():
+            bauteil = Component(row)
+            self.components.update({bauteil.name:bauteil})
+        self.update_LT()
 
     def load_params(self, path, sheetname="params"):
         """loads the sheet "params" of a excel at path and returns it as a dataframe"""
@@ -68,18 +83,17 @@ class Building:
         hull = pd.read_excel(path, sheet_name="thermal_hull")
         return hull  # returns a dataframe
 
-
-
-    @property
-    def LT(self):
-        """calculates the LT [W/K/m²BGF] from a Hull Dataframe"""
-        # Todo: switch this to use self.components, as each component.L is available
-        A_B = self.hull["Fläche"].sum()
-        self.hull["L_B"] = self.hull["Fläche"] * self.hull["U-Wert"] * self.hull["Temperatur-Korrekturfaktor"]
-        L_B = self.hull.L_B.sum()
+    def update_LT(self):
+        A_B = 0
+        L_B = 0
+        for name, comp in self.components.items():
+            A_B += comp.area
+            l = comp.area * comp.u_value * comp.temp_factor
+            L_B += l
         L_PX = max(0, (0.2 * (0.75 - L_B / A_B) * L_B))  # wärmebrücken ZUschlag
         L_T = L_B + L_PX
-        return L_T / self.bgf
+        self.LT = L_T / self.bgf
+        
 
     def __repr__(self):
         data = 7
@@ -88,15 +102,14 @@ Net storey height:  {self.net_storey_height:>{data}} m
 Eff. Heat capacity: {self.heat_capacity:>{data}} Wh/m²/K
 LT:                 {self.LT:>{data}.2f} W/K/m²
 """  # triple quote strings preserve linebreaks and indentation
-        for c in self.components:
-            string+=str(c)+"\n"
+        for key, c in self.components.items():
+            string += str(c) + "\n"
 
         return string
 
 
 if __name__ == "__main__":
-
-    #print(Building())
-    test = Building(path=Path(DATA_DIR,"building_ph.xlsx"))
+    # print(Building())
+    test = Building(path=Path(DATA_DIR, "building_ph.xlsx"))
     print(test)
-    bauteil = test.components[0]
+    bauteil = next(iter(test.components.items()))
