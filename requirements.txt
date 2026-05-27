@@ -2,4 +2,4 @@ pygame-ce>=2.5
 numpy>=2.0
 pandas>=2.2
 matplotlib>=3.8
-openpyxl>=3.1q
+openpyxl>=3.1
