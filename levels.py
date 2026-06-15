@@ -242,7 +242,7 @@ Level(
         # ],
         intro=[
             "Dein Schiurlaub war fantastisch! Aber dein Haus ist in deiner Abwesenheit fast",
-            "eingefroren! Dreh die Heizug auf underreiche eine sichere Innentemperatur!",
+            "eingefroren! Dreh die Heizug auf und erreiche eine sichere Innentemperatur!",
             "",
             "",
             "Tipp: Wenn dein Haus nicht schnell genug warm wird, brauchst du vielleicht ein",
