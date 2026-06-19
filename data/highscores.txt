@@ -26,5 +26,89 @@
   {
     "name": "Simon",
     "score": 0
+  },
+  {
+    "name": "Sebastian",
+    "score": 5069
+  },
+  {
+    "name": "markus Rettenbacher",
+    "score": 2933
+  },
+  {
+    "name": "theo ",
+    "score": 2904
+  },
+  {
+    "name": "felix",
+    "score": 15851
+  },
+  {
+    "name": "Richard",
+    "score": 2607
+  },
+  {
+    "name": "Noran",
+    "score": 2612
+  },
+  {
+    "name": "matthias",
+    "score": 9578
+  },
+  {
+    "name": "mira",
+    "score": 11744
+  },
+  {
+    "name": "Michael",
+    "score": 2879
+  },
+  {
+    "name": "Kilian",
+    "score": 4902
+  },
+  {
+    "name": "felix",
+    "score": 3475
+  },
+  {
+    "name": "",
+    "score": 9426
+  },
+  {
+    "name": "niklas",
+    "score": 3792
+  },
+  {
+    "name": "Erik",
+    "score": 2761
+  },
+  {
+    "name": "benett",
+    "score": 3101
+  },
+  {
+    "name": "lukas brawl stars",
+    "score": 1860
+  },
+  {
+    "name": "lukas",
+    "score": 4037
+  },
+  {
+    "name": "mia",
+    "score": 2707
+  },
+  {
+    "name": "Pauli",
+    "score": 2509
+  },
+  {
+    "name": "yannick",
+    "score": 2103
+  },
+  {
+    "name": "levente",
+    "score": 2120
   }
 ]
