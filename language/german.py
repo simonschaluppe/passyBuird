@@ -1,4 +1,4 @@
-MAIN_MENU = "Hauptmenue"
+MAIN_MENU = "Hauptmenü"
 GAME_OVER = "GAME OVER!"
 START_NEW_GAME = "Neues Spiel starten"
 SHOP = "Zum Shop"

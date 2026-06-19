@@ -107,7 +107,7 @@ LEVELS = [
 
         start = 0,
         end= 7 * 24 * 2,
-        speed=14,
+        speed=12,
         start_TI=18,
         reward=700,
         background = "Winter.png",
@@ -116,7 +116,7 @@ LEVELS = [
             p_change=1 / 6,
             alpha=0.25,
             sigma=0.8,
-            comfort_sensitivity= 1
+            comfort_sensitivity= 0.8
         )
     ),
 
@@ -143,7 +143,7 @@ LEVELS = [
         ],
         start=745,
         end=745 + 7 * 24 * 2,
-        speed=16,
+        speed=12,
         start_TI=21,
         reward=1000,
         background = "Dunkelflaute.png",
@@ -151,7 +151,7 @@ LEVELS = [
             p_change=1 / 12,
             alpha=0.5,
             sigma=0.8,
-            comfort_sensitivity= 2,
+            comfort_sensitivity= 1,
             minimum_comfort_band=4
         )
     ),
@@ -180,7 +180,7 @@ LEVELS = [
         ],
         start=2161,
         end=2161 + 7 * 24 * 2,
-        speed=20,
+        speed=14,
         start_TI=21,
         reward=1500,
         background = "Spring.png",
@@ -216,7 +216,7 @@ LEVELS = [
         ],
         start=3625,
         end=3625 + 7 * 24 * 2,
-        speed=24,
+        speed=14,
         start_TI=21,
         reward=1500,
         background = "Summer.png",
@@ -228,67 +228,67 @@ LEVELS = [
         )
     ),
 
-Level(
-        number=6,
-        name="Level 6: Game of Thaws",
-        month = "February",
-        # intro=[
-        #     "That ski trip was amazing! Without heating, the house almost froze in your absence.",
-        #     "",
-        #     "Blast the heating and reach safe indoor temperatures!",
-        #     "",
-        #     "If you cannot heat the place quick enough, you may need an upgrade to your",
-        #     "*Heat Power* "
-        # ],
-        intro=[
-            "Dein Schiurlaub war fantastisch! Aber dein Haus ist in deiner Abwesenheit fast",
-            "eingefroren! Dreh die Heizug auf underreiche eine sichere Innentemperatur!",
-            "",
-            "",
-            "Tipp: Wenn dein Haus nicht schnell genug warm wird, brauchst du vielleicht ein",
-            "Upgrade deiner Heizleistung."
-        ],
-        start=500,
-        end=500 + 2 * 24 * 2,
-        speed=6,
-        start_TI=10,
-        reward=1500,
-        background = "Winter.png",
-        start_paused=True,
-        comfort=Comfortmodel(
-            random=False,
-            maximum_room_temperature=26,
-            comfort_sensitivity=10
-        )
-    ),
+# Level(
+#         number=6,
+#         name="Level 6: Game of Thaws",
+#         month = "February",
+#         # intro=[
+#         #     "That ski trip was amazing! Without heating, the house almost froze in your absence.",
+#         #     "",
+#         #     "Blast the heating and reach safe indoor temperatures!",
+#         #     "",
+#         #     "If you cannot heat the place quick enough, you may need an upgrade to your",
+#         #     "*Heat Power* "
+#         # ],
+#         intro=[
+#             "Dein Schiurlaub war fantastisch! Aber dein Haus ist in deiner Abwesenheit fast",
+#             "eingefroren! Dreh die Heizug auf underreiche eine sichere Innentemperatur!",
+#             "",
+#             "",
+#             "Tipp: Wenn dein Haus nicht schnell genug warm wird, brauchst du vielleicht ein",
+#             "Upgrade deiner Heizleistung."
+#         ],
+#         start=500,
+#         end=500 + 2 * 24 * 2,
+#         speed=6,
+#         start_TI=10,
+#         reward=1500,
+#         background = "Winter.png",
+#         start_paused=True,
+#         comfort=Comfortmodel(
+#             random=False,
+#             maximum_room_temperature=26,
+#             comfort_sensitivity=10
+#         )
+#     ),
 
-        Level(
-        number=7,
-        name="Level 7: Toddler Trouble!",
-        month = "Oktober",
-        # intro=[
-        #     "The baby is afoot! And it found the thermostat!",
-        #     "",
-        #     "Prepare for some seriously sudden setpoint shifts!!",
-        # ],
-        intro=[
-            "Dein Baby hat das Gehen gelernt! Und es hat das Thermostat gefunden!",
-            "",
-            "Mach dich auf heftige Sollwertsprünge gefasst!!",
-        ],
-        start=6000,
-        end=6000 + 14 * 24 * 2,
-        speed=24,
-        start_TI=21,
-        reward=1500,
-        background = "Fall.png",
-        comfort=Comfortmodel(
-            p_change=1 / 4,
-            alpha=0.25,
-            sigma=1.0,
-            comfort_sensitivity=3
-        )
-    ),
+#         Level(
+#         number=7,
+#         name="Level 7: Toddler Trouble!",
+#         month = "Oktober",
+#         # intro=[
+#         #     "The baby is afoot! And it found the thermostat!",
+#         #     "",
+#         #     "Prepare for some seriously sudden setpoint shifts!!",
+#         # ],
+#         intro=[
+#             "Dein Baby hat das Gehen gelernt! Und es hat das Thermostat gefunden!",
+#             "",
+#             "Mach dich auf heftige Sollwertsprünge gefasst!!",
+#         ],
+#         start=6000,
+#         end=6000 + 14 * 24 * 2,
+#         speed=24,
+#         start_TI=21,
+#         reward=1500,
+#         background = "Fall.png",
+#         comfort=Comfortmodel(
+#             p_change=1 / 4,
+#             alpha=0.25,
+#             sigma=1.0,
+#             comfort_sensitivity=3
+#         )
+#     ),
 
 
     # Level(
