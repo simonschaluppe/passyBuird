@@ -14,6 +14,7 @@ from pathlib import Path
 from Highscores import Scoreboard
 import datetime
 import language.german as language  # set language here
+from joystick import JoystickManager
 
 DEBUG_MODE = settings.DEBUG_MODE
 AUTOPILOT = False
@@ -23,6 +24,9 @@ pg.init()
 print(pg.version)
 sound_manager = Music()
 scoreboard = Scoreboard()
+
+# Initialize the joystick manager
+joystick_manager = JoystickManager()
 
 # Set up the main display surface
 screen: pg.Surface = pg.display.set_mode(
@@ -323,6 +327,7 @@ class Screen:
         """Basic handler/render loop."""
         running = True
         while running:
+            joystick_manager.update()
             running = self.handler.update()
             particle_manager.update()
             self.render()
@@ -463,6 +468,7 @@ class ShopScreen(Screen):
         """Basic handler/render loop."""
         running = True
         while running:
+            joystick_manager.update()
             running = self.handler.update()
             particle_manager.update()
             for b in self.upgrade_buttons:
@@ -509,6 +515,12 @@ class LevelScreen(Screen):
         running = True
         accumulated_gamehours = 0
         while running:
+            joystick_manager.update()          
+            if joystick_manager.is_heating():
+                heat()
+            if joystick_manager.is_cooling():
+                cool()
+            
             running = self.handler.update()
 
             dt_real = clock.tick(60) / 1000.0  # Convert milliseconds to seconds
@@ -783,6 +795,7 @@ class HighscoreScreen(Screen):
         """Basic handler/render loop."""
         running = True
         while running:
+            joystick_manager.update()
             running = self.handler.update()
             particle_manager.update()
             self.render()
