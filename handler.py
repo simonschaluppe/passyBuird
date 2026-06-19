@@ -174,6 +174,7 @@ class InputHandler(object):
         self.mousebutton_bindings = {}
         self.continuous_mousebutton_bindings = {}
         self.joybutton_binds = {}
+        self.joycombo_binds = {}
         self.music = music
 
         self.buttons = []
@@ -214,6 +215,13 @@ class InputHandler(object):
     def bind_joybutton(self, button_id: int, callback: callable) -> None:
         """Binds a specific joystick button ID to a callback function."""
         self.joybutton_binds[button_id] = callback
+
+    def bind_joycombo(self, modifier_id: int, button_id: int, callback: callable) -> None:
+        """
+        Binds a combination of a held modifier button and a newly pressed button to a callback.
+        Example: bind_joycombo(4, 7, quit_game) -> Hold LB (4) + Press Start (7)
+        """
+        self.joycombo_binds[(modifier_id, button_id)] = callback
 
     def bind_WASD_movement(self, mover, speed: float, turnspeed: float):
         self.bind_continuous_keypress(pg.K_w, lambda: mover.move_in_direction(speed))
@@ -288,8 +296,19 @@ class InputHandler(object):
             self.handle_mouse_up(event)
 
         elif event.type == pg.JOYBUTTONDOWN:
-            if event.button in self.joybutton_binds:
-                # Optional print statement mimicking your keyboard debug prints
+            joy = pg.joystick.Joystick(event.instance_id)
+            combo_triggered = False
+            
+            # 1. Check if this button press completes any registered combo
+            for (mod_id, btn_id), action in self.joycombo_binds.items():
+                if event.button == btn_id and joy.get_button(mod_id):
+                    print(f"Combo triggered: {mod_id} + {btn_id} > calling {action.__name__}")
+                    action()
+                    combo_triggered = True
+                    break  # Stop processing once a combo is fired
+            
+            # 2. If it wasn't a combo, check standard single-button bindings
+            if not combo_triggered and event.button in self.joybutton_binds:
                 print(f"joy button pressed: {event.button} > calling {self.joybutton_binds[event.button].__name__}")
                 self.joybutton_binds[event.button]()
 

@@ -513,7 +513,10 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
         self.handler.bind_joybutton(1, game.toggle_pause)
-
+        self.handler.bind_joybutton(0, game.toggle_pause)
+        self.handler.bind_joycombo(3, 0, level_success)
+        self.handler.bind_joycombo(3, 1, victory_loop) 
+        self.handler.bind_joycombo(3, 2, quit_game)
 
     @override
     def loop(self) -> None:
