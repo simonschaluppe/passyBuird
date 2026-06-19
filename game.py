@@ -327,7 +327,9 @@ class Screen:
         """Basic handler/render loop."""
         running = True
         while running:
-            joystick_manager.update()
+            # Process discrete button navigation
+            joystick_manager.update_menu(self.handler.buttons)
+
             running = self.handler.update()
             particle_manager.update()
             self.render()
@@ -468,7 +470,9 @@ class ShopScreen(Screen):
         """Basic handler/render loop."""
         running = True
         while running:
-            joystick_manager.update()
+            # Process discrete button navigation
+            joystick_manager.update_menu(self.handler.buttons)
+
             running = self.handler.update()
             particle_manager.update()
             for b in self.upgrade_buttons:
@@ -508,6 +512,8 @@ class LevelScreen(Screen):
         self.handler.bind_keypress(pg.K_ESCAPE, start_shop_loop)
         self.handler.bind_keypress(pg.K_s, take_screenshot)
         self.handler.bind_keypress(pg.K_m, toggle_audio)
+        self.handler.bind_joybutton(1, game.toggle_pause)
+
 
     @override
     def loop(self) -> None:
@@ -515,11 +521,14 @@ class LevelScreen(Screen):
         running = True
         accumulated_gamehours = 0
         while running:
-            joystick_manager.update()          
+            # Handle continuous game logic instead of UI
             if joystick_manager.is_heating():
                 heat()
             if joystick_manager.is_cooling():
                 cool()
+
+            # (If you add an in-game pause menu with buttons later, you would add:
+            # if game.paused: joystick_manager.update_menu(self.handler.buttons) )
             
             running = self.handler.update()
 
@@ -795,7 +804,9 @@ class HighscoreScreen(Screen):
         """Basic handler/render loop."""
         running = True
         while running:
-            joystick_manager.update()
+            # Process discrete button navigation
+            joystick_manager.update_menu(self.handler.buttons)
+
             running = self.handler.update()
             particle_manager.update()
             self.render()

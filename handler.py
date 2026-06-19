@@ -13,6 +13,7 @@ class Button:
         self.hovered = False
         self.pressed = False
         self.disabled = False
+        self.is_selected = False
 
     def release(self):
         self.pressed = False
@@ -22,11 +23,19 @@ class Button:
         self.pressed = True
 
     def is_hovering(self, mouse_pos):
-        """Check if the mouse is over the button."""
+        """Check if the mouse is over the button OR it is selected by the joystick."""
         x, y = self.position
         w, h = self.size
-        self.hovered = x <= mouse_pos[0] <= x + w and y <= mouse_pos[1] <= y + h
+        
+        # Check physical mouse collision
+        mouse_hover = x <= mouse_pos[0] <= x + w and y <= mouse_pos[1] <= y + h
+        
+        # Merge mouse hover and joystick selection
+        self.hovered = mouse_hover or self.is_selected
+        
+        # Ensure it doesn't stay pressed if the user moves off the button
         self.pressed = min(self.pressed, self.hovered)
+        
         return self.hovered
 
 class TextInput:
@@ -164,6 +173,7 @@ class InputHandler(object):
         self.continuous_keypress_bindings = {}
         self.mousebutton_bindings = {}
         self.continuous_mousebutton_bindings = {}
+        self.joybutton_binds = {}
         self.music = music
 
         self.buttons = []
@@ -200,6 +210,10 @@ class InputHandler(object):
     def bind_continuous_mousebutton(self, button, action):
         """left mousebutton is button 0"""
         self.continuous_mousebutton_bindings[button] = action
+        
+    def bind_joybutton(self, button_id: int, callback: callable) -> None:
+        """Binds a specific joystick button ID to a callback function."""
+        self.joybutton_binds[button_id] = callback
 
     def bind_WASD_movement(self, mover, speed: float, turnspeed: float):
         self.bind_continuous_keypress(pg.K_w, lambda: mover.move_in_direction(speed))
@@ -272,6 +286,12 @@ class InputHandler(object):
             self.handle_mouse_down(event)
         elif event.type == pg.MOUSEBUTTONUP:
             self.handle_mouse_up(event)
+
+        elif event.type == pg.JOYBUTTONDOWN:
+            if event.button in self.joybutton_binds:
+                # Optional print statement mimicking your keyboard debug prints
+                print(f"joy button pressed: {event.button} > calling {self.joybutton_binds[event.button].__name__}")
+                self.joybutton_binds[event.button]()
 
     def handle_continuous_keypresses(self):
         keys = pg.key.get_pressed()
