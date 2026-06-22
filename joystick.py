@@ -57,7 +57,7 @@ class JoystickManager:
                 self.move_cooldown = self.COOLDOWN_MAX
 
         # 2. Handle Clicking (Button 0 is 'A' / Cross)
-        is_pressed = joy.get_button(0)
+        is_pressed = joy.get_button(0) | joy.get_button(1)
         is_disabled = getattr(self.selected_button, "disabled", False)
 
         if is_pressed and not self.button_a_pressed and not is_disabled:
@@ -89,6 +89,24 @@ class JoystickManager:
                 return True
             if joy.get_axis(1) > self.deadzone:
                 return True
+        return False
+    
+    def is_speedup(self) -> bool:
+        """For Level gameplay."""
+        joy = list(self.joysticks.values())[0]  # Read player 1
+        dx, dy = self._get_directional_input(joy)
+        if dx == 1:
+            return True
+            print("speedup!")
+        return False
+    
+    def is_speeddown(self) -> bool:
+        """For Level gameplay."""
+        joy = list(self.joysticks.values())[0]  # Read player 1
+        dx, dy = self._get_directional_input(joy)
+        if dx == -1:
+            return True
+            print("speeddown!")
         return False
 
     # --- Private Helpers ---

@@ -24,6 +24,9 @@ class Button:
 
     def is_hovering(self, mouse_pos):
         """Check if the mouse is over the button OR it is selected by the joystick."""
+        """!!! Known issue: When a joystick is connected, navigating the menu with the
+        mouse is tedious because button highlighted by joystick will be picked every time.
+        Solution: New hovering class for joystick and decision on which hover """
         x, y = self.position
         w, h = self.size
         

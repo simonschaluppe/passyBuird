@@ -1,3 +1,4 @@
+from math import ceil
 import sys
 from pathlib import Path
 from typing import Iterable
@@ -340,6 +341,11 @@ class GameModel:
     def set_speed(self, simhours_per_second):
         """sets how many hours should be simulated for each second of the game"""
         self.speed = simhours_per_second
+
+    def inc_speed(self, hours = 1):
+        self.speed = min(100, max(1, self.speed + hours))
+        
+
 
     def set_cop(self, cop):
         self.model.HVAC.HP_COP = cop

@@ -524,11 +524,16 @@ class LevelScreen(Screen):
         running = True
         accumulated_gamehours = 0
         while running:
+            print(joystick_manager.joysticks.values)
             # Handle continuous game logic instead of UI
             if joystick_manager.is_heating():
                 heat()
             if joystick_manager.is_cooling():
                 cool()
+            if joystick_manager.is_speedup():
+                game.inc_speed(1)
+            if joystick_manager.is_speeddown():
+                game.inc_speed(-1)
 
             # (If you add an in-game pause menu with buttons later, you would add:
             # if game.paused: joystick_manager.update_menu(self.handler.buttons) )
